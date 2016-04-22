@@ -1,0 +1,31 @@
+SourceFile("halcust\\Import",0);
+SourceFile("halcust\\Windows",0);
+SourceFile("halcust\\halpatch",0);
+
+begin
+
+
+  RecordBegin(VARVc,VARView,"VARVc3");
+  NewAutosyncRegister(kSyncDirectionToClient,true);
+  RecordField(Code,M4Code,10,0);
+  RecordField(Comment,M4Str,60,0);
+  RecordField(VARGCode,M4Code,5,VARGVc);
+  RecordField(TerminateFlag,M4Int,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(LangCode,M4Code,5,0);
+  ArrayField(Text,M4Str,100,0);
+  EndArray;  
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  KeySegment(VARGCode);
+  KeyBegin(VARGCode);
+  KeySegment(VARGCode);
+  KeySegment(Code);
+  KeyBegin(Comment);
+  KeySegment(Comment);
+  KeySegment(Code);
+  EndRecord;
+
+return;
+end;

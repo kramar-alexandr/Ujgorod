@@ -1,0 +1,146 @@
+
+
+global updating procedure INImportIn()		//Edit----------------------Dima  05.02.2016
+begin
+	record INVc INr;
+	record DIVc DIr;
+	string 255 artcode, name, classCode, className;
+
+	SetImportCodepage("CP1251");
+
+	while (TestEOF()==false) begin
+		artcode = ImportField;
+		name = ImportField;
+		classCode = ImportField;
+		className = ImportField;
+
+		INr.Code = artcode;
+		if (ReadFirstMain(INr,1,true)==false) then begin
+
+			RecordNew(INr);
+			INr.Code = artcode;
+			INr.Name = name;
+			INr.ItemType = kItemTypeStocked;
+    	
+			DIr.Code = classCode;
+			if (ReadFirstMain(DIr,1,true)) then begin
+				INr.DispGroups = DIr.Code;
+			end else begin
+				RecordNew(DIr);
+				DIr.Code = classCode;
+				DIr.Name = className;
+				DIr.CType = "BRAND";
+				RecordStore(DIr,true);
+				INr.DispGroups = classCode;
+			end;
+			RecordStore(INr,true);
+		end;
+
+		NextImportLine(true);
+	end;
+  
+end;
+
+
+global updating procedure VARImportIn()
+begin
+	record VARVc VARr;
+	string 255 code, name, group;
+
+	SetImportCodepage("CP1251");
+
+	while (TestEOF()==false) begin
+		code = ImportField;
+		name = ImportField;
+		group = ImportField;
+
+		VARr.Code = code;
+		if (ReadFirstMain(VARr,1,true)==false) then begin
+			RecordNew(VARr);
+			VARr.Code = code;
+			VARr.Comment = name;
+			VARr.VARGCode = group;
+			RecordStore(VARr,true);			
+		end;
+
+		NextImportLine(true);
+	end;  
+end;
+
+
+global updating procedure ItemPricesImportIn()
+begin
+	record VARVc VARr;
+	record INVc INr;
+	record PLVc PLr;
+	record BarcodeVc Barr;
+	string 255 code, var1,var2,bar,aditional,fullcode;
+	val price;
+
+	SetImportCodepage("CP1251");
+
+	while (TestEOF()==false) begin
+		code = ImportField;
+		var1 = ImportField;
+		var2 = ImportField;
+		price = StringToVal(ImportField,M45Val);
+		bar = ImportField;
+		aditional = ImportField;
+
+		if (nonblank(code)) then begin
+
+			fullcode = code;
+			if (nonblank(var1)) then begin 
+				fullcode = fullcode & "." & var1;
+			end;
+			if (nonblank(var2)) then begin 
+				fullcode = fullcode & "." & var2;
+			end;
+    	
+			PLr.ArtCode = fullcode;
+			PLr.PLCode = "RRP";
+			PLr.ExVatPrice = price;
+			INr.Code = code;
+			if (ReadFirstMain(INr,1,true))	then begin
+				PLr.Comment = INr.Name;
+			end;
+			RecordStore(PLr,true);
+    	
+			Barr.Itemcode = fullcode;
+			Barr.Barcode = bar;
+			Barr.Comment = INr.Name;;
+			RecordStore(Barr,true);
+    	
+			if (nonblank(aditional)) then begin
+				if (nonblank(INr.DispGroups)) then begin
+					INr.DispGroups = INr.DispGroups & ",A";
+					RecordStore(INr,true);
+				end;
+			end;
+
+		end;
+
+		NextImportLine(true);
+	end;  
+end;
+
+
+
+
+
+global updating procedure CleaningMn() //Edit------------------------------Dima,   24.12.2014
+begin
+	record INVc INr;
+	Boolean TrHs;
+		
+
+	TrHs = true;
+	while (LoopMain(INr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(INr);
+	    StepBack(INr);
+	  end;
+	end;
+
+return;
+end;

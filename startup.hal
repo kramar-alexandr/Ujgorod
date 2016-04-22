@@ -1,0 +1,15 @@
+event startup
+begin
+
+	SetLangMode(LangUkrainian,"UKR",0);
+	//SetLangMode(LangRussian,"RUS",0);
+
+
+	Import("€мпорт товаров и классификаций",ImportIClass,INImportIn,modDBMain);
+	Import("€мпорт вариантов товаров",ImportIClass,VARImportIn,modDBMain);
+	Import("€мпорт цен и штрих-кодов",ImportIClass,ItemPricesImportIn,modDBMain);
+
+	Maintenance("Ћчистить регистр товары",MyVClass,CleaningMn,modDBMain);
+
+	return;
+end;

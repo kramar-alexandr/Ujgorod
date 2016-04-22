@@ -1,0 +1,21 @@
+SetLangMode(LangUkrainian,"UKR",0);
+//SetLangMode(LangRussian,"RUS",0);
+
+
+window ImportIClass:1		
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Импорт данных",ImportIClass,CGIcW,-);	
+  SetWRect(20,80,270,300);
+
+
+  EndWindow;
+end;
+
+window MyVClass:1 // Edit ************************** Friday, 17 October 2014 11:47:19
+ wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+ begin
+WindowBegin("Maintenance",MyVClass,CGMnt,RcType);
+  SetWRect(20,120,360,220);
+  EndWindow;
+end;
