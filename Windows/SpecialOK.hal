@@ -1018,6 +1018,37 @@ begin
   return;
 end;
 
+
+
+global procedure FillVarrianArrayFromIVDclass(integer wn,var Array string vars)		//Edit----------------------Dima  25.04.2016
+begin
+	Integer rownr;
+  record IVVc IVr;
+  row IVVc IVrw;
+  Array string 20 amsk;
+  Array string 20 maskvar;
+  Array string 2 maskvarsz; 
+  string 60 sz,mskrep,varsubset;
+  string 255 mask;
+  
+  if (GetWindowClass(wn)=="IVDClass") then begin
+  	ClearArray(vars);
+  	GetWindowRecord(wn,IVr);
+  	rownr = WindowActiveRow(wn);
+	  if (rownr>=0) then begin  	  	
+	  	MatRowGet(IVr,rownr,IVrw);
+	  	if (FindItemVAR(IVrw.ArtCode,sz,mask,mskrep,varsubset)) then begin
+	  		SplitVars(IVrw.ArtCode,maskvar,maskvarsz,amsk);
+	  		vars[0] = amsk[0];
+	  		vars[1] = amsk[1];
+	  	end;  	
+	  end;  
+	end;    
+end;
+
+
+
+
 procedure BuildVarString(string theitemcode,val theqty,string varx,string vary,array string maskvar2,array string maskvarsz2,
                          array string maskvar,string itemsize,var array string incode,var array val qty,var Integer pos,Boolean checkqty)
 begin
@@ -1078,10 +1109,12 @@ BEGIN
   
   res = true;
   GetWindowRecord(wn,VarMEr);
+  mwn = MotherWindow(wn);
   FindMotherWindowLocation(wn,location,dt);
   tstr = VarMEr.ItemCode;
   if (MATVARINSClassOnOKWindowPaste(tstr,sepstr,msk,mskrep,varsubset,maskvar2,maskvarsz2,maskvar,maskvarsz,
                                    varsx,varsy)) then begin
+    FillVarrianArrayFromIVDclass(wn,varsx);  //Edit----------------------Dima  25.04.2016                            
     pos = 0;
     incode[pos] = "";
     switch (fieldname) begin
@@ -1162,6 +1195,7 @@ begin
   tstr = VarMEr.ItemCode;
   if (MATVARINSClassOnOKWindowPaste(tstr,sepstr,msk,mskrep,varsubset,maskvar2,maskvarsz2,maskvar,maskvarsz,
                                    varsx,varsy)) then begin
+    FillVarrianArrayFromIVDclass(mwn,varsx);                               
     for (i=0;i<40;i=i+1) begin
       incode[i] = "";
     end;
