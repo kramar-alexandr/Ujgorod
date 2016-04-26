@@ -551,7 +551,10 @@ done below
       if (INr.Terminated==1) then begin
         warning = USetStr(1266) & IVrw.ArtCode;
       end else begin
-        warning = USetStr(1120) & IVrw.ArtCode;
+      	if (FindItemVAR(IVrw.ArtCode,sz,msk,mskrep,varsubset)==false) then begin//Edit----------------------Dima  25.04.2016. 
+      			//Don't show this message for items with variants. Code could be not ended.
+        	warning = USetStr(1120) & IVrw.ArtCode;
+        end;	
       end;
     end;
   end;

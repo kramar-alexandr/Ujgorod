@@ -1686,7 +1686,7 @@ BEGIN
   record INVc INr;
 //LogText(0,"TestForMATVARINSLocal");
   varsitemcode = FirstInRange(GetWindowNameArg(wn),20);
-  varsitemcode = GetActiveArtCode(wn);		//Edit----------------------Dima  26.04.2016
+  varsitemcode = GetActiveArtCode(wn);	//For working with one variant. Show list of variants not matrix	//Edit----------------------Dima  26.04.2016
   location = LastInRange(GetWindowNameArg(wn),20);
   wclass = GetWindowClass(wn);
 //LogText(0,wclass & "  +  " & location & " + " & varsitemcode);
@@ -1701,7 +1701,7 @@ BEGIN
 
   if (ReadFirstItem(varsitemcode,INr,true,false)==false) then begin //*** ReadFirstItem(varsitemcode,INr,true,true)
     goto LTestForMATVARINS; 
-		LogText(0,"not found");
+		//LogText(0,"not found");
   end else begin
     SetWindowNameArg(wn,INr.Code & ":" & location);
     res = PrepareAndOpenMatVARWind(wn,INr.Code,location,itemsize,mask,subsets);
