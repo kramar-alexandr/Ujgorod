@@ -1021,8 +1021,9 @@ end;
 
 
 
-global procedure FillVarrianArrayFromIVDclass(integer wn,var Array string vars)		//Edit----------------------Dima  25.04.2016
+function string 255 GetCodeFromDClassActiveRow(integer wn)		//Edit----------------------Dima  26.04.2016
 begin
+	string 255 artcode;
   Integer rownr;
   record IVVc IVr;
   row IVVc IVrw;
@@ -1040,14 +1041,6 @@ begin
   row PUVc PUrw;
   record IVCashVc IVCashr;
   row IVCashVc IVCashrw;  
-  Array string 20 amsk;
-  Array string 20 maskvar;
-  Array string 2 maskvarsz; 
-  string 60 sz,mskrep,varsubset;
-  string 255 mask,artcode;
-  
-
-  ClearArray(vars);
   
 	switch(GetWindowClass(wn)) begin
 		case "IVDClass":
@@ -1105,19 +1098,54 @@ begin
 	  		if (rownr>=0) then begin  	  	
 	  			MatRowGet(IVCashr,rownr,IVCashrw);
 	  			artcode = IVCashrw.ArtCode; 	
-	  		end;	  		  
+	  		end;  		  
 
 	end;
+	
+GetCodeFromDClassActiveRow = artcode;
+return;
+end;
+
+
+global procedure FillVarrianArrayFromDclass(integer wn,var Array string vars)		//Edit----------------------Dima  25.04.2016
+begin
+  Array string 20 amsk;
+  Array string 20 maskvar;
+  Array string 2 maskvarsz; 
+  string 60 sz,mskrep,varsubset;
+  string 255 mask,artcode; 
+
+  ClearArray(vars);
   
+  artcode = GetCodeFromDClassActiveRow(wn);
+ 
 	if (FindItemVAR(artcode,sz,mask,mskrep,varsubset)) then begin
 		SplitVars(artcode,maskvar,maskvarsz,amsk);
 		vars[0] = amsk[0];
 		vars[1] = amsk[1];
-	end; 
-	
+	end;
 	  
 end;
 
+
+
+function string 255 GetActiveArtCode(integer wn)		//Edit----------------------Dima  26.04.2016
+begin
+  Array string 20 amsk;
+  Array string 20 maskvar;
+  Array string 2 maskvarsz; 
+  string 60 sz,mskrep,varsubset;
+  string 255 mask,artcode;
+  
+  artcode = GetCodeFromDClassActiveRow(wn);
+ 
+	if (FindItemVAR(artcode,sz,mask,mskrep,varsubset)) then begin
+		SplitVars(artcode,maskvar,maskvarsz,amsk);
+		artcode = amsk[0];
+	end;	
+GetActiveArtCode = artcode;
+return;
+end;
 
 
 
@@ -1186,7 +1214,7 @@ BEGIN
   tstr = VarMEr.ItemCode;
   if (MATVARINSClassOnOKWindowPaste(tstr,sepstr,msk,mskrep,varsubset,maskvar2,maskvarsz2,maskvar,maskvarsz,
                                    varsx,varsy)) then begin
-    FillVarrianArrayFromIVDclass(wn,varsx);  //Edit----------------------Dima  25.04.2016                            
+    FillVarrianArrayFromDclass(wn,varsx);  //Edit----------------------Dima  25.04.2016                            
     pos = 0;
     incode[pos] = "";
     switch (fieldname) begin
@@ -1267,7 +1295,7 @@ begin
   tstr = VarMEr.ItemCode;
   if (MATVARINSClassOnOKWindowPaste(tstr,sepstr,msk,mskrep,varsubset,maskvar2,maskvarsz2,maskvar,maskvarsz,
                                    varsx,varsy)) then begin
-    FillVarrianArrayFromIVDclass(mwn,varsx);                               
+    FillVarrianArrayFromDclass(mwn,varsx);                               
     for (i=0;i<40;i=i+1) begin
       incode[i] = "";
     end;
@@ -1461,13 +1489,14 @@ begin
     case "IVDClass": begin
       record IVVc IVr;
       row IVVc IVrw;
-
+LogText(0,"FingVarMatrxEntryQuantitys----");
       GetWindowRecord(wn,IVr);
       rwcnt = MatRowCnt(IVr);
       for (ri=0;ri<rwcnt;ri=ri+1) begin
         MatRowGet(IVr,ri,IVrw);
         if (Left(IVrw.ArtCode,len(itemcode))==itemcode) then begin
           variety = Right(IVrw.ArtCode,len(IVrw.ArtCode)-len(itemcode));
+          LogText(0,"variety   " & variety);
           varsq[variety] = varsq[variety] + IVrw.Quant;
           AddToVarietyArray(variety,avariety);
         end;
@@ -1655,18 +1684,19 @@ BEGIN
   string 255 varsitemcode,itemsize,mask,subsets,location;
   string 60 wclass;
   record INVc INr;
-LogText(0,"TestForMATVARINSLocal");
+//LogText(0,"TestForMATVARINSLocal");
   varsitemcode = FirstInRange(GetWindowNameArg(wn),20);
+  varsitemcode = GetActiveArtCode(wn);		//Edit----------------------Dima  26.04.2016
   location = LastInRange(GetWindowNameArg(wn),20);
   wclass = GetWindowClass(wn);
-LogText(0,wclass & "  +  " & location & " + " & varsitemcode);
+//LogText(0,wclass & "  +  " & location & " + " & varsitemcode);
 //MessageBox(0,wclass & "  +  " & location & " + " & varsitemcode);
 
   if ((blank(varsitemcode)) or 
       (wclass=="VARMaskTClass") or 
       (wclass=="AvailVarsRClass")) then begin goto LTestForMATVARINS; end;//list of all windows where paste variety should not work, C - code!
   if (FindItemVAR2(varsitemcode,itemsize,mask,subsets)==false) then begin
-LogText(0,itemsize & "  ..  " & mask & " ... " & subsets);
+//LogText(0,itemsize & "  ..  " & mask & " ... " & subsets);
  goto LTestForMATVARINS; end;
 
   if (ReadFirstItem(varsitemcode,INr,true,false)==false) then begin //*** ReadFirstItem(varsitemcode,INr,true,true)

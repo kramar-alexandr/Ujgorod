@@ -12,7 +12,7 @@ external function Integer CountObjects(string);
 external function Boolean AccInRange(string,string);
 external function Boolean GetPMRow(string,var row PMBlock);
 external function string 20 FindWithHoldAcc(string,string);
-external procedure FillVarrianArrayFromIVDclass(integer,var Array string);
+external procedure FillVarrianArrayFromDclass(integer,var Array string);
 
 
 function Boolean SetCUDLabel(string subset,string fldname,var string plbl)
@@ -1165,7 +1165,7 @@ begin
   
   switch (posy) begin
 		case 1:
-			FillVarrianArrayFromIVDclass(wn,vars);
+			FillVarrianArrayFromDclass(wn,vars);
 		case 2:
   		if (FillAndPrepareVarCodes(vars,posy,GetWindowNameArg(wn))) then begin
   		  i = 0;
@@ -1203,7 +1203,7 @@ begin
   
   switch (posy) begin								//Edit----------------------Dima  25.04.2016
 		case 1:
-			FillVarrianArrayFromIVDclass(wn,vars);
+			FillVarrianArrayFromDclass(wn,vars);
 		case 2:
   		if (FillAndPrepareVarTheCodes(vars,posy,GetWindowNameArg(wn))) then begin
   		  i = 0;
