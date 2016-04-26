@@ -32,6 +32,7 @@ remote function Boolean FindItemVAR(string,var string,var string,var string,var 
 external procedure StripEndingSpaces(var string);
 external procedure DisplayStrArray(array string);
 
+
 global
 procedure PasteFromWn(Integer wn,string paststr)
 begin
@@ -1018,8 +1019,6 @@ begin
   return;
 end;
 
-<<<<<<< HEAD
-=======
 
 
 function string 255 GetCodeFromDClassActiveRow(integer wn)		//Edit----------------------Dima  26.04.2016
@@ -1150,7 +1149,6 @@ end;
 
 
 
->>>>>>> origin/master
 procedure BuildVarString(string theitemcode,val theqty,string varx,string vary,array string maskvar2,array string maskvarsz2,
                          array string maskvar,string itemsize,var array string incode,var array val qty,var Integer pos,Boolean checkqty)
 begin
@@ -1211,14 +1209,12 @@ BEGIN
   
   res = true;
   GetWindowRecord(wn,VarMEr);
+  mwn = MotherWindow(wn);
   FindMotherWindowLocation(wn,location,dt);
   tstr = VarMEr.ItemCode;
   if (MATVARINSClassOnOKWindowPaste(tstr,sepstr,msk,mskrep,varsubset,maskvar2,maskvarsz2,maskvar,maskvarsz,
                                    varsx,varsy)) then begin
-<<<<<<< HEAD
-=======
     FillVarrianArrayFromDclass(wn,varsx);  //Edit----------------------Dima  25.04.2016                            
->>>>>>> origin/master
     pos = 0;
     incode[pos] = "";
     switch (fieldname) begin
@@ -1299,10 +1295,7 @@ begin
   tstr = VarMEr.ItemCode;
   if (MATVARINSClassOnOKWindowPaste(tstr,sepstr,msk,mskrep,varsubset,maskvar2,maskvarsz2,maskvar,maskvarsz,
                                    varsx,varsy)) then begin
-<<<<<<< HEAD
-=======
     FillVarrianArrayFromDclass(mwn,varsx);                               
->>>>>>> origin/master
     for (i=0;i<40;i=i+1) begin
       incode[i] = "";
     end;
