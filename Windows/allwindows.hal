@@ -2192,8 +2192,9 @@ if (HasTouchScreenLook==false) then begin
   MatText(t=kInvoiceRowTypeCashPayment,32,"Готівка",true);
   MatCol(t,94,"Сума",0,Sum,true,0);
   MatCol(t,198,"Спос. оплати",0,PayMode,true,PMSClass);
-  MatCol(t,220,"Валюта",0,CurncyCode,true,CurncyCodeSClass);// Edit ************************** Friday, 22 April 2016 14:16:59
-  MatCol(t,280,"Опис",0,Spec,false,0); 
+  MatText(t,220,"Готівка",true);
+  MatCol(t,270,"Валюта",0,CurncyCode,true,CurncyCodeSClass);// Edit ************************** Friday, 22 April 2016 14:16:59
+  MatCol(t,310,"Опис",0,Spec,false,0); 
   MatText(t=kInvoiceRowTypeLoyaltyPointsPayment,32,"ОББ",true);
   MatCol(t,68,"Сума",0,Sum,true,0);
   MatCol(t,108,"Бали",0,Points,true,0);
