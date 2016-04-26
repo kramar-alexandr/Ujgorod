@@ -66,7 +66,10 @@ external function Boolean GetItemPriceDiscount3(string,val,var record INVc,strin
                                                 var val,var string,var val,var string,var val,var string,Integer,var Boolean,Date,Time,
                                                 string,Boolean,var Boolean,string,var string,var val,string,string,var string);
 external function Boolean INVc_AllowSales(record INVc,var LongInt);
+<<<<<<< HEAD
+=======
 remote procedure SplitVars(string ,Array string ,Array string ,Array string);//Edit----------------------Dima  22.04.2016
+>>>>>>> origin/master
 
 global
 function Integer VATCalcRule(string VATCode)
@@ -408,7 +411,10 @@ BEGIN
   string 60 sz,msk,mskrep;
   string 200 varsubset;
   record AccVc Accr;
+<<<<<<< HEAD
+=======
   string 255 mask;  			//Edit----------------------Dima  25.04.2016
+>>>>>>> origin/master
 
   pritemf = true;
   MatRowGet(IVr,rownr,IVrw);  
@@ -418,9 +424,13 @@ BEGIN
   location = IVrw.Location;
   if (blank(location)) then begin
     location = IVr.Location;
+<<<<<<< HEAD
+  end;
+=======
   end;  
   
   
+>>>>>>> origin/master
   if (touchscreenf) then begin
     if (GetFirstItem(IVrw.ArtCode,INr)) then begin
       IVrw.ArtCode = INr.Code;
@@ -555,10 +565,14 @@ done below
       if (INr.Terminated==1) then begin
         warning = USetStr(1266) & IVrw.ArtCode;
       end else begin
+<<<<<<< HEAD
+        warning = USetStr(1120) & IVrw.ArtCode;
+=======
       	if (FindItemVAR(IVrw.ArtCode,sz,mask,mskrep,varsubset)==false) then begin//Edit----------------------Dima  25.04.2016. 
       			//Don't show this message for items with variants. Code could be not ended.
         	warning = USetStr(1120) & IVrw.ArtCode;
         end;	
+>>>>>>> origin/master
       end;
     end;
   end;
@@ -575,9 +589,12 @@ done below
       end;
     end;
   end;
+<<<<<<< HEAD
+=======
   
   MatRowPut(IVr,rownr,IVrw);
   
+>>>>>>> origin/master
   if (chrsum) then begin
     chsum = IVDchrsum(IVr,rownr);
     if (chsum) then begin
@@ -1174,6 +1191,15 @@ END;
 global
 procedure IVVc_PasteFrPrice(var record IVVc IVp)
 BEGIN
+<<<<<<< HEAD
+  record GeneralOptionBlock GOb;
+  record FreightBlock Fb;
+  val pr,t;  
+
+  BlockLoad(GOb);
+  BlockLoad(Fb);
+  if (Fb.UseWeight!=0) then begin
+=======
   record GeneralOptionBlock GenOptr;
   record FreightBlock FreightRec;
   val pr,t;  
@@ -1181,11 +1207,16 @@ BEGIN
   BlockLoad(GenOptr);
   BlockLoad(FreightRec);
   if (FreightRec.UseWeight!=0) then begin
+>>>>>>> origin/master
     CalculateFreightWeight(IVp,false);
   end else begin
     IVp.FrBase = MulRateToBase1(IVp.CurncyCode,IVp.FrPrice,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2,DefaultCurRoundOff);
     pr = 100 - IVp.FrGPPercent;
+<<<<<<< HEAD
+    CalcSum(1,IVp.FrBase,0,pr,t,GOb.UseDiscount);
+=======
     CalcSum(1,IVp.FrBase,0,pr,t,GenOptr.UseDiscount);
+>>>>>>> origin/master
     IVp.FrGP = t;
   end;
   IVSumup(IVp,true); 
@@ -1331,6 +1362,10 @@ BEGIN
   string 10 crncy;
   record ItemSettingBlock ISb;
   Boolean testf;
+<<<<<<< HEAD
+  val timesum;
+=======
+>>>>>>> origin/master
   
   testf = true;
   if (df) then begin
@@ -1348,14 +1383,52 @@ BEGIN
       end;
     end else begin
       MatRowGet(IVp,rownr,IVrw);
+<<<<<<< HEAD
+      // Edit Start ---------------------------------------------- Edit Start
+	//Monday, 25 April 2016 10:19:32
+	
+      if(IVrw.stp==kInvoiceRowTypeCashPayment)then begin
+				fr = IVp.FrRate;
+				to1 = IVp.ToRateB1;
+      	if(fr==0 or to1==0)then begin
+      		fr = 1;
+      		to1 = 1;
+      	end;
+      	timesum = IVrw.Sum/fr*to1;
+      end;
+      
+	// Edit End ---------------------------------------------- Edit End
+	
       crncy = IVrw.CurncyCode;
       GetFullCurncyRate(crncy,IVp.TransDate,fr,to1,to2,br1,br2);
+            
+=======
+      crncy = IVrw.CurncyCode;
+      GetFullCurncyRate(crncy,IVp.TransDate,fr,to1,to2,br1,br2);
+>>>>>>> origin/master
       IVrw.CurncyCode = crncy;
       IVrw.FrRate = fr;
       IVrw.ToRateB1 = to1;
       IVrw.ToRateB2 = to2;
       IVrw.BaseRate1 = br1;
       IVrw.BaseRate2 = br2;  
+<<<<<<< HEAD
+      // Edit Start ---------------------------------------------- Edit Start
+	//Monday, 25 April 2016 10:19:36
+	
+      if(IVrw.stp==kInvoiceRowTypeCashPayment)then begin
+      	if(fr==0 or to1==0)then begin
+      		fr = 1;
+      		to1 = 1;
+      	end;
+      	timesum = timesum*fr/to1;
+      	IVrw.Sum = timesum;
+      end;
+      
+	// Edit End ---------------------------------------------- Edit End
+	
+=======
+>>>>>>> origin/master
       MatRowPut(IVp,rownr,IVrw);
       IVSumup(IVp,true)
     end;
@@ -1474,7 +1547,11 @@ global
 procedure IVVc_PastePayDeal(var record IVVc IVp,string prevpaydeal,string defreturnlocation)
 BEGIN
   string 2 pd;
+<<<<<<< HEAD
+  record AccBlock ARb;
+=======
   record AccBlock ARAccRec;
+>>>>>>> origin/master
   record SRBlock SRRec;
   LongInt newnr;
   row IVVc IVrw;
@@ -1484,6 +1561,10 @@ BEGIN
   record INVc INr;
   string 255 salesacc;
   row WHTaxBlock WHTaxrw;
+<<<<<<< HEAD
+  Boolean testf;
+=======
+>>>>>>> origin/master
         
   BlockLoad(PDSb);
   pd = IVp.PayDeal;
@@ -1506,6 +1587,30 @@ LkInvoiceTypeCash:;
         IVp.SerNr = NextSerNr("IVVc",IVp.TransDate,newnr,false,IVp.LangCode);
       end;
       IVp.pdays = 0;
+<<<<<<< HEAD
+    case kInvoiceTypeCreditSpecialSales: 
+      goto LkInvoiceTypeCredit;
+    case kInvoiceTypeCredit:
+LkInvoiceTypeCredit:;
+      testf = true;
+      rwcnt = MatRowCnt(IVp);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(IVp,i,IVrw);
+        if (IVrw.stp==kInvoiceRowTypeCredit) then begin
+          i = rwcnt;
+          testf = false;
+        end;
+      end;
+      if (testf) then begin
+        ClearRow(IVp,IVrw,kInvoiceRowTypeCredit);
+        MatRowInsert(IVp,0,IVrw);
+      end;
+      BlockLoad(ARb);    
+      if (ARb.CredSalesAccs!=0) then begin
+        PasteCreditSalesAccs(IVp);    
+      end;
+      IVp.DisputedFlag = ARb.SetDisputedFlagsOnCredIV;
+=======
     case kInvoiceTypeCreditSpecialSales: goto LkInvoiceTypeCredit;
     case kInvoiceTypeCredit:
 LkInvoiceTypeCredit:;
@@ -1516,6 +1621,7 @@ LkInvoiceTypeCredit:;
         PasteCreditSalesAccs(IVp);    
       end;
       IVp.DisputedFlag = ARAccRec.SetDisputedFlagsOnCredIV;
+>>>>>>> origin/master
       newnr = GetCurUserLastNr("CreditIVVc");
       if (newnr<=0) then begin
         BlockLoad(SRRec);
