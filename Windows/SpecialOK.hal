@@ -1046,8 +1046,8 @@ begin
   string 60 sz,mskrep,varsubset;
   string 255 mask,artcode;
   
-  
-  	ClearArray(vars);
+
+  ClearArray(vars);
   
 	switch(GetWindowClass(wn)) begin
 		case "IVDClass":
@@ -1109,22 +1109,11 @@ begin
 
 	end;
   
-  /*
-  if (GetWindowClass(wn)=="IVDClass") then begin
-  	
-  	GetWindowRecord(wn,IVr);
-  	rownr = WindowActiveRow(wn);
-	  if (rownr>=0) then begin  	  	
-	  	MatRowGet(IVr,rownr,IVrw); 	
-	  end;  
-	end;  */
-
-
-	  	if (FindItemVAR(artcode,sz,mask,mskrep,varsubset)) then begin
-	  		SplitVars(artcode,maskvar,maskvarsz,amsk);
-	  		vars[0] = amsk[0];
-	  		vars[1] = amsk[1];
-	  	end; 
+	if (FindItemVAR(artcode,sz,mask,mskrep,varsubset)) then begin
+		SplitVars(artcode,maskvar,maskvarsz,amsk);
+		vars[0] = amsk[0];
+		vars[1] = amsk[1];
+	end; 
 	
 	  
 end;
