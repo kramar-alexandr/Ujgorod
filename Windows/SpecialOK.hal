@@ -32,6 +32,7 @@ remote function Boolean FindItemVAR(string,var string,var string,var string,var 
 external procedure StripEndingSpaces(var string);
 external procedure DisplayStrArray(array string);
 
+
 global
 procedure PasteFromWn(Integer wn,string paststr)
 begin
@@ -1022,28 +1023,99 @@ end;
 
 global procedure FillVarrianArrayFromIVDclass(integer wn,var Array string vars)		//Edit----------------------Dima  25.04.2016
 begin
-	Integer rownr;
+  Integer rownr;
   record IVVc IVr;
   row IVVc IVrw;
+  record SDVc SDr;
+  row SDVc SDrw;
+  record SHVc SHr;
+  row SHVc SHrw;
+  record ORVc ORr;
+  row ORVc ORrw;
+  record StockMovVc SMr;
+  row StockMovVc SMrw;
+  record POVc POr;
+  row POVc POrw;
+  record PUVc PUr;
+  row PUVc PUrw;
+  record IVCashVc IVCashr;
+  row IVCashVc IVCashrw;  
   Array string 20 amsk;
   Array string 20 maskvar;
   Array string 2 maskvarsz; 
   string 60 sz,mskrep,varsubset;
-  string 255 mask;
+  string 255 mask,artcode;
   
-  if (GetWindowClass(wn)=="IVDClass") then begin
-  	ClearArray(vars);
-  	GetWindowRecord(wn,IVr);
-  	rownr = WindowActiveRow(wn);
-	  if (rownr>=0) then begin  	  	
-	  	MatRowGet(IVr,rownr,IVrw);
-	  	if (FindItemVAR(IVrw.ArtCode,sz,mask,mskrep,varsubset)) then begin
-	  		SplitVars(IVrw.ArtCode,maskvar,maskvarsz,amsk);
-	  		vars[0] = amsk[0];
-	  		vars[1] = amsk[1];
-	  	end;  	
-	  end;  
-	end;    
+
+  ClearArray(vars);
+  
+	switch(GetWindowClass(wn)) begin
+		case "IVDClass":
+  			GetWindowRecord(wn,IVr);
+  			rownr = WindowActiveRow(wn);
+	  		if (rownr>=0) then begin  	  	
+	  			MatRowGet(IVr,rownr,IVrw);
+	  			artcode = IVrw.ArtCode; 	
+	  		end;
+	  	case "ORDClass":
+  			GetWindowRecord(wn,ORr);
+  			rownr = WindowActiveRow(wn);
+	  		if (rownr>=0) then begin  	  	
+	  			MatRowGet(ORr,rownr,ORrw);
+	  			artcode = ORrw.ArtCode; 	
+	  		end;	  	
+	  	case "PODClass":
+  			GetWindowRecord(wn,POr);
+  			rownr = WindowActiveRow(wn);
+	  		if (rownr>=0) then begin  	  	
+	  			MatRowGet(POr,rownr,POrw);
+	  			artcode = POrw.ArtCode; 	
+	  		end;	  	
+	  	case "PUDClass":
+  			GetWindowRecord(wn,PUr);
+  			rownr = WindowActiveRow(wn);
+	  		if (rownr>=0) then begin  	  	
+	  			MatRowGet(PUr,rownr,PUrw);
+	  			artcode = PUrw.ArtCode; 	
+	  		end;	  	
+	  	case "StockMovDClass":
+  			GetWindowRecord(wn,SMr);
+  			rownr = WindowActiveRow(wn);
+	  		if (rownr>=0) then begin  	  	
+	  			MatRowGet(SMr,rownr,SMrw);
+	  			artcode = SMrw.ArtCode; 	
+	  		end;	  	
+	  	case "SDDClass":
+  			GetWindowRecord(wn,SDr);
+  			rownr = WindowActiveRow(wn);
+	  		if (rownr>=0) then begin  	  	
+	  			MatRowGet(SDr,rownr,SDrw);
+	  			artcode = SDrw.ArtCode; 	
+	  		end;	  	
+	  	case "SHDClass":
+  			GetWindowRecord(wn,SHr);
+  			rownr = WindowActiveRow(wn);
+	  		if (rownr>=0) then begin  	  	
+	  			MatRowGet(SHr,rownr,SHrw);
+	  			artcode = SHrw.ArtCode; 	
+	  		end;	  	
+	  	case "IVCashDClass":
+  			GetWindowRecord(wn,IVCashr);
+  			rownr = WindowActiveRow(wn);
+	  		if (rownr>=0) then begin  	  	
+	  			MatRowGet(IVCashr,rownr,IVCashrw);
+	  			artcode = IVCashrw.ArtCode; 	
+	  		end;	  		  
+
+	end;
+  
+	if (FindItemVAR(artcode,sz,mask,mskrep,varsubset)) then begin
+		SplitVars(artcode,maskvar,maskvarsz,amsk);
+		vars[0] = amsk[0];
+		vars[1] = amsk[1];
+	end; 
+	
+	  
 end;
 
 
