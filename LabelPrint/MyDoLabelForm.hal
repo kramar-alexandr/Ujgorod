@@ -100,6 +100,7 @@ BEGIN
   Boolean rowsf; //Edit***************************Sasha2,10:25 25.12.2014
   record BarcodeVc Barcoder;
   record INVc INr;
+  string 20 oldprice;
   
   
   ReadFirstItem(artcode,INr,true,true);
@@ -163,7 +164,11 @@ BEGIN
     OUTFORMFIELD("F_PRIS",tstr);
   end;
   
-  OUTFORMFIELD("F_AGREEDPRICE",stringtoint(tstr)-100)
+  PLr.ArtCode = artcode;
+  PLr.PLCode = "OLD";
+  readfirstmain(PLr,2,true);
+  oldprice = PLr.ExVatPrice;
+  OUTFORMFIELD("F_AGREEDPRICE",oldprice)
   
   OUTFORMFIELD("F_TOPAYEXCLFREIGHT",artcode);
   
