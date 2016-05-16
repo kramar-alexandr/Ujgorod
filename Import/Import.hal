@@ -4,15 +4,18 @@ global updating procedure INImportIn()		//Edit----------------------Dima  05.02.
 begin
 	record INVc INr;
 	record DIVc DIr;
-	string 255 artcode, name, classCode, className;
+	record ITVc ITr;	
+	string 255 artcode, name, classBrand, className, itemGroup,classType;
 
 	SetImportCodepage("CP1251");
 
 	while (TestEOF()==false) begin
 		artcode = ImportField;
 		name = ImportField;
-		classCode = ImportField;
+		classBrand = ImportField;
 		className = ImportField;
+		classType = ImportField;
+		itemGroup = ImportField;
 
 		INr.Code = artcode;
 		if (ReadFirstMain(INr,1,true)==false) then begin
@@ -22,17 +25,48 @@ begin
 			INr.Name = name;
 			INr.ItemType = kItemTypeStocked;
     	
-			DIr.Code = classCode;
-			if (ReadFirstMain(DIr,1,true)) then begin
-				INr.DispGroups = DIr.Code;
-			end else begin
-				RecordNew(DIr);
-				DIr.Code = classCode;
-				DIr.Name = className;
-				DIr.CType = "BRAND";
-				RecordStore(DIr,true);
-				INr.DispGroups = classCode;
+    	if (nonblank(classBrand)) then begin
+				DIr.Code = classBrand;
+				if (ReadFirstMain(DIr,1,true)) then begin
+					INr.DispGroups = DIr.Code;
+				end else begin
+					RecordNew(DIr);
+					DIr.Code = classBrand;
+					DIr.Name = className;
+					DIr.CType = "BRAND";
+					RecordStore(DIr,true);
+				end;
 			end;
+			
+			if (nonblank(classType)) then begin
+				DIr.Code = classType;
+				if (ReadFirstMain(DIr,1,true)) then begin
+					INr.DispGroups = DIr.Code;
+				end else begin
+					RecordNew(DIr);
+					DIr.Code = classType;
+					DIr.Name = classType;
+					DIr.CType = "TYPE";
+					RecordStore(DIr,true);
+				end;
+			end;
+			
+			INr.DispGroups = classType & "," & classBrand;
+			
+			if (nonblank(itemGroup)) then begin
+				ITr.Code = itemGroup;
+				if (ReadFirstMain(ITr,1,true)) then begin
+					INr.Group = ITr.Code;
+				end else begin
+					RecordNew(ITr);
+					ITr.Code = itemGroup;
+					ITr.Comment = className;
+					RecordStore(ITr,true);
+					INr.Group = ITr.Code;
+				end;
+			end;			
+						
+			
 			RecordStore(INr,true);
 		end;
 
