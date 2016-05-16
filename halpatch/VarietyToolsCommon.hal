@@ -477,6 +477,7 @@ begin
     itemsize = sz;
     FillMaskVAR(itemcode,itemsize,mask,maskvar,maskvarsz);
     FillThisItemVAR(itemcode,"",itemsize,maskvar,maskvarsz,vars,varssz,comment);
+    
     if (nonblank(vars[0])) then begin
       theitemcode = vars[0];
     end;
