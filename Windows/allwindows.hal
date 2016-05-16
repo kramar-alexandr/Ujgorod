@@ -2967,3 +2967,456 @@ end else begin
 end;
   EndWindow;
 end;
+
+
+window PUDClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h1,h2,h3,h4,t,v,vm,vs;
+  string 255 label;
+  record CYBlock CYb;
+  Integer tilenr;
+  Integer f,flipnr,rn;
+
+  BlockLoad(CYb);
+  WindowBegin("Надходження товарів на склад",PUDClass,CGview,-);
+  if (HasJewelleryInterface) then begin
+    SetWRect(20,80,870,620);
+  end else begin
+    SetWRect(20,80,750,360);
+  end;
+  if (HasMultiCurrency or IsEnterprise or HasObjects) then begin
+  Sizeable(-1,-1,0,0);
+  end;
+  UseView(PUVc);
+  ActiveFieldOnNew("VECode");      
+  FormName(PurchaseForm);
+  Tile(0,74,false,"",TransDate);
+  EditField(75,vm=(v=6),95,"Номер",Normal,SerNr,false,TSerSClass);
+  EditField(75,v+=20,95,"Постачальник",Normal,VECode,false,VESClass);
+  EnterSkip(TransDate);
+  EditField(h=255,v=vm,-40,"Найменування",Normal,VEName,false,0);
+  CheckBox(h4=-100,v+=20,0,"OK",OKFlag);
+  if (CYb.UseTaxTemplatesforTaxCalc==0) then begin
+  CheckBox(h4,v+=16,0,"Ціна з ПДВ",InclVAT); 
+  end else begin
+    CheckBox(h4,v+=16,0,"Ціна з ПДВ",InclVAT);
+  end;
+  tilenr = 1;
+  TileButton(tilenr,"Умови"); tilenr = tilenr + 1; 
+  TileButton(tilenr,"Товари"); tilenr = tilenr + 1; 
+  if (HasMultiCurrency) then begin
+    TileButton(tilenr,"Валюта"); tilenr = tilenr + 1; 
+  end;
+  if (IsEnterprise) then begin
+    if (StandardHansa==false) then begin
+    TileButton(tilenr,"Накл.розходи"); tilenr = tilenr + 1; 
+    TileButton(tilenr,"Фрахт"); tilenr = tilenr + 1; 
+    end;
+    TileButton(tilenr,"Коментар"); tilenr = tilenr + 1; 
+  end;
+  tilenr = 1;
+
+  vs = 20; h1 = 110; h2 = 300; h3 = 550; h4 = -100;
+  Tile(tilenr,70,false,tilenr,TransDate); tilenr = tilenr + 1;
+  EditField(h1,vm=(v=6),82,"Дата оперерації",Normal,TransDate,false,PasteCurDate);
+  if (IsEnterprise==false) then begin
+    EditField(h2,v,-20,"Коментар",Normal,Comment,false,0); 
+  end;
+  if (HasMultiLocations) then begin
+    v = v + vs;
+    EditField(h1,v,82,"Склад",Normal,Location,false,LocationSClass);
+  end;
+  if (HasRoute) then begin
+    v = v + vs;
+    EditField(h1,v,82,"Маршрут",ViewOnly,Sorting,false,0); 
+  end;
+  v = v + vs;
+  SoftEditField(h1,v,82,"Сканувати штрихкод",Normal,"scanbarcode",false,0,M4Str,60);
+  if (HasObjects) then begin
+    if (IsEnterprise) then begin
+  EditField(h2,v=vm,135,"Об'єкти",Normal,Objects,false,ObjSClass);
+    end else begin
+      if (HasMultiLocations) then begin
+        EditField(h2,v,135,"Об'єкти",Normal,Objects,false,ObjSClass); 
+      end else begin
+        v = v + vs;
+        EditField(h2,v,135,"Об'єкти",Normal,Objects,false,ObjSClass);
+      end;
+    end;
+  end;
+  if (HasModPO) then begin
+    if (HasObjects) then begin
+      v = v + vs;
+    end;
+    EditField(h2,v,135,"Номер постач",ViewOnly,PONr,false,0); 
+  end;
+  if (IsEnterprise) then begin
+    if (StandardHansa==false) then begin
+      v = v + vs;
+      EditField(h2,v,135,"Контракт постач.",ViewOnly,POCOSerNr,true,POCOSClass);
+    end;
+  EditField(h3,v=vm,80,"Вид зам. постач.",ViewOnly,PUClass,false,0);
+  end;
+  if (HasLanguages) then begin
+    v = v + vs;
+    EditField(h3,v,80,"Мова",Normal,LangCode,false,LangSClass);
+  end;
+  if (IsEnterprise) then begin
+    v = v + vs;
+    EditField(h3,v,80,"Номер тамож. декл.",Normal,CustomsNr,false,0);
+  end;
+  if (HasLocalization("ARG,MEX,USA")) then begin 
+    v = v + vs;
+    EditField(h3,v,80,"Dispatch Number",Normal,DispatchNumber,false,0);
+  end;
+//  CheckBox(h4,v=vm,0,"Price Incl. #VAT#",InclVAT);
+  EnterSkip(Math);
+  Tile(tilenr,220,true,tilenr,Math); tilenr = tilenr + 1;
+  v = 24;
+  if (HasSerialNumbers) then begin
+    MatrixBegin(4,v,-50,-50,-,200);
+  end else begin
+    MatrixBegin(4,v,-25,-50,-,200);
+  end;
+  MatTypedRow(stp);
+  MatOverStrike(ovst);
+  Flip(0);
+  MatCol(1,28,"Товар",0,ArtCode,false,INSClass);
+//  MatCol(1,84,"Var",0,VARList,true,VARSClass);
+//  MatCol(1,144,"Кіл",0,Quant,true,0);
+  if (HasVarieties) then begin
+  MatCol(1,94,"Кіл-ть",0,Quant,true,MATVARINSClass);
+  end else begin
+    MatCol(1,94,"Qty",0,Quant,true,0); //!!PRODTRANSLATE
+  end;
+  EnterSkip(Spec);
+  MatText(t=3,28,"Підпис",true);
+  MatCol(t,100,"",0,Sign,false,0);
+  MatText(t,160,"Дата виправлення",true);
+  MatCol(t,290,"Дата пон.",0,UpdDate,false,0);
+  flipnr = 1;
+  Flip(flipnr); flipnr = flipnr + 1;
+  if (HasJewelleryInterface) then begin
+    MatColTL(1,144,"Один.",0,M4Code,ViewOnly,5,UnitCode,false,UnitSCLass); 
+    MatCol(1,184,"Найменування",0,Spec,false,0); 
+    MatCol(1,-485,"Склад",0,Location,false,LocationSClass); 
+    MatCol(1,-430,"Серійний №",0,SerialNr,false,SerialNrSClass); 
+    MatCol(1,-320,"Тип складу",0,StockType,false,SetSClass); 
+  end else begin
+  MatColTL(1,164,"Од-ця",0,M4Code,ViewOnly,5,UnitCode,false,UnitSCLass);
+  MatCol(1,204,"Найменування",0,Spec,false,0);
+  end;
+  MatCol(1,-240,"Ціна",0,UPrice,true,0);
+  MatCol(1,-160,"Собів-ть",0,CostPrice,true,0);
+  MatCol(1,-80,"Сума",0,Sum,true,0);
+  if (IsEnterprise) then begin
+    Flip(flipnr); flipnr = flipnr + 1;
+  MatCol(1,144,"Найменування",0,Spec,false,0);
+  MatCol(1,-350,"Склад",0,Location,false,LocationSClass);
+  MatCol(1,-280,"Серійний №",0,SerialNr,false,SerialNrSClass);
+  MatCol(1,-150,"Терм. придат.",0,BestBefore,false,0);
+  MatCol(1,-60,"Статус партії",0,BatchStatus,false,BatchStatusSClass);
+    Flip(flipnr); flipnr = flipnr + 1;
+  MatCol(1,144,"Опис",0,Spec,false,0);
+  MatColTL(1,-404,"В-ть товару",0,-1,ViewOnly,-1,InPrice,false,0);
+    if (StandardHansa==false) then begin
+  MatColTL(1,-324,"Відх. ціни",0,-1,ViewOnly,-1,VarianceAmount,false,0);
+  MatCol(1,-244,"Ціна",0,UPrice,true,0);
+  MatCol(1,-174,"Накл. витр.",0,Extra,true,0);
+  MatCol(1,-104,"Собів-ть",0,CostPrice,true,0);
+    end else begin
+      MatCol(1,-324,"Фрахт",0,ShipCost,true,0);
+      MatCol(1,-244,"Додат. витр.",0,Extra,true,0);
+      MatCol(1,-164,"Митниця",0,CustomsCost,true,0);
+    end;
+    if (CYb.UseTaxTemplatesforTaxCalc!=0) then begin
+      MatCol(1,-34,"Ш-н",0,TaxTemplateCode,false,TaxTemplateSClass); 
+    end else begin
+  MatCol(1,-34,"ПДВ",0,VATCode,false,VATCodeSClass);
+    end;
+    Flip(flipnr); flipnr = flipnr + 1;
+  MatCol(1,144,"Найменування",0,Spec,false,0);
+    MatCol(1,-350,"Товар пост.",0,VEItemCode,false,PISClass);
+  MatColTL(1,-270,"Од. пост.",0,M4Code,ViewOnly,5,VEUnit,false,UnitSCLass);
+  MatCol(1,-200,"К-ть пост.",0,VEQuant,true,0);
+    if (StandardHansa==false) then begin
+  MatCol(1,-140,"Коеф.",0,Coefficient,true,0);
+    end;
+  MatCol(1,-90,"Відпускна ціна",0,BasePrice,false,0);
+    Flip(flipnr); flipnr = flipnr + 1;
+  MatCol(1,144,"Найменування",0,Spec,false,0);
+    if (StandardHansa==false) then begin
+  MatCol(1,-400,"Тип складу",0,StockType,false,SetSClass);
+    end;
+    if (HasTREO) then begin
+  MatCol(1,-310,"TREO",0,TREO,false,SetSClass);
+    end;
+  MatCol(1,-220,"Рах. складу",0,CostAcc,false,AccSClass);
+  MatCol(1,-155,"Рах придб.",0,CredAcc,false,AccSClass);
+  MatCol(1,-90,"Об'єкти",0,Objects,false,ObjSClass);
+    if (StandardHansa==false) then begin
+    Flip(flipnr); flipnr = flipnr + 1;
+      MatCol(1,144,"№ митниці",0,CustomsNr,false,0);
+      MatCol(1,-340,"дата митниці",0,CustomsDate,false,PasteCurDate);
+  MatCol(1,-240,"Країна",0,CountryOfOrg,false,CountrySClass);
+  MatCol(1,-140,"Із місця",0,PosCode,false,PosSClass);
+  MatCol(1,-70,"на місце",0,ToPosCode,false,FreePosSClass);
+    end;
+    Flip(flipnr); flipnr = flipnr + 1;
+  MatCol(1,144,"Найменування",0,Spec,false,0);
+  MatCol(1,-250,"Серійний №",0,SerialNr,false,SerialNrSClass);
+  MatCol(1,-135,"Шир.",0,UnitXval,true,0);
+  MatCol(1,-90,"Вис.",0,UnitYval,true,0);
+  MatCol(1,-45,"Глиб.",0,UnitZval,true,0);
+    if (StandardHansa==false) then begin
+  Flip(flipnr); flipnr = flipnr + 1;
+      MatCol(1,144,"Додат. витрати",0,Extra,true,0);
+  MatCol(1,-420,"Фрахт",0,ShipCost,true,0);
+  MatCol(1,-360,"Мито",0,CustomsCost,true,0);
+  label = UserDefined("AccBlock","PUCost1");
+  if (blank(label)) then begin label = "Витр. 1";end;
+  MatCol(1,-300,label,0,RowCost1,false,0);
+  label = UserDefined("AccBlock","PUCost2");
+  if (blank(label)) then begin label = "Витр. 2";end;
+  MatCol(1,-240,label,0,RowCost2,false,0);
+  label = UserDefined("AccBlock","PUCost3");
+  if (blank(label)) then begin label = "Витр. 3";end;
+  MatCol(1,-180,label,0,RowCost3,false,0);
+  label = UserDefined("AccBlock","PUCost4");
+  if (blank(label)) then begin label = "Витр. 4";end;
+  MatCol(1,-120,label,0,RowCost4,false,0);
+  label = UserDefined("AccBlock","PUCost5");
+  if (blank(label)) then begin label = "Витр. 5";end;
+  MatCol(1,-60,label,0,RowCost5,false,0);
+    end;
+    Flip(flipnr); flipnr = flipnr + 1;
+  MatCol(1,144,"Зам. №",0,PONr,false,POSClass);
+  MatCol(1,194,"Рядок",0,OrdRow,false,0);
+  MatCol(1,-370,"Узг. зам.",0,PORecon,false,0);
+  MatCol(1,-310,"Коментар",0,POReconComment,false,0);
+  MatCol(1,-200,"Узг. накл.",0,VIRecon,false,0);
+  MatCol(1,-130,"Коментар",0,VIReconComment,false,0);
+  end else begin
+    if (HasSerialNumbers) then begin
+      Flip(flipnr); flipnr = flipnr + 1;
+      MatCol(1,144,"Опис",0,Spec,false,0); //!!PRODTRANSLATE
+      MatCol(1,-150,"Сер. номер",0,SerialNr,false,SerialNrSClass); //!!PRODTRANSLATE
+    end;
+/*
+    MatCol(1,-280,"Ціна",0,UPrice,true,0); 
+    MatCol(1,-210,"Фрахт",0,ShipCost,true,0); 
+    MatCol(1,-140,"Накл. витр.",0,Extra,true,0); 
+    MatCol(1,-70,"Собів-ть",0,CostPrice,true,0); 
+*/
+  end;
+  if (HasLocalization("ARG,MEX,USA")) then begin 
+    Flip(flipnr); flipnr = flipnr + 1;
+    MatCol(t=1,144,"Опис",0,Spec,false,0);
+    MatCol(t,-250,"Номер відправки",0,DispatchNumber,false,0);
+  end;
+  if (HasJewelleryInterface) then begin
+    Flip(flipnr); flipnr = flipnr + 1;
+    MatCol(t=1,144,"Опис",0,Spec,false,0); //!!PRODTRANSLATE
+    MatCol(t,-350,"Пост. сер. номер",0,SuppSerialNr,true,0); //!!PRODTRANSLATE
+    MatCol(t,-200,"Метал",0,Metal,true,0); //!!PRODTRANSLATE
+    MatCol(t,-150,"Вага",0,RowWeight,true,0); //!!PRODTRANSLATE
+    MatCol(t,-100,"Розмір",0,Size,true,0); //!!PRODTRANSLATE
+    MatCol(t,-50,"Довжина",0,Length,true,0); //!!PRODTRANSLATE
+    Flip(flipnr); flipnr = flipnr + 1;
+    MatCol(t=1,144,"Опис",0,Spec,false,0); //!!PRODTRANSLATE
+    MatCol(t,-350,"Осн. камінь",0,MajStoneDet,true,0); //!!PRODTRANSLATE
+    MatCol(t,-250,"Колиір",0,Colour,true,0); //!!PRODTRANSLATE
+    MatCol(t,-200,"Прозорість",0,Clarity,true,0); //!!PRODTRANSLATE
+    MatCol(t,-150,"Cert",0,Cert,true,0); //!!PRODTRANSLATE
+    MatCol(t,-100,"Minor Stone",0,MinStoneDet,true,0); //!!PRODTRANSLATE
+    Flip(flipnr); flipnr = flipnr + 1;
+    MatCol(t=1,144,"Description",0,Spec,false,0); //!!PRODTRANSLATE
+    MatCol(t,-400,"Watch Brand",0,WatchBrand,true,0); //!!PRODTRANSLATE
+    MatCol(t,-300,"Style Name",0,StyleName,true,0); //!!PRODTRANSLATE
+    MatCol(t,-200,"Watch Metal",0,WatchMetal,true,0); //!!PRODTRANSLATE
+    MatCol(t,-100,"Movement",0,Movement,true,0); //!!PRODTRANSLATE
+    Flip(flipnr); flipnr = flipnr + 1;
+    MatCol(t=1,144,"Description",0,Spec,false,0); //!!PRODTRANSLATE
+    MatCol(t,-400,"Brc/Str",0,BrcStr,true,0); //!!PRODTRANSLATE
+    MatCol(t,-300,"Gender",0,Gender,true,0); //!!PRODTRANSLATE
+    MatCol(t,-200,"Other",0,Other,true,0); //!!PRODTRANSLATE
+    MatCol(t,-100,"Other 2",0,Other2,true,0); //!!PRODTRANSLATE
+  end;
+  InsertRowTest;
+  DeleteRowTest;
+  RowMenuBegin("");  
+  if (StandardHansa==false) then begin
+    if (HasSerialNumbers) then begin
+      RowMenuItem(0,"Відкрити загальну специфікацію",' ',' ',0,"OpenBatchPUDsm");  
+    end;
+    RowMenuItem(0,"Розділити рядок",' ',' ',0,"SplitRowPUDsm");  
+  end;
+  EndRowMenu;
+  EndMatrix;
+  vs = 20;
+//  v = 18;
+  v = v + 1;
+  if (flipnr>2) then begin
+    for (f=1;f<flipnr;f=f+1) begin
+      VTab(-35,v,-16,v+vs,ToolFlip,f,chr(asc("A") + f - 1)); 
+      v = v + vs;
+    end;
+  end;
+  EditField(110,-41,70,"Заг. кільк-ть",ViewOnly,SumQuant,true,0);
+//  EditField(110,-21,70,"Price Subtotal",Normal,SubTotal,true,0); //Shows the same as SumCostPrice?
+  EditField(260,-41,70,"Фрахт",Normal,ShipCost,true,0);
+  if (IsEnterprise) then begin
+  EditField(260,-21,70,"Митниця",Normal,CustomsCost,true,0);
+  end;
+  if (CYb.UseTaxTemplatesforTaxCalc==0) then begin
+  EditField(410,-41,70,"ПДВ",Normal,VATVal,true,0);
+  if (HasExtTax) then begin
+  EditField(410,-21,70,"Дод. под.",ViewOnly,TAX1Sum,true,0);
+    end;
+  end else begin
+    EditField(410,-41,70,"ПДВ",Normal,VATVal,true,0); 
+  end;
+  EditField(-169,-41,118,"Собівартість",ViewOnly,SumCostPrice,true,0);
+  EditField(-169,-21,118,"Загалом",ViewOnly,PayVal,true,0);
+  if (HasMultiCurrency or HasBase2) then begin
+    Tile(tilenr,70,false,tilenr,FrRate); tilenr = tilenr + 1;
+  vs = 20;
+    if (HasBase2) then begin
+      h1 = h1 + 20;
+    end;
+  EditField(h1,v=6,50,"Валюта",Normal,CurncyCode,false,CurncyCodeSClass);
+    if (HasMultiCurrency) then begin
+    if (HasBase2) then begin
+        EditField(h1,v+vs,50,"Осн. вал. 1",Normal,BaseRate1,true,0);
+    end else begin
+        EditField(h1,v+vs,50,"Осн. вал.",Normal,BaseRate1,true,0);
+      end;
+      if (HasBase2) then begin  
+        EditField(h1,v+(vs*2),50,"Осн.валюта 2",Normal,BaseRate2,true,0);
+      end;
+      EditField(h2=295,v,50,"Курс",Normal,FrRate,true,0);
+      if (HasBase2) then begin  
+        RateField(h3=360,v,50,":",Normal,"ToRateB1",true,h3+60,v+14,"Осн.валюта 1",false);
+        RateField(h3,v+=vs,50,":",Normal,"ToRateB2",true,h3+60,v+14,"Осн.валюта 2",false);
+      end else begin
+        RateField(h3=360,v,50,":",Normal,"ToRateB1",true,h3+60,v+14,"Осн.валюта",false); 
+      end;
+    end else begin
+      EditField(h1,v+=vs,50,"Осн.валюта 1",Normal,BaseRate1,true,0);
+      EditField(h1,v+=vs,50,"Осн.валюта 2",Normal,BaseRate2,true,0);
+    end;
+  end;
+  if (IsEnterprise and StandardHansa==false) then begin
+    Tile(tilenr,120,false,tilenr,Cost1); tilenr = tilenr + 1;
+  vs = 20;
+  label = UserDefined("AccBlock","PUCost1");
+  if (blank(label)) then begin label = "Накл. витр. 1";end;
+  EditField(h=110,v=6,70,label,Normal,Cost1,false,0);
+  label = UserDefined("AccBlock","PUCost2");
+  if (blank(label)) then begin label = "Накл. витр. 2";end;
+  EditField(h2=295,v,70,label,Normal,Cost2,false,0);
+  label = UserDefined("AccBlock","PUCost3");
+  if (blank(label)) then begin label = "Накл. витр. 3";end;
+  EditField(h,v+=vs,70,label,Normal,Cost3,false,0);
+  label = UserDefined("AccBlock","PUCost4");
+  if (blank(label)) then begin label = "Накл. витр. 4";end;
+  EditField(h2,v,70,label,Normal,Cost4,false,0);
+  label = UserDefined("AccBlock","PUCost5");
+  if (blank(label)) then begin label = "Накл. витр. 5";end;
+  EditField(h,v+=vs,70,label,Normal,Cost5,false,0);
+    if (HasApprovals) then begin
+      SoftEditField(h2,v,123,"Approval Status",ViewOnly,"AcceptanceStatusFlag",false,0,M4Str,255);
+    end;
+    ButtonFrame(h3=400,v=16,130,2,"Розрахунок накл. витрат"); 
+    RadioButton(h3,v,0,0,"Сума",ExtraCostsCalculation); 
+    RadioButton(h3,v+=16,1,0,"Вага",ExtraCostsCalculation); 
+/*
+//oldapprovals  
+  ButtonFrame(h3=-163,v=16,123,6,"Статус затвердження");
+  RadioButton(h3,v,kAcceptanceStateNotRequired,0,"не потрібно",AcceptanceStatus);
+  RadioButton(h3,v+=16,kAcceptanceStateNotStarted,0,"не розпочато",AcceptanceStatus);
+  RadioButton(h3,v+=16,kAcceptanceStateNotRequested,0,"не було запиту",AcceptanceStatus);
+  RadioButton(h3,v+=16,kAcceptanceStatePending,0,"очікування",AcceptanceStatus);
+  RadioButton(h3,v+=16,kAcceptanceStateApproved,0,"затвердженно",AcceptanceStatus);
+  RadioButton(h3,v+=16,kAcceptanceStateRejected,0,"незатверджено",AcceptanceStatus);  
+*/    
+    Tile(tilenr,130,false,tilenr,FreightCode); tilenr = tilenr + 1;
+  EditField(h1,v=6,80,"Перевізник",Normal,FreightCode,false,FreightCompanySClass);
+  EditField(h1,v+=vs,-20,"Назва",Normal,FreightCompany,false,0);
+  EditField(h1,v+=vs,-20,"ІПН",Normal,FreightCompanyRegNr,false,0);
+  EditField(h1,v+=vs,-20,"Ваговоз",Normal,TruckInfo,false,0);
+  EditField(h1,v+=vs,-20,"Водій",Normal,Driver,false,0);
+  EditField(h1,v+=vs,-20,"CMR",Normal,CMRText,false,0); // International transporting number
+    Tile(tilenr,30,false,tilenr,Comment); tilenr = tilenr + 1;
+    EditField(h1,v=6,-20,"Коментар",Normal,Comment,false,0); //!!PRODTRANSLATE
+  end;
+  if (StandardHansa==true) then begin
+    Tile(tilenr,30,false,tilenr,Comment); tilenr = tilenr + 1;
+    EditField(h1,v=6,-20,"Коментар",Normal,Comment,false,0);
+  end;
+  if (GuiType==kGuiMetro) then begin // Temporarily disabled on Windows 8
+    SpecialMenu("Статус надходження на склад",'r',4,"PUStatusDsm");
+    SpecialMenu("Створити серійні номери",' ',2,"GenSerialNosPUDsm");
+    if (HasModNL) then begin
+      SpecialMenu("Відкрити запис операції",'t',4,"OpenTRFromPU");
+    end;
+    SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);  
+    if (HasModPL) then begin
+      SpecialMenu("Створити акт/накл. постачальника",'F',3,"VIFromPUDsm");
+    end;
+    if (IsEnterprise or (HasLocalization("PRT") and HasModIN) or (HasRetGoodsToSupp and HasModIN)) then begin
+      SpecialMenu("Повернення товарів",'B',7,"RetPUFromPUDsm");
+    end;
+  end else begin
+  if (IsEnterprise) then begin
+  SpecialMenu("Пошук товарів",'f',1,"ItemSearchDsm");
+    SpecialMenu("Статус надходження на склад",'r',4,"PUStatusDsm"); 
+  end;
+  if (HasSerialNumbers) then begin
+  SpecialMenu("Створити серійні номери",' ',2,"GenSerialNosPUDsm");
+  end;
+  if (HasModNL) then begin
+  SpecialMenu("Відкрити запис операцій",'t',4,"OpenTRFromPU");
+  end;
+  if (HasTaxMatrix) then begin
+  SpecialMenu("Відкрити матрицю податків",' ',25,"OpenVatMatrixPUDsm"); 
+  end;
+//  SpecialMenu("Надрукувати етикетки",'e',0,"PrintPULabPUDsm");
+  SpecialMenu("Надрукувати етикетки",'',14,"PrintLabelEANDsm");// Edit ************************** Monday, 16 May 2016 11:53:49
+
+  SpecialMenu("Поновити ціни",' ',1,"UpdatePricesPUDsm");
+
+  if (HasModWHM) then begin
+    SpecialMenu("Підтвердити приміщення складу",' ',9,"OKStockMovPUrDsm");  
+  end;
+  if (HasLocalization("HRV")) then begin  
+    SpecialMenu("Розрахунок цін з продажів",' ',8,"SPCHRVPUDsm");  
+  end;
+  if (HasApprovals) then begin
+    SpecialMenu("Запитати затвердження",' ',6,"PUSendforAcceptancePUDsm");  
+    SpecialMenu("Відмінити запит затвердження",' ',2,"CancelApprovalRequestDsm");  
+  end;
+  SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);  
+  if (HasModPL) then begin
+  SpecialMenu("Створити акт/накл. постачальника",'F',3,"VIFromPUDsm");
+  end;
+  if (HasQualityControl) then begin
+  SpecialMenu("Контроль якості",'u',10,"QualConFromPUDsm");
+//  SpecialMenu("Відмітка про виправлення",' ',6,"UpdateMarkPUDsm");
+  end;
+  if (HasAdvancedStock or (HasLocalization("PRT") and HasModIN) or (HasRetGoodsToSupp and HasModIN)) then begin
+  SpecialMenu("Повернення товарів",'B',7,"RetPUFromPUDsm");
+  end;
+  if (HasModRent) then begin
+//  SpecialMenu("Create Stock Movement",' ',5,"StockMovFromPUSpec");
+//  SpecialMenu("Scan",' ',8,"ScanBarCodePUDsm");
+  SpecialMenu("Створити переміщення по складам",' ',8,"INTransFromPUsm");
+  end;
+    SpecialMenu("Додати постачальника",' ',0,"AddSupplierPUDsm");  
+    SpecialMenu("Додати товар",' ',0,"AddItemPUDsm");   
+    
+       
+  end;
+  EndWindow;
+end;

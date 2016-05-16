@@ -1,0 +1,113 @@
+remote procedure HandleSetEAN13PU(var record PUVc); //Edit***************************Sasha2,14:33 23.01.2015
+remote procedure HandlePrintEAN13PU(record PUVc,var array record PUVc,var array integer); //Edit***************************Sasha2,16:15 26.01.2015
+external procedure Zebra_Printing(record RcVc);
+external function Boolean PUVcRowEFActiveCheck(string,Integer,Integer,Integer);
+external function Boolean PUVcEFActiveTest(Integer,Integer,record PUVc);
+
+
+global //Edit***************************Sasha2,12:00 22.01.2015 {
+procedure PrintEAN13PUDsm()
+begin 
+	integer wn;
+	record PUVc PUr;
+	array record PUVc PU2r;
+	array integer rownr;
+  boolean previewf;
+
+	wn = CurWindow;
+	GetWindowRecord(wn,PUr);
+	HandlePrintEAN13PU(PUr,PU2r,rownr);
+	previewf = false;
+	if (rownr[0]>0) then begin
+		PrintDocument(PU2r[0],"ItemLabForm9",previewf);
+	end;
+	//PutWindowrecord(wn,PUr);
+
+	return;
+end; //Edit***************************Sasha2,12:00 22.01.2015 }
+
+global //Edit***************************Sasha2,12:00 22.01.2015 {
+updating procedure SetEAN13PUDsm()
+begin 
+	integer wn;
+	record PUVc PUr;
+
+	wn = CurWindow;
+	GetWindowRecord(wn,PUr);
+	HandleSetEAN13PU(PUr);
+	PutWindowrecord(wn,PUr);
+
+	return;
+end; //Edit***************************Sasha2,12:00 22.01.2015 }
+
+global //Edit***************************Sasha2,12:00 22.01.2015 {
+procedure PrintEAN13PUDsm()
+begin 
+	integer wn;
+	record PUVc PUr;
+	array record PUVc PU2r;
+	array integer rownr;
+  boolean previewf;
+
+	wn = CurWindow;
+	GetWindowRecord(wn,PUr);
+	HandlePrintEAN13PU(PUr,PU2r,rownr);
+	previewf = false;
+	if (rownr[0]>0) then begin
+		PrintDocument(PU2r[0],"ItemLabForm9",previewf);
+	end;
+	//PutWindowrecord(wn,PUr);
+
+	return;
+end; //Edit***************************Sasha2,12:00 22.01.2015 }
+
+
+global procedure PrintLabelEANDsm()
+begin
+	record RcVc RepSpec;
+	integer nwn;
+	nwn = OpenWindow("ChooseLabelPrinterTClass",0,CurWindow,"","",RepSpec);      
+end;
+
+
+global procedure ChoosePrinter()	//Edit----------------------Dima  21.10.2015
+begin
+	integer wn,mwn;
+	record PUVc PUr;
+	record StockMovVc StockMovr;
+	record RCVc RepSpec;
+	string 20 windowClass;
+
+
+	wn = CurWindow;
+	DeselectWindow(wn,false);	
+	GetWindowRecord(wn,RepSpec);
+		
+	mwn = MotherWindow(wn);	
+	windowClass = GetWindowClass(mwn);
+	switch (windowClass) begin
+		case "StockMovDClass":
+			CloseWindow(wn);
+			SelectWindow(mwn);
+			if (RepSpec.flags[1]==0) then begin
+				//PrintEAN13StockMovDsm;
+			end;
+			if (RepSpec.flags[1]==1) then begin
+				RepSpec.flags[2] = mwn;
+				RepSpec.f1 = "StockMovVc";
+				Zebra_Printing(RepSpec);
+			end;
+		case "PUDClass":
+			CloseWindow(wn);
+			SelectWindow(mwn);
+			if (RepSpec.flags[1]==0) then begin
+				PrintEAN13PUDsm;
+			end;
+			if (RepSpec.flags[1]==1) then begin
+				RepSpec.flags[2] = mwn;
+				RepSpec.f1 = "PUVc";
+				Zebra_Printing(RepSpec);
+			end;					
+	end;	
+
+end;

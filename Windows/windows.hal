@@ -19,3 +19,21 @@ WindowBegin("Maintenance",MyVClass,CGMnt,RcType);
   SetWRect(20,120,360,220);
   EndWindow;
 end;
+
+
+window ChooseLabelPrinterTClass:1				//Edit----------------------Dima  25.06.2015
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs;
+  WindowBegin("Друк етикеток",ChooseLabelPrinterTClass,CGother,RcType);
+  SetWRect(64,80,500,300);
+  v=20;vs = 20; h = 70;
+  UseView(RcVc);
+  statictext(40,v,"Визначте спосіб друку етикеток",false);
+	RadioButton(h,v+=30,0,0,"Друк на аркуші А4",flags[1]);
+	RadioButton(h,v+=16,1,0,"Друк на принтері Zebra",flags[1]);
+  v=v+30;
+  h=300;
+  ColourPushButton(h,v,h+100,v+30,"ChoosePrinter","Друк",8);
+  EndWindow;
+end;

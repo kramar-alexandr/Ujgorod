@@ -1,6 +1,7 @@
 SourceFile("halcust\\Import",0);
 SourceFile("halcust\\Windows",0);
 SourceFile("halcust\\halpatch",0);
+SourceFile("halcust\\LabelPrint",0);
 
 begin
 
@@ -26,6 +27,19 @@ begin
   KeySegment(Comment);
   KeySegment(Code);
   EndRecord;
+  
+  BlockBegin(ZebraPrinterBlock,-,""); // Edit ************************** Monday, 16 May 2016 12:12:45
+  BlockForAllCompanies;
+  RecordField(PrinterNameMac,M4Str,200,0);
+  RecordField(ParamIn1,M4Int,0,0);
+  RecordField(ParamIn2,M4Int,0,0);
+  RecordField(CompNameWin,M4Str,200,0);
+  RecordField(PrinterNameWin,M4Str,200,0);
+  RecordField(ParamStr3,M4Str,200,0);
+  RecordField(ParamStr4,M4Str,200,0);
+  RecordField(ParamVal1,M4Val,0,0);
+  RecordField(ParamVal2,M4Val,0,0);
+  EndBlock;// Edit ************************** Monday, 16 May 2016 12:12:43
 
 return;
 end;
