@@ -37,3 +37,23 @@ begin
   ColourPushButton(h,v,h+100,v+30,"ChoosePrinter","Друк",8);
   EndWindow;
 end;
+
+
+window SetSerialTypesForINVClass:1 // Edit ************************** Friday, 17 October 2014 11:47:19
+ wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+ begin
+ 	real h1,v;
+WindowBegin("Set Serial Types",SetSerialTypesForINVClass,CGMnt,RcType);
+  SetWRect(20,120,360,220);
+  UseView(RcVc);
+  
+  h1=30;
+  v=6;
+  ButtonFrame(h1,v+=24,160,3,"Встановити для всіх товарів типи серійних номерів");
+  RadioButton(h1,v,0,0,"ні",flags[0]);
+  RadioButton(h1,v+=16,1,0,"на одиницю",flags[0]);
+  RadioButton(h1,v+=16,2,0,"на партію",flags[0]);  
+  EndWindow;
+end;
+
+

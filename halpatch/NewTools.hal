@@ -1,0 +1,158 @@
+
+
+
+global updating procedure CleaningMn() //Edit----------------------Dima  09.06.2016
+begin
+	record INVc INr;
+	record DIVc DIr;
+	record ITVc ITr;
+	record IVVc IVr;
+	record VIVc VIr;
+	record IPVc IPr;
+	record VARVc VARr;
+	record RLinkVc RLr;
+	record POVc POr;
+	record PUVc PUr;
+	record StockMovVc SMr;
+	record SDVc SDr;
+	record ItemStatusVc ISr;
+	record ItemHistVc IHr;
+	record BarcodeVc Barr;
+	record SerBalVc SBr;	
+	Boolean TrHs;
+		
+
+	TrHs = true;
+	while (LoopMain(INr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(INr);
+	    StepBack(INr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(DIr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(DIr);
+	    StepBack(DIr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(ITr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(ITr);
+	    StepBack(ITr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(IVr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(IVr);
+	    StepBack(IVr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(VIr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(VIr);
+	    StepBack(VIr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(IPr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(IPr);
+	    StepBack(IPr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(VARr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(VARr);
+	    StepBack(VARr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(RLr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(RLr);
+	    StepBack(RLr);
+	  end;
+	end;
+	TrHs = true;
+	while (LoopMain(POr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(POr);
+	    StepBack(POr);
+	  end;
+	end;
+	TrHs = true;
+	while (LoopMain(PUr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(PUr);
+	    StepBack(PUr);
+	  end;
+	end;
+	
+	TrHs = true;	
+	while (LoopMain(SMr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(SMr);
+	    StepBack(SMr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(SDr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(SDr);
+	    StepBack(SDr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(ISr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(ISr);
+	    StepBack(ISr);
+	  end;
+	end;
+	LogText(0,"Item statuses were removed..");
+	TrHs = true;	
+	while (LoopMain(IHr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(IHr);
+	    StepBack(IHr);
+	  end;
+	end;
+	LogText(0,"Item histiry was removed..");					
+	TrHs = true;	
+	while (LoopMain(Barr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(Barr);
+	    StepBack(Barr);
+	  end;
+	end;	
+	TrHs = true;	
+	while (LoopMain(SBr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(SBr);
+	    StepBack(SBr);
+	  end;
+	end;											
+
+	LogText(0,"Registers were cleaned.......");
+return;
+end;
+
+
+
+global updating procedure SetSerialNumberTypeForItemsMn(record RcVc RepSpec)	//Edit----------------------Dima  10.06.2016
+begin
+	record INVc INr;
+	
+	While(LoopMain(INr,1,true))  begin
+		if (INr.Terminated==0) then begin
+			INr.SerNrf = RepSpec.flags[0];
+			RecordStore(INr,true);
+		end;
+	end;
+  
+end;
