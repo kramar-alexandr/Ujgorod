@@ -41,5 +41,11 @@ begin
   RecordField(ParamVal2,M4Val,0,0);
   EndBlock;// Edit ************************** Monday, 16 May 2016 12:12:43
 
+	RecordAddBegin(POVc,"MyPO1"); 
+		ArrayField(Color,M4Code,100,0); 
+		ArrayField(Size,M4Code,100,0); 
+		ArrayField(Collection,M4Code,100,0); 
+	EndRecordAdd;
+
 return;
 end;
