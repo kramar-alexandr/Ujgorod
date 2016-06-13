@@ -3478,6 +3478,7 @@ begin
   if (HasModIN) then begin
   EditField(h1,v+=vs,82,"Заплан.відвантаж.",Normal,PlanShip,false,PasteCurDate);
   end;
+  EditField(h1,v+=vs,82,"Колекція",Normal,GeneralCollection,false,0);//Edit----------------------Dima  13.06.2016
   EditField(h2,v=vm,135,"Відповід-ний",Normal,OurContact,false,0);
   EditField(h2,v+=vs,135,"Конт. особа",Normal,VEContact,false,ContactSClass);
   if (HasObjects) then begin
@@ -3535,13 +3536,21 @@ begin
 //  MatCol(1,84,"Var",0,VARList,true,VARSClass);
 //  MatCol(1,144,"Кіл",0,Quant,true,0);
   if (HasVarieties) then begin
-  MatCol(1,94,"Кіл-ть",0,Quant,true,MATVARINSClass);
+  MatCol(1,94,"Кіл-ть",0,Quant,true,0);//Edit----------------------Dima  13.06.2016
   end else begin
     MatCol(1,94,"Qty",0,Quant,true,0); //!!PRODTRANSLATE
   end;
   EnterSkip(ArtCode);
 //  MatCol(1,194,"Наймен.",0,Spec,false,0);
   flipnr = 1;
+  Flip(flipnr); flipnr = flipnr + 1;		//Edit----------------------Dima  10.06.2016
+	MatCol(1,150,"Колекція",0,Collection,false,0);
+  MatCol(1,200,"Колір",0,Color,false,0);
+  MatCol(1,250,"Розмір",0,Size,false,MATVARINSClass);
+  MatCol(1,300,"Найменування",0,Spec,false,0);
+  MatCol(1,-170,"Ціна од-ці",0,Price,true,0);
+  MatCol(1,-100,"%",0,vRebate,true,0);
+  MatCol(1,-70,"Сума",0,Sum,true,0);  
   Flip(flipnr); flipnr = flipnr + 1;
   MatColTL(1,164,"Од-ця",0,M4Code,ViewOnly,5,UnitCode,false,UnitSCLass);
   MatCol(1,204,"Опис",0,Spec,false,0);
@@ -3590,16 +3599,17 @@ begin
   if (IsEnterprise) then begin
     Flip(flipnr); flipnr = flipnr + 1;
     if (StandardHansa==false) then begin
-      MatCol(1,164,"Тип замовлення",0,OrderType,false,0); 
-  MatCol(1,-400,"Тип товару",0,StockType,false,SetSClass);
+      MatCol(1,140,"Тип замовлення",0,OrderType,false,0); 
+  MatCol(1,-450,"Тип товару",0,StockType,false,SetSClass);
     end else begin
       MatCol(1,164,"Опис",0,Spec,false,0);
     end;
     if (HasTREO) then begin
-  MatCol(1,-300,"TREO",0,TREO,false,SetSClass);
+  MatCol(1,-360,"TREO",0,TREO,false,SetSClass);
     end;
-  MatCol(1,-200,"Запл. відвантаж.",0,PlanShipRow,true,PasteCurDate);
-  MatCol(1,-100,"Коментар",0,Comment,true,0);
+  MatCol(1,-290,"Запл. відвантаж.",0,PlanShipRow,true,PasteCurDate);
+  MatCol(1,-230,"Коментар",0,Comment,true,0);
+  MatCol(1,-170,"Серійний №",0,SerialNr,true,0);		//Edit----------------------Dima  13.06.2016
     if (StandardHansa==false) then begin
     Flip(flipnr); flipnr = flipnr + 1;
   MatCol(1,164,"Наймен.",0,Spec,false,0);
@@ -3622,14 +3632,6 @@ begin
   MatCol(1,-60,label,0,RowCost5,true,0);
     end;
   end;
-  Flip(flipnr); flipnr = flipnr + 1;		//Edit----------------------Dima  10.06.2016
-	MatCol(1,150,"Колекція",0,Collection,false,0);
-  MatCol(1,200,"Колір",0,Color,false,0);
-  MatCol(1,250,"Розмір",0,Size,false,0);
-  MatCol(1,300,"Найменування",0,Spec,false,0);
-  MatCol(1,-150,"Ціна од-ці",0,Price,true,0);
-  MatCol(1,-100,"%",0,vRebate,true,0);
-  MatCol(1,-80,"Сума",0,Sum,true,0);
   DeleteRowTest;
   InsertRowTest;
   RowMenuBegin("");  
@@ -3831,6 +3833,7 @@ begin
   if (IsEnterprise) then begin
     SpecialMenu("Резервації",' ',6,"POReservPODsm");  
   end;
+  SpecialMenu("Надходження",'L',0,"PUFromPODsm");
   if (HasApprovals) then begin
     SpecialMenu("Запитати затвердження",' ',6,"POSendforAcceptancePODsm");  
     SpecialMenu("Відмінити запит затвердження",' ',2,"CancelApprovalRequestDsm");  
@@ -3845,9 +3848,9 @@ begin
   if (HaseMail) then begin
     SpecialMenu("Ел. лист",'m',3,"CreateMailFromPODsm");  
   end;
-  if (HasModIN) then begin
+  //if (HasModIN) then begin
     SpecialMenu("Надходження",'L',0,"PUFromPODsm");
-  end;
+ // end;
   if (IsEnterprise and StandardHansa==false) then begin
   SpecialMenu("Створ. оповіщ. про відвант.",'l',0,"DropSHFromPODsm");
   end;
@@ -3860,5 +3863,78 @@ begin
     SpecialMenu("Додати постачальника",' ',0,"AddSupplierPODsm");  
     SpecialMenu("Додати товар",' ',0,"AddItemPODsm");      
   end;
+  EndWindow;
+end;
+
+
+
+window MATVARINSClass:2
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  array string 255 axlabels,aylabels;
+  integer pos,xpos,ypos,ylabellen,starth;
+  real h,v,matheightbase;
+  string 255 label;
+  
+  WindowBegin("Матриці різновидів товару 1",MATVARINSClass,CGother,VarMatrxEntryView);
+  DynamicWindow;
+  xpos = CntVarietyCode(1,axlabels);
+  ypos = CntVarietyCode(2,aylabels);
+  for (pos=1;pos<=ypos;pos=pos+1) begin
+    label = aylabels[pos];
+    if (ylabellen<len(label)) then begin
+      ylabellen = len(label);
+    end;
+  end;
+  starth = 7*ylabellen;
+  if (starth<70) then begin starth = 70; end;
+  SetWRect(80,80,200+(xpos*40)+(starth-70),125+(ypos*17)+35);
+  UseView(VarMatrxEntryVc);
+  h = 10; v = -40;
+  if (WindowStyle("MasterWClass")==kWindowStyleWindows8Desktop) then begin
+    matheightbase = 66;
+  end else begin
+    matheightbase = 63;
+  end;
+  MatrixBegin(starth,50,-32,matheightbase+ypos*17,VarMatrxEntryRowType,ypos);
+  for (pos=1;pos<=xpos;pos=pos+1) begin
+    label = axlabels[pos];
+    switch (pos) begin
+      case 1: MatCol(1,v+=40,label,0,A,false,0);
+      case 2: MatCol(1,v+=40,label,0,B,false,0);
+      case 3: MatCol(1,v+=40,label,0,C,false,0);
+      case 4: MatCol(1,v+=40,label,0,D,false,0);
+      case 5: MatCol(1,v+=40,label,0,E,false,0);
+      case 6: MatCol(1,v+=40,label,0,F,false,0);
+      case 7: MatCol(1,v+=40,label,0,G,false,0);
+      case 8: MatCol(1,v+=40,label,0,H,false,0);
+      case 9: MatCol(1,v+=40,label,0,I,false,0);
+      case 10: MatCol(1,v+=40,label,0,J,false,0);
+      case 11: MatCol(1,v+=40,label,0,K,false,0);
+      case 12: MatCol(1,v+=40,label,0,L,false,0);
+      case 13: MatCol(1,v+=40,label,0,M,false,0);
+      case 14: MatCol(1,v+=40,label,0,N,false,0);
+      case 15: MatCol(1,v+=40,label,0,O,false,0);
+      case 16: MatCol(1,v+=40,label,0,P,false,0);
+      case 17: MatCol(1,v+=40,label,0,Q,false,0);
+      case 18: MatCol(1,v+=40,label,0,R,false,0);
+      case 19: MatCol(1,v+=40,label,0,S,false,0);
+      case 20: MatCol(1,v+=40,label,0,T,false,0);
+      case 21: MatCol(1,v+=40,label,0,U,false,0);
+      case 22: MatCol(1,v+=40,label,0,V,false,0);
+      case 23: MatCol(1,v+=40,label,0,W,false,0);
+      case 24: MatCol(1,v+=40,label,0,X,false,0);
+      case 25: MatCol(1,v+=40,label,0,Y,false,0);
+      case 26: MatCol(1,v+=40,label,0,Z,false,0);
+    end;
+  end;
+  EndMatrix;
+  v = 17;
+  for (pos=1;pos<=ypos;pos=pos+1) begin
+    label = aylabels[pos];
+    StaticText(starth-5,v+=17,label,true);
+  end;
+  
+//  PushButton(-90,-25,-10,-5,ToolOK,"Paste");
   EndWindow;
 end;

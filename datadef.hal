@@ -42,9 +42,11 @@ begin
   EndBlock;// Edit ************************** Monday, 16 May 2016 12:12:43
 
 	RecordAddBegin(POVc,"MyPO1"); 
+		RecordField(GeneralCollection,M4Str,200,0);
 		ArrayField(Color,M4Code,100,0); 
 		ArrayField(Size,M4Code,100,0); 
 		ArrayField(Collection,M4Code,100,0); 
+		ArrayField(SerialNr,M4Str,60,0); 
 	EndRecordAdd;
 
 return;
