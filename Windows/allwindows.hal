@@ -2097,14 +2097,14 @@ if (HasTouchScreenLook==false) then begin
   //  MatCol(t,94,"Var",0,VARList,true,VARSClass);
   //  MatCol(t,144,"Qty",0,Quant,true,0);
   if (HasVarieties) then begin
-  MatCol(t,94,"Кіл-ть",0,Quant,true,MATVARINSClass);
+  MatCol(t,94,"Кіл-ть",0,Quant,true,0);
   end else begin
     MatCol(t,94,"Кіл-ть",0,Quant,true,0); 
   end;
   EnterSkip(ArtCode);
   MatCol(t=kInvoiceRowTypeStructuredItemComponent,32,"Товар",0,ArtCode,false,ForSaleINSClass);
   if (HasVarieties) then begin
-  MatCol(t,94,"Кіл-ть",0,Quant,true,MATVARINSClass);
+  MatCol(t,94,"Кіл-ть",0,Quant,true,0);
   end else begin
     MatCol(t,94,"Кіл-ть",0,Quant,true,0); 
   end;
@@ -3086,7 +3086,7 @@ begin
 //  MatCol(1,84,"Var",0,VARList,true,VARSClass);
 //  MatCol(1,144,"Кіл",0,Quant,true,0);
   if (HasVarieties) then begin
-  MatCol(1,94,"Кіл-ть",0,Quant,true,MATVARINSClass);
+  MatCol(1,94,"Кіл-ть",0,Quant,true,0);
   end else begin
     MatCol(1,94,"Qty",0,Quant,true,0); //!!PRODTRANSLATE
   end;
@@ -3866,75 +3866,3 @@ begin
   EndWindow;
 end;
 
-
-
-window MATVARINSClass:2
-  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
-begin
-  array string 255 axlabels,aylabels;
-  integer pos,xpos,ypos,ylabellen,starth;
-  real h,v,matheightbase;
-  string 255 label;
-  
-  WindowBegin("Матриці різновидів товару 1",MATVARINSClass,CGother,VarMatrxEntryView);
-  DynamicWindow;
-  xpos = CntVarietyCode(1,axlabels);
-  ypos = CntVarietyCode(2,aylabels);
-  for (pos=1;pos<=ypos;pos=pos+1) begin
-    label = aylabels[pos];
-    if (ylabellen<len(label)) then begin
-      ylabellen = len(label);
-    end;
-  end;
-  starth = 7*ylabellen;
-  if (starth<70) then begin starth = 70; end;
-  SetWRect(80,80,200+(xpos*40)+(starth-70),125+(ypos*17)+35);
-  UseView(VarMatrxEntryVc);
-  h = 10; v = -40;
-  if (WindowStyle("MasterWClass")==kWindowStyleWindows8Desktop) then begin
-    matheightbase = 66;
-  end else begin
-    matheightbase = 63;
-  end;
-  MatrixBegin(starth,50,-32,matheightbase+ypos*17,VarMatrxEntryRowType,ypos);
-  for (pos=1;pos<=xpos;pos=pos+1) begin
-    label = axlabels[pos];
-    switch (pos) begin
-      case 1: MatCol(1,v+=40,label,0,A,false,0);
-      case 2: MatCol(1,v+=40,label,0,B,false,0);
-      case 3: MatCol(1,v+=40,label,0,C,false,0);
-      case 4: MatCol(1,v+=40,label,0,D,false,0);
-      case 5: MatCol(1,v+=40,label,0,E,false,0);
-      case 6: MatCol(1,v+=40,label,0,F,false,0);
-      case 7: MatCol(1,v+=40,label,0,G,false,0);
-      case 8: MatCol(1,v+=40,label,0,H,false,0);
-      case 9: MatCol(1,v+=40,label,0,I,false,0);
-      case 10: MatCol(1,v+=40,label,0,J,false,0);
-      case 11: MatCol(1,v+=40,label,0,K,false,0);
-      case 12: MatCol(1,v+=40,label,0,L,false,0);
-      case 13: MatCol(1,v+=40,label,0,M,false,0);
-      case 14: MatCol(1,v+=40,label,0,N,false,0);
-      case 15: MatCol(1,v+=40,label,0,O,false,0);
-      case 16: MatCol(1,v+=40,label,0,P,false,0);
-      case 17: MatCol(1,v+=40,label,0,Q,false,0);
-      case 18: MatCol(1,v+=40,label,0,R,false,0);
-      case 19: MatCol(1,v+=40,label,0,S,false,0);
-      case 20: MatCol(1,v+=40,label,0,T,false,0);
-      case 21: MatCol(1,v+=40,label,0,U,false,0);
-      case 22: MatCol(1,v+=40,label,0,V,false,0);
-      case 23: MatCol(1,v+=40,label,0,W,false,0);
-      case 24: MatCol(1,v+=40,label,0,X,false,0);
-      case 25: MatCol(1,v+=40,label,0,Y,false,0);
-      case 26: MatCol(1,v+=40,label,0,Z,false,0);
-    end;
-  end;
-  EndMatrix;
-  v = 17;
-  for (pos=1;pos<=ypos;pos=pos+1) begin
-    label = aylabels[pos];
-    StaticText(starth-5,v+=17,label,true);
-  end;
-  
-//  PushButton(-90,-25,-10,-5,ToolOK,"Paste");
-  EndWindow;
-end;
