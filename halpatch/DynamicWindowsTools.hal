@@ -1214,7 +1214,7 @@ begin
 	end;  
   
   if (i==0) then begin
-    i = 1; // Then we get one line in the matrix of a one variety item.
+    i = 1; // Then we get one line in the matrix of  one variety item.
   end;
   CntVarietyTheCodes = i;
   return;
