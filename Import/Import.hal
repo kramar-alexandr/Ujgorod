@@ -1,3 +1,6 @@
+external procedure PUVc_PasteTransDate(var record PUVc,var Boolean,var Boolean,var Boolean);
+external procedure PUSumUp(var record PUVc);
+external function Boolean PUVc_PasteArtCode(var record PUVc,Integer,var string,var string);
 
 
 global updating procedure INImportIn()		//Edit----------------------Dima  05.02.2016
@@ -109,31 +112,27 @@ begin
 	record INVc INr;
 	record PLVc PLr;
 	record BarcodeVc Barr;
-	string 255 code, var1,var2,bar,aditional,fullcode;
+	string 255 code, var1,var2,bar,aditional,fullcode,collection,serialNr;
 	val price;
 
-	SetImportCodepage("CP1251");
+	//SetImportCodepage("CP1251");
 
 	while (TestEOF()==false) begin
 		code = ImportField;
 		var1 = ImportField;
 		var2 = ImportField;
+		collection = ImportField;
 		price = StringToVal(ImportField,M45Val);
 		bar = ImportField;
-		aditional = ImportField;
+		
+		serialNr = code & "." & var1 & "." & var2 & "." & collection;
 
 		if (nonblank(code)) then begin
 
-			fullcode = code;
-			if (nonblank(var1)) then begin 
-				fullcode = fullcode & "." & var1;
-			end;
-			if (nonblank(var2)) then begin 
-				fullcode = fullcode & "." & var2;
-			end;
     	
-			PLr.ArtCode = fullcode;
+			PLr.ArtCode = code;
 			PLr.PLCode = "RRP";
+			PLr.SerialNr = serialNr;
 			PLr.ExVatPrice = price;
 			INr.Code = code;
 			if (ReadFirstMain(INr,1,true))	then begin
@@ -141,16 +140,12 @@ begin
 			end;
 			RecordStore(PLr,true);
     	
-			Barr.Itemcode = fullcode;
-			Barr.Barcode = bar;
-			Barr.Comment = INr.Name;;
-			RecordStore(Barr,true);
-    	
-			if (nonblank(aditional)) then begin
-				if (nonblank(INr.DispGroups)) then begin
-					INr.DispGroups = INr.DispGroups & ",A";
-					RecordStore(INr,true);
-				end;
+    	if (nonblank(bar)) then begin
+				Barr.Itemcode = fullcode;
+				Barr.Barcode = bar;
+				Barr.Comment = INr.Name;
+				Barr.SerialNr = serialNr;
+				RecordStore(Barr,true);
 			end;
 
 		end;
@@ -161,4 +156,61 @@ end;
 
 
 
+global updating procedure ImportStockRemainsIn()			//Edit----------------------Dima  14.06.2016
+begin
+	record PUVc PUr;
+	row PUVc PUrw;
+	string 100 location;
+	string 255 code, var1,var2,collection;
+	Boolean datewarnf,warnoldrecordsf,warnfutdatef;
+	string 255 warning,inwarn;
+	integer rownr,qty;
+	val cost;
+	
+	location = ImportField;
+	NextImportLine(true);
+	
+	if (blank(location)) then begin
+		goto LImportStockRemainsIn;
+	end;
+	
+	RecordNew(PUr);
+	
+	PUr.SerNr = NextSerNr("PUVc",PUr.TransDate,-1,false,"");
+	PUr.TransDate = CurrentDate;
+	PUr.Location = location;
+	PUVc_PasteTransDate(PUr,datewarnf,warnoldrecordsf,warnfutdatef);
+	rownr = 0;
+	
+	while (TestEOF()==false) begin
+		code = ImportField;
+		var1 = ImportField;
+		var2 = ImportField;
+		collection = ImportField;
+		cost = StringToVal(ImportField,M45Val);
+		qty = StringToInt(ImportField);
 
+
+		if (nonblank(code)) then begin
+
+			PUrw.ArtCode = code;
+			MatRowPut(PUr,rownr,PUrw);
+			PUVc_PasteArtCode(PUr,rownr,warning,inwarn);
+			MatRowGet(PUr,rownr,PUrw);
+			PUrw.SerialNr = code & "." & var1 & "." & var2 & "." & collection;
+			PUrw.Quant = qty;
+			PUrw.UPrice = cost;
+    	PUrw.CostPrice = cost;
+    	PUrw.Sum = cost*qty;		
+			MatRowPut(PUr,rownr,PUrw);
+			rownr = rownr + 1;
+		end;
+
+		NextImportLine(true);
+	end;
+	
+	PUSumUp(PUr);
+	RecordInsert(PUr,true);	
+  
+  LImportStockRemainsIn:;
+end;
