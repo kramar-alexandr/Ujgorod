@@ -719,11 +719,19 @@ BEGIN
 //  INp.WarrantyLength = 0;
 //  INp.SerNrf = 0;
 //  INp.Group = "";
+LogText(0,"in the begin  " & artcode);
   if (nonblank(artcode)) then begin
-  if (CorrectItemVAR(artcode,theitemcode,comment,forcepropervar)) then begin
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //forcepropervar = false; //Edit----------------------Dima  14.06.2016
+  //отключаем проверку маски для вариантов
+  //иначе товары, для которых заведена маска, нельзя использовать без маски
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  if (CorrectItemVAR(artcode,theitemcode,comment,false)) then begin
 //    res = GetFirstItem(theitemcode,INp);// what if alternative code used oon another item? 
     INp.Code = theitemcode;
+   
     res = ReadFirstMain(INp,1,true);
+    LogText(0,theitemcode & "  theitemcode  ReadFirstItem " & res);
     if (addname) then begin
       if (artcode!=theitemcode) then begin
         name = INp.Name;
@@ -736,6 +744,7 @@ BEGIN
     end;
   end;
   end;
+  LogText(0,res & "   res total");
   ReadFirstItem = res;
   RETURN;
 END;
