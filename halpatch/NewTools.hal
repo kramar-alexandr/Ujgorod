@@ -13,6 +13,7 @@ begin
 	record RLinkVc RLr;
 	record POVc POr;
 	record PUVc PUr;
+	record PLVc PLr;
 	record StockMovVc SMr;
 	record SDVc SDr;
 	record ItemStatusVc ISr;
@@ -136,7 +137,14 @@ begin
 	    RecordDelete(SBr);
 	    StepBack(SBr);
 	  end;
-	end;											
+	end;	
+	TrHs = true;	
+	while (LoopMain(PLr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(PLr);
+	    StepBack(PLr);
+	  end;
+	end;												
 
 	LogText(0,"Registers were cleaned.......");
 return;

@@ -8,6 +8,7 @@ begin
 	Import("€мпорт товаров и классификаций",ImportIClass,INImportIn,modDBMain);
 	Import("€мпорт вариантов товаров",ImportIClass,VARImportIn,modDBMain);
 	Import("€мпорт цен и штрих-кодов",ImportIClass,ItemPricesImportIn,modDBMain);
+	Import("€мпорт поступлений",ImportIClass,ImportStockRemainsIn,modDBMain);		//Edit----------------------Dima  14.06.2016
 
 	Document("…тикетки штрихкодґв" ,LabelItem9RClass,ItemLabForm9,MyLabelItemFClass,modIN); //Edit***************************Sasha2,12:08 23.10.2014
 

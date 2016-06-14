@@ -48,6 +48,27 @@ begin
 		ArrayField(Collection,M4Code,100,0); 
 		ArrayField(SerialNr,M4Str,60,0); 
 	EndRecordAdd;
+	
+	
+	RecordAddBegin(PLVc,"MyPL1"); 
+		RecordField(SerialNr,M4Str,60,0);				//Edit----------------------Dima  14.06.2016
+  	KeyBegin(SerialNr);
+  	KeySegment(SerialNr);
+  	KeySegment(PLCode);
+  	KeySegment(ArtCode);
+  	KeySegment(CustCode);
+	EndRecordAdd;	
+	
+
+	RecordAddBegin(BarcodeVc,"MyBarcodeVc1"); 
+		RecordField(SerialNr,M4Str,60,0);				//Edit----------------------Dima  14.06.2016
+  	KeyBegin(SerialNr);
+  	KeySegment(SerialNr);
+  	KeySegment(Barcode);
+	EndRecordAdd;	
+	
+
+	
 
 return;
 end;
