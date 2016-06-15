@@ -50,24 +50,95 @@ begin
 	EndRecordAdd;
 	
 	
-	RecordAddBegin(PLVc,"MyPL1"); 
+	/*RecordAddBegin(PLVc,"MyPL1"); 
 		RecordField(SerialNr,M4Str,60,0);				//Edit----------------------Dima  14.06.2016
   	KeyBegin(SerialNr);
   	KeySegment(SerialNr);
   	KeySegment(PLCode);
   	KeySegment(ArtCode);
-  	KeySegment(CustCode);
-	EndRecordAdd;	
+  	KeySegment(CustCode); 
+	EndRecordAdd;	*/
 	
+	
+	RecordBegin(PLVc,-,"pl2");
+  NewAutosyncRegister(kSyncDirectionToClient,true);
+  ImpExpLevel(0);
+  RecordField(PLCode,M4Code,5,0);
+  RecordField(Comment,M4Str,60,0);
+  RecordField(ArtCode,M4Code,20,INVc);
+  RecordField(ExVatPrice,M423Val,0,0);
+  RecordField(SalesAcc,M4Code,10,AccVc);
+  RecordField(CustCode,M4Code,20,CUVc);
+  RecordField(NoOtherPricing,M4Int,0,0);
+  RecordField(VATCode,M4Code,10,VATCodeBlock);
+  RecordField(DonotRecalculate,M4Int,0,0);
+  RecordField(CostPrice,M4Val,0,0);
+  RecordField(BBGenTrans,M4Int,0,0);
+  RecordField(BBVarAcc,M4Code,10,AccVc);
+  RecordField(SerialNr,M4Str,60,0);				//Edit----------------------Dima  14.06.2016
+  MainKeyBegin(PLCode,0);
+  KeySegment(PLCode);
+  KeySegment(ArtCode);
+  KeySegment(CustCode);
+  KeySegment(SerialNr);//-------------alexandr
+  KeyBegin(ArtCode);
+  KeySegment(ArtCode);
+  KeySegment(PLCode);
+  KeySegment(CustCode);
+  KeySegment(SerialNr);//-------------alexandr
+  KeyBegin(Price);
+  KeySegment(ExVatPrice);
+  KeySegment(PLCode);
+  KeySegment(ArtCode);
+  KeySegment(CustCode);
+  KeySegment(SerialNr);//-------------alexandr
+  KeyBegin(Comment);
+  KeySegment(Comment);
+  KeySegment(PLCode);
+  KeySegment(ArtCode);
+  KeySegment(CustCode);
+  KeySegment(SerialNr);//-------------alexandr
+  KeyBegin(SerialNr);//-------------alexandr
+  	KeySegment(SerialNr);
+  	KeySegment(PLCode);
+  	KeySegment(ArtCode);
+  	KeySegment(CustCode); 
+  EndRecord;
 
+	
 	RecordAddBegin(BarcodeVc,"MyBarcodeVc1"); 
 		RecordField(SerialNr,M4Str,60,0);				//Edit----------------------Dima  14.06.2016
   	KeyBegin(SerialNr);
   	KeySegment(SerialNr);
-  	KeySegment(Barcode);
+  	KeySegment(Barcode); 
 	EndRecordAdd;	
-	
-
+		
+	/*RecordBegin(BarcodeVc,-,"BarcodeVc2");
+  NewAutosyncRegister(kSyncDirectionToClient,true);
+	ImpExpLevel(0);
+  RecordField(Barcode,M4UStr,60,0);
+  RecordField(Itemcode,M4Code,20,INVc);
+  RecordField(Comment,M4Str,100,0);
+  RecordField(BarCodeSerialNo,M4Str,20,0);
+  RecordField(CustCode,M4Code,20,CUVc);
+  RecordField(SerialNr,M4Str,60,0);	
+  MainKeyBegin(Barcode,0);
+  KeySegment(Barcode);
+  KeyBegin(Itemcode);
+  KeySegment(Itemcode);
+  KeySegment(Barcode);
+  KeyBegin(Comment);
+  KeySegment(Comment);
+  KeySegment(Barcode);
+  KeySegment(Itemcode);
+  KeyBegin(BarCodeSerialNo);
+  KeySegment(BarCodeSerialNo);
+  KeySegment(Barcode);
+  KeySegment(Itemcode);
+  KeyBegin(SerialNr);
+  	KeySegment(SerialNr);
+  	KeySegment(Barcode);
+  EndRecord;*/
 	
 
 return;

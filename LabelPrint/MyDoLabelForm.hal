@@ -13,7 +13,7 @@ external procedure ItemBCEAN(string,var string);
 external procedure ItemBCEAN13(string,var string);
 external procedure GetStandardProblemText(string,Integer,var string);
 external procedure GetFullCurncyRate(var string,Date,var val,var val,var val,var val,var val);
-external procedure CreateEAN128(var string);//-------------------------------------------------
+//external procedure CreateEAN128(var string);//-------------------------------------------------
 external function roundmode SetRoundModeD(Integer); //Edit***************************Sasha2,12:22 23.10.2014
 external function Boolean GetFirstItem(var string,var record INVc);
 external function Boolean ReadFirstItem(string,var record INVc,Boolean,Boolean);

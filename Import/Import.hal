@@ -129,7 +129,7 @@ begin
 
 		if (nonblank(code)) then begin
 
-    	
+			recordnew(PLr);
 			PLr.ArtCode = code;
 			PLr.PLCode = "RRP";
 			PLr.SerialNr = serialNr;
@@ -138,14 +138,15 @@ begin
 			if (ReadFirstMain(INr,1,true))	then begin
 				PLr.Comment = INr.Name;
 			end;
-			RecordStore(PLr,true);
+			RecordStore(PLr,false);
     	
     	if (nonblank(bar)) then begin
-				Barr.Itemcode = fullcode;
+				recordnew(Barr);
+				Barr.Itemcode = code;
 				Barr.Barcode = bar;
 				Barr.Comment = INr.Name;
 				Barr.SerialNr = serialNr;
-				RecordStore(Barr,true);
+				RecordStore(Barr,false);
 			end;
 
 		end;
