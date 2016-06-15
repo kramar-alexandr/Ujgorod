@@ -1,4 +1,4 @@
-remote procedure HandleSetEAN13PU(var record PUVc); //Edit***************************Sasha2,14:33 23.01.2015
+//remote procedure HandleSetEAN13PU(var record PUVc); //Edit***************************Sasha2,14:33 23.01.2015
 remote procedure HandlePrintEAN13PU(record PUVc,var array record PUVc,var array integer); //Edit***************************Sasha2,16:15 26.01.2015
 external procedure Zebra_Printing(record RcVc);
 external function Boolean PUVcRowEFActiveCheck(string,Integer,Integer,Integer);
@@ -34,7 +34,7 @@ begin
 
 	wn = CurWindow;
 	GetWindowRecord(wn,PUr);
-	HandleSetEAN13PU(PUr);
+	//HandleSetEAN13PU(PUr);
 	PutWindowrecord(wn,PUr);
 
 	return;

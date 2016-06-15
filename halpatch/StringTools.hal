@@ -1,0 +1,150 @@
+//replace all "findWord"s in "Source" to "newWord"
+global
+function string 255 ReplaceAllSubStringInString(string findWord, string newWord, string Source )		//Edit----------------------Dima  02.03.2015
+begin
+	integer i,length,lengthFind,lengthNew,diff;
+	string 255 temp,str,inStr,res;
+
+	length = len(findWord);
+	lengthNew = len(newWord);
+	lengthFind=len(Source);
+	diff=lengthFind-length;
+
+	str=UpperCase(findWord);   
+	inStr=Source;		
+	if (diff<0) then begin
+	goto	breakFunction;
+	end;
+	
+	for(i=0;i<=diff;i=i+1) begin
+	 temp = mid(inStr,i,length);
+	 if(UpperCase(temp)==str) then begin
+			res = left(inStr,i) & newWord & Right(inStr,lengthFind-i-length);
+			i = i + length;
+			inStr = res;
+	 end;	
+	end;
+
+	breakFunction:; // goto
+	ReplaceAllSubStringInString = inStr;
+return;  
+end;
+
+
+//pos - from 0 to length-1. This is  position of substring
+global 
+procedure  ReplaceSubstringInString(var string source, string put, integer pos)		//Edit----------------------Dima  27.02.2015
+begin
+	string 255 result;
+	integer lenSubStr;
+	
+	if ( Len(put) + pos <= Len(source)) then begin
+		lenSubStr = Len(put);
+	end else begin
+		lenSubStr = Len(source)-pos;
+	end;
+	
+	result = Left(source,pos) & Left(put,lenSubStr) & Right(source, Len(source)-pos-lenSubStr);
+	source = result;
+  
+end;
+
+
+
+global
+function string 255 InsertSubStringInString(string source, string put, integer pos) //Edit----------------------Dima  02.03.2015
+begin
+	string 255 result;
+	
+	result = Left(source,pos) &  put & Right(source,Len(source)-pos);
+  InsertSubStringInString = result;
+return;
+end;
+
+
+
+global
+function Integer FindFirstPosStringInString( string Search, string Source )//Edit----------------------Dima  20.02.2015
+begin
+	integer i,length,lengthSource,diff;
+	string 150 temp,str,inStr;
+	integer res;
+	
+	res=-1;
+	length=len(Search);
+	lengthSource=len(Source);
+	diff=lengthSource-length;
+
+	str=UpperCase(Search);   
+	inStr=UpperCase(Source);		
+	if (diff<0) then begin
+	goto	LbreakFirstPos;
+	end;
+	
+	for(i=0;i<=diff;i=i+1) begin
+	 temp=mid(inStr,i,length);
+	 if(temp==str) then begin
+	 	res = i;
+	 	goto LbreakFirstPos;
+	 end;	
+	end;
+
+	LbreakFirstPos:; 
+	FindFirstPosStringInString=res;
+return;  
+end;
+
+
+global
+function Boolean FindSubString( string Search, string Source )
+begin
+	integer i,length,lengthSource,diff;
+	string 150 temp,str,inStr;
+	boolean res;
+	
+	res=false;
+	length=len(Search);
+	lengthSource=len(Source);
+	diff=lengthSource-length;
+
+	str=UpperCase(Search);   
+	inStr=UpperCase(Source);		
+	if (diff<0) then begin
+	goto	breakFunction;
+	end;
+	
+	for(i=0;i<=diff;i=i+1) begin
+	 temp=mid(inStr,i,length);
+	 if(temp==str) then begin
+	 	res = true;
+	 	goto breakFunction;
+	 end;	
+	end;
+
+	breakFunction:; // goto
+	FindSubString=res;
+return;  
+end;
+
+
+global
+procedure GetPartsOfString(string str,integer size,var array string parts)	//Edit----------------------Dima  22.10.2015
+begin
+	string 255 tempStr;
+	string 255 shortPart;
+	integer i;
+	
+	tempStr = str;
+	ClearArray(parts);
+	
+	while(tempStr!="") begin
+		shortPart = Left(tempStr,size);
+		tempStr = Right(tempStr,Len(tempStr)-size);
+		while (Left(shortPart,1)==" ") begin
+			i=i+1;
+			shortPart = Right(shortPart,size-i);
+		end;
+		parts[parts.length] = shortPart;
+	end;
+  
+end;
