@@ -2,6 +2,7 @@ SourceFile("halcust\\Import",0);
 SourceFile("halcust\\Windows",0);
 SourceFile("halcust\\halpatch",0);
 SourceFile("halcust\\LabelPrint",0);
+SourceFile("halcust\\Reports",0);
 
 begin
 
