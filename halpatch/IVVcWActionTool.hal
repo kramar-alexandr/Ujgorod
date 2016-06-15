@@ -62,9 +62,9 @@ external procedure IVVcGetCalcItemPrice(record INVc,record IVVc,Integer,var val)
 external function Boolean GetFirstItem(var string,var record INVc);
 external function val CalcItemRepa(val,val,val,var string,val,val,val,val,val,roundmode);
 external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
-external function Boolean GetItemPriceDiscount3(string,val,var record INVc,string,val,val,val,val,val,string,string,string,string,
+external function Boolean GetItemPriceDiscount3ser(string,string,val,var record INVc,string,val,val,val,val,val,string,string,string,string,
                                                 var val,var string,var val,var string,var val,var string,Integer,var Boolean,Date,Time,
-                                                string,Boolean,var Boolean,string,var string,var val,string,string,var string);
+                                                string,Boolean,var Boolean,string,var string,var val,string,string,var string);// Edit ************************** Wednesday, 15 June 2016 14:22:37
 external function Boolean INVc_AllowSales(record INVc,var LongInt);
 
 global
@@ -297,7 +297,8 @@ BEGIN
   if (IVr.InvType==kInvoiceTypeCredit or IVr.InvType==kInvoiceTypeCreditSpecialSales) then begin
     exportflag = exportflag + AddPortugueseType;
   end;  
-  if (GetItemPriceDiscount3(IVrw.ArtCode,IVrw.Quant,INr,IVr.CurncyCode,
+  // Edit ************************** Wednesday, 15 June 2016 14:22:22
+  if (GetItemPriceDiscount3ser(IVrw.SerialNr,IVrw.ArtCode,IVrw.Quant,INr,IVr.CurncyCode,
                             IVr.FrRate,IVr.ToRateB1,IVr.ToRateB2,IVr.BaseRate1,IVr.BaseRate2,
                             IVr.LangCode,IVr.CustCat,IVr.PriceList,IVr.RebCode,
                             price,tstr,vreb,dummystr,baseprice,dummystr,
@@ -426,7 +427,8 @@ BEGIN
   if (IVr.InvType==kInvoiceTypeCredit or IVr.InvType==kInvoiceTypeCreditSpecialSales) then begin
     exportflag = exportflag + AddPortugueseType;
   end;
-  if (GetItemPriceDiscount3(IVrw.ArtCode,IVrw.Quant,INr,IVr.CurncyCode,
+  // Edit ************************** Wednesday, 15 June 2016 14:22:17
+  if (GetItemPriceDiscount3ser(IVrw.SerialNr,IVrw.ArtCode,IVrw.Quant,INr,IVr.CurncyCode,
                             IVr.FrRate,IVr.ToRateB1,IVr.ToRateB2,IVr.BaseRate1,IVr.BaseRate2,
                             IVr.LangCode,IVr.CustCat,IVr.PriceList,IVr.RebCode,
                             price,curitemname,vreb,vatcode,baseprice,salesacc,
@@ -1233,7 +1235,8 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IVp,i,IVrw);
     if (nonblank(IVrw.ArtCode)) then begin
-      if (GetItemPriceDiscount3(IVrw.ArtCode,IVrw.Quant,INr,IVp.CurncyCode,
+    	// Edit ************************** Wednesday, 15 June 2016 14:22:05
+      if (GetItemPriceDiscount3ser(IVrw.SerialNr,IVrw.ArtCode,IVrw.Quant,INr,IVp.CurncyCode,
                             IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2,
                             IVp.LangCode,IVp.CustCat,IVp.PriceList,IVp.RebCode,
                             price,tstr,vreb,dummystr,baseprice,dummystr,
