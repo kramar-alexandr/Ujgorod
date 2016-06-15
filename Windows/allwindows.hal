@@ -2146,3 +2146,55 @@ begin
   EndWindow;
 end;
 
+window BarcodeDClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v;
+  WindowBegin("Штрих-код",BarcodeDClass,CGview,-);
+  SetWRect(64,80,509,170);
+  UseView(BarcodeVc);
+  EditField(120,v=6,-40,"Серійний номер",Normal,SerialNr,false,0);
+  EditField(120,v+=20,-40,"Штрих-код",Normal,Barcode,false,0);
+  EditField(120,v+=20,-40,"Товар",Normal,Itemcode,false,INSClass);
+  EditField(120,v+=20,-40,"Клиент",Normal,CustCode,false,CUSClass);
+  EditField(120,v+=20,-40,"Комментарий",Normal,Comment,false,0);
+  //
+  CheckBox(120,v+=20,40,"Актуален",ActualFlag);
+  CheckBox(220,v,40,"1C",1CFlag);
+  EndWindow;
+end;
+
+window PLDClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Ціна",PLDClass,CGview,-);
+  SetWRect(64,80,509,330);
+  UseView(PLVc);
+  v = 10; vs = 20; h = 120;
+  EditField(h,v,100,"Серійний номер",Normal,SerialNr,false,0);
+  EditField(h,v+=vs, 100,"Товар",Normal,ArtCode,false,INSClass);
+  EditField(h,v+=vs,50,"Прайс-лист",Normal,PLCode,false,PLDefSClass);
+  EditField(h,v+=vs,307,"Коментар",Normal,Comment,false,0);
+  EditField(h,v+=vs ,70,"Ціна",Normal,ExVatPrice,true,0);
+  if (HasModNL) then begin
+  EditField(h,vm=(v+=vs),70,"Рахунок реалізації",Normal,SalesAcc,false,AccSClass);
+  end;
+  if (HasStandardCRM) then begin
+  EditField(h,v+=vs,70,"Клієнт",Normal,CustCode,false,CUSClass);
+  end;
+  if (IsEnterprise) then begin
+  EditField(h,v+=vs ,70,"Собівартість",Normal,CostPrice,true,0);
+    if (StandardHansa==false) then begin
+  EditField(h,v+=20,70,"Рах.нарах.звор.закуп.",Normal,BBVarAcc,false,AccSClass);
+    end;
+  end;
+  if (HasStandardCRM) then begin
+  CheckBox(80,v+=30,0,"Використовувати тільки цю ціну, не робити інших розрахунків",NoOtherPricing);
+  CheckBox(80,v+=16,0,"Не перераховувати",DonotRecalculate);
+  end;
+  if (IsEnterprise and StandardHansa==false) then begin
+  CheckBox(80,v+=16,0,"Створити операцію зворотн. закупівлі",BBGenTrans);
+  end;
+  EndWindow;
+end;

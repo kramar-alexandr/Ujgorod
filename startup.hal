@@ -4,7 +4,10 @@ begin
 	SetLangMode(LangUkrainian,"UKR",0);
 	//SetLangMode(LangRussian,"RUS",0);
 
-
+  Register("ARVc","ARVc",ARVc,modDBMain);
+  Register("ARPayVc","ARPayVc",ARPayVc,modDBMain);
+  Register("APVc","APVc",APVc,modDBMain);
+  
 	Import("€мпорт товаров и классификаций",ImportIClass,INImportIn,modDBMain);
 	Import("€мпорт вариантов товаров",ImportIClass,VARImportIn,modDBMain);
 	Import("€мпорт цен и штрих-кодов",ImportIClass,ItemPricesImportIn,modDBMain);
