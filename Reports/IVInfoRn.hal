@@ -394,22 +394,49 @@ BEGIN
   val res;
   row IVVc IVrw;
   Integer i,rwcnt;
+  val tempsum;
+  record BaseCurBlock BCr;
+  
+  blockload(BCr);
   
 
-  if ((IVr.RetnValue>0 and IVr.Sum4>0) or (IVr.RetnValue<0 and IVr.Sum4<0)) and (IVr.InvType!=kInvoiceTypeCredit) then begin
-    res = res - IVr.RetnValue;
-  end;  
+  
   rwcnt = MatRowCnt(IVr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IVr,i,IVrw);
     switch (IVrw.stp) begin
       case kInvoiceRowTypeChequePayment: res = res + IVrw.Sum;
       case kInvoiceRowTypeCreditCardPayment: res = res + IVrw.Sum;
-      case kInvoiceRowTypeCashPayment: res = res + IVrw.Sum;//MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);// Edit ************************** Thursday, 19 November 2015 16:16:50
+      case kInvoiceRowTypeCashPayment: 
+      
+      			// Edit Start ---------------------------------------------- Edit Start
+	//Thursday, 16 June 2016 10:46:36
+						if(IVrw.CurncyCode==IVr.CurncyCode or blank(IVrw.CurncyCode))then begin
+	      			res = res + IVrw.Sum;//MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);// Edit ************************** Thursday, 19 November 2015 16:16:50
+      			end else begin
+      				tempsum = 0;
+      				tempsum = MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
+      				if(IVr.CurncyCode==BCr.BaseCur1)then begin
+      					res = res + tempsum;
+      				end else begin
+      					res = res + round(tempsum*IVr.FrRate/IVr.ToRateB1,DefaultCurRoundOff);
+      				end;
+      			end;
+      			
+	// Edit End ---------------------------------------------- Edit End
+	
       case kInvoiceRowTypeLoyaltyPointsPayment: res = res + IVrw.Sum;//MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);// Edit ************************** Thursday, 19 November 2015 16:16:50
       case kInvoiceRowTypeGiftVoucherPayment: res = res + IVrw.Sum;
     end;
+    logtext(0,res);
   end;
+  
+  if(res!=IVr.Sum4)then begin
+		if ((IVr.RetnValue>0 and IVr.Sum4>0) or (IVr.RetnValue<0 and IVr.Sum4<0)) and (IVr.InvType!=kInvoiceTypeCredit) then begin
+			res = res - IVr.RetnValue;
+		end;  
+  end;
+  
   FindPaidValueOnInvoice = res;
   RETURN;
 END;

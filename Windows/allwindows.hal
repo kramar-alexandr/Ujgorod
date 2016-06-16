@@ -320,6 +320,8 @@ if (HasTouchScreenLook==false) then begin
   EditField(h3,v+=vs,80,"Проект",Normal,PRCode,false,0);
   end;  
   EditField(h3,v+=vs,80,"Підстав.кред-ня",Normal,Reason,false,StandProblemsSClass); 
+  EditField(h3,v+=vs,80,"Здача",ViewOnly,RetnValue,false,0); 
+  EditField(h3,v+=vs,80,"Л.Маш.",Normal,MachineName,false,0); 
   if (HasLocalization("MEX")) then begin 
     EditField(h3,v+=vs,80,"Payment Mode",Normal,PMCode,false,PMSClass);
   end;

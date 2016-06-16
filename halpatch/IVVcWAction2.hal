@@ -915,7 +915,7 @@ BEGIN
       cash = cash + IVrw.Sum;
     end;
     if (IVrw.stp==15) then begin 
-      if (IVrw.CurncyCode!=IVr.CurncyCode) then begin   
+      if (IVrw.CurncyCode!=IVr.CurncyCode and nonblank(IVrw.CurncyCode)) then begin   // Edit ************************** Thursday, 16 June 2016 11:44:24
         if (IVr.CurncyCode==bascur.BaseCur1) then begin
           cash = cash + MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
           bcurf = true;

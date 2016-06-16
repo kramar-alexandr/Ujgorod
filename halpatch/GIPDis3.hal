@@ -1355,7 +1355,6 @@ L44GetItemPriceDiscount3ser:;
   RegionPerceptionTax(custcode,region,INr.EUCodex,INr.Group,tax2code,tax2prc);
   nomoreremotecalls = !calcpricef and !rebfound and !qtyplfound;
 //Trace("item " & item," pricelist " & pricelist & " rebcode " & rebcode & " custcode " & custcode & " tprice " & tprice); 
-	logtext(0,"tprice " & tprice);           
   GetItemPriceDiscount3ser = res;
   RETURN;
 END;

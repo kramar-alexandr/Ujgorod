@@ -1206,6 +1206,10 @@ BEGIN
   Boolean cashf;
   Integer sign;
   val basepayment;// Edit ************************** Wednesday, 15 June 2016 15:04:07
+  val tempsum;
+  record BaseCurBlock BCr;
+  
+  blockload(BCr);
   
   sign = 1;
   if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales 
@@ -1215,15 +1219,56 @@ BEGIN
   rwcnt = MatRowCnt(IVp);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IVp,i,IVrw);
-    if ((IVrw.stp==kInvoiceRowTypeGiftVoucherPayment) or (IVrw.stp==kInvoiceRowTypeCashPayment) or (IVrw.stp==kInvoiceRowTypeCreditCardPayment) or (IVrw.stp==kInvoiceRowTypeLoyaltyPointsPayment) or (IVrw.stp==kInvoiceRowTypeChequePayment)) then begin
+    switch (IVrw.stp) begin
+    	case kInvoiceRowTypeCashPayment:
+    							
+    							if(IVrw.CurncyCode==IVp.CurncyCode or blank(IVrw.CurncyCode))then begin
+										ARp.RVal = ARp.RVal - sign*AbsoluteVal(IVrw.Sum);
+									end else begin
+										tempsum = 0;
+										tempsum = MulRateToBase1(IVrw.CurncyCode,AbsoluteVal(IVrw.Sum),IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
+										if(IVp.CurncyCode==BCr.BaseCur1)then begin
+											ARp.RVal = ARp.RVal - sign*tempsum;
+										end else begin
+											ARp.RVal = ARp.RVal - sign*round(tempsum*IVp.FrRate/IVp.ToRateB1,DefaultCurRoundOff);
+										end;
+									end;
+    							
+									//ARp.RVal = ARp.RVal - sign*AbsoluteVal(IVrw.Sum); //Edit***************************Sasha2,10:57 22.04.2015
+									
+									basepayment = MulRateToBase1(IVrw.CurncyCode,AbsoluteVal(IVrw.Sum),IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff); //Edit***************************Sasha2,10:53 22.04.2015
+									ARp.BookRVal = ARp.BookRVal - sign*basepayment; //Edit***************************Sasha2,10:57 22.04.2015
+									cashf = true;
+			case kInvoiceRowTypeGiftVoucherPayment:
+									ARp.RVal = ARp.RVal - sign*AbsoluteVal(IVrw.Sum);
+									basepayment = MulRateToBase1(IVp.CurncyCode,AbsoluteVal(IVrw.Sum),IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2,DefaultCurRoundOff); //Edit***************************Sasha2,10:53 22.04.2015
+									ARp.BookRVal = ARp.BookRVal - sign*basepayment; //Edit***************************Sasha2,10:57 22.04.2015
+									cashf = true;
+			case kInvoiceRowTypeCreditCardPayment:
+									ARp.RVal = ARp.RVal - sign*AbsoluteVal(IVrw.Sum);
+									basepayment = MulRateToBase1(IVp.CurncyCode,AbsoluteVal(IVrw.Sum),IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2,DefaultCurRoundOff); //Edit***************************Sasha2,10:53 22.04.2015
+									ARp.BookRVal = ARp.BookRVal - sign*basepayment; //Edit***************************Sasha2,10:57 22.04.2015
+									cashf = true;
+			case kInvoiceRowTypeLoyaltyPointsPayment:
+									ARp.RVal = ARp.RVal - sign*AbsoluteVal(IVrw.Sum);
+									basepayment = MulRateToBase1(IVp.CurncyCode,AbsoluteVal(IVrw.Sum),IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2,DefaultCurRoundOff); //Edit***************************Sasha2,10:53 22.04.2015
+									ARp.BookRVal = ARp.BookRVal - sign*basepayment; //Edit***************************Sasha2,10:57 22.04.2015
+									cashf = true;
+			
+    	
+    end;
+        
+    /*if ((IVrw.stp==kInvoiceRowTypeGiftVoucherPayment) or (IVrw.stp==kInvoiceRowTypeCashPayment) or (IVrw.stp==kInvoiceRowTypeCreditCardPayment) or (IVrw.stp==kInvoiceRowTypeLoyaltyPointsPayment) or (IVrw.stp==kInvoiceRowTypeChequePayment)) then begin
       ARp.RVal = ARp.RVal - sign*AbsoluteVal(IVrw.Sum); //Edit***************************Sasha2,10:57 22.04.2015
       basepayment = MulRateToBase1(IVp.CurncyCode,AbsoluteVal(IVrw.Sum),IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2,DefaultCurRoundOff); //Edit***************************Sasha2,10:53 22.04.2015
       ARp.BookRVal = ARp.BookRVal - sign*basepayment; //Edit***************************Sasha2,10:57 22.04.2015
       cashf = true;
-    end;
+    end;*/
   end;
-  if ((IVp.RetnValue>0 and IVp.Sum4>0) or (IVp.RetnValue<0 and IVp.Sum4<0)) then begin
-    ARp.RVal = ARp.RVal + sign*AbsoluteVal(IVp.RetnValue); //Edit***************************Sasha2,11:06 22.04.2015
+  if(ARp.RVal!=0 and ARp.RVal!=IVp.Sum4)then begin
+		if ((IVp.RetnValue>0 and IVp.Sum4>0) or (IVp.RetnValue<0 and IVp.Sum4<0)) then begin
+			ARp.RVal = ARp.RVal + sign*AbsoluteVal(IVp.RetnValue); //Edit***************************Sasha2,11:06 22.04.2015
+		end;
   end;
   if (cashf) then begin
 /*

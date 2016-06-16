@@ -832,9 +832,7 @@ function Boolean MATVARINSClassOnOKWindowPaste(var string tstr,var string sepstr
                  var Array string varsx,var Array string varsy)
 begin
   Boolean res;
-  
-  LogText(0,"MATVARINSClassOnOKWindowPaste");
-  
+    
   res = false;
   if (FindItemVAR(tstr,sepstr,msk,mskrep,varsubset)) then begin
     FillMaskVAR(tstr,sepstr,msk,maskvar2,maskvarsz2);

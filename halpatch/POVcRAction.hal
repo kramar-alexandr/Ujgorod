@@ -463,7 +463,6 @@ begin
 		MatRowGet(POr,i,POrw);
 		if (blank(POrw.SerialNr) and nonblank(POrw.ArtCode)) then begin
 			POrw.SerialNr = POrw.ArtCode & "." & POrw.Color & "." & POrw.Size & "." & POrw.Collection;
-			LogText(0,"sernr   " & POrw.ArtCode & "." & POrw.Color & "." & POrw.Size & "." & POrw.Collection);
 			MatRowPut(POr,i,POrw);
 		end;		
 	end;  

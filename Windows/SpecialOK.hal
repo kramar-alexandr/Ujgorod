@@ -1218,7 +1218,6 @@ BEGIN
   string 255 location;
   Date dt;
   
-  LogText(0,"MATVARINSClassBeforeEditField");
   res = true;
   GetWindowRecord(wn,VarMEr);
   mwn = MotherWindow(wn);
@@ -1502,14 +1501,13 @@ begin
     case "IVDClass": begin
       record IVVc IVr;
       row IVVc IVrw;
-LogText(0,"FingVarMatrxEntryQuantitys----");
+      
       GetWindowRecord(wn,IVr);
       rwcnt = MatRowCnt(IVr);
       for (ri=0;ri<rwcnt;ri=ri+1) begin
         MatRowGet(IVr,ri,IVrw);
         if (Left(IVrw.ArtCode,len(itemcode))==itemcode) then begin
           variety = Right(IVrw.ArtCode,len(IVrw.ArtCode)-len(itemcode));
-          LogText(0,"variety   " & variety);
           varsq[variety] = varsq[variety] + IVrw.Quant;
           AddToVarietyArray(variety,avariety);
         end;
@@ -1728,7 +1726,6 @@ END;
 global
 function Boolean MATVARINSClassOnOpenPaste(Integer wn,string find)
 begin
-LogText(0,"MATVARINSClassOnOpenPaste");
   if (TestForMATVARINSLocal(wn)) then begin end else begin
     if (GuiType!=kGuiiPhone and IsDoingTimedPasteSpecial==false) then begin
       MessageBox(33711,"");
