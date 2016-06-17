@@ -1357,9 +1357,9 @@ begin
   Tile(tilenr,220,true,tilenr,Math); tilenr = tilenr + 1;
   v = 24;
   if (HasSerialNumbers) then begin
-    MatrixBegin(4,v,-50,-50,-,200);
+    MatrixBegin(4,v,-50,-50,-,1000);// Edit ************************** Friday, 17 June 2016 14:46:33
   end else begin
-    MatrixBegin(4,v,-25,-50,-,200);
+    MatrixBegin(4,v,-25,-50,-,1000);// Edit ************************** Friday, 17 June 2016 14:46:34
   end;
   MatTypedRow(stp);
   MatOverStrike(ovst);
@@ -1808,9 +1808,9 @@ begin
 //  CheckBox(20,-21,0,"OK",OKFlag);
   v = 24;
   if (HasModIN or HasModPL or HasObjects) then begin
-  MatrixBegin(3,v,-50,-44,-,199);
+  MatrixBegin(3,v,-50,-44,-,1000);// Edit ************************** Friday, 17 June 2016 14:46:27
   end else begin
-    MatrixBegin(3,v,-25,-44,-,199);
+    MatrixBegin(3,v,-25,-44,-,1000);// Edit ************************** Friday, 17 June 2016 14:46:28
   end;
   MatTypedRow(stp);
   Flip(0);

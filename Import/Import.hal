@@ -176,7 +176,6 @@ begin
 	end;
 	
 	RecordNew(PUr);
-	
 	PUr.SerNr = NextSerNr("PUVc",PUr.TransDate,-1,false,"");
 	PUr.TransDate = CurrentDate;
 	PUr.Location = location;
@@ -198,6 +197,15 @@ begin
 			MatRowPut(PUr,rownr,PUrw);
 			PUVc_PasteArtCode(PUr,rownr,warning,inwarn);
 			MatRowGet(PUr,rownr,PUrw);
+			if(blank(var1))then begin
+				var1 = "OS";
+			end;
+			if(blank(var2))then begin
+				var2 = "OS";
+			end;
+			if(blank(collection))then begin
+				collection = "OS";
+			end;
 			PUrw.SerialNr = code & "." & var1 & "." & var2 & "." & collection;
 			PUrw.Quant = qty;
 			PUrw.UPrice = cost;
@@ -205,13 +213,24 @@ begin
     	PUrw.Sum = cost*qty;		
 			MatRowPut(PUr,rownr,PUrw);
 			rownr = rownr + 1;
+			if(rownr>=500)then begin
+				PUSumUp(PUr);
+				RecordInsert(PUr,true);
+				logtext(0,"PU Imported " & PUr.SerNr);
+				RecordNew(PUr);
+				PUr.SerNr = NextSerNr("PUVc",PUr.TransDate,-1,false,"");
+				PUr.TransDate = CurrentDate;
+				PUr.Location = location;
+				PUVc_PasteTransDate(PUr,datewarnf,warnoldrecordsf,warnfutdatef);
+				rownr = 0;
+			end;
 		end;
 
 		NextImportLine(true);
 	end;
-	
 	PUSumUp(PUr);
-	RecordInsert(PUr,true);	
+	RecordInsert(PUr,true);
+	
   
   LImportStockRemainsIn:;
 end;
