@@ -2148,6 +2148,23 @@ begin
   EndWindow;
 end;
 
+window BarcodeLClass:2
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Штрих-коди",BarcodeLClass,CGmlist,-);
+  SetWRect(64,80,609,298);
+  SpawnClass(BarcodeDClass);
+  Sizeable(-1,-1,0,0);
+  UseView(BarcodeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,  "Штрих-код",Barcode,false,Barcode);
+  RlColKey(100,100,"Товар",Itemcode,false,Itemcode);
+  RlColKey(200,200,"Коментар",Comment,false,Comment);
+  RlColKey(-100,-100,"Серійний номер",SerialNr,false,SerialNr);
+  SearchField("Search");
+  EndWindow;
+end;
+
 window BarcodeDClass:1
   wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
@@ -2158,11 +2175,34 @@ begin
   EditField(120,v=6,-40,"Серійний номер",Normal,SerialNr,false,0);
   EditField(120,v+=20,-40,"Штрих-код",Normal,Barcode,false,0);
   EditField(120,v+=20,-40,"Товар",Normal,Itemcode,false,INSClass);
-  EditField(120,v+=20,-40,"Клиент",Normal,CustCode,false,CUSClass);
-  EditField(120,v+=20,-40,"Комментарий",Normal,Comment,false,0);
+  EditField(120,v+=20,-40,"Клієнт",Normal,CustCode,false,CUSClass);
+  EditField(120,v+=20,-40,"Коментар",Normal,Comment,false,0);
   //
   CheckBox(120,v+=20,40,"Актуален",ActualFlag);
   CheckBox(220,v,40,"1C",1CFlag);
+  EndWindow;
+end;
+
+window PLLClass:2
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Ціни",PLLClass,CGmlist,-);
+  SpawnClass(PLDClass);
+  SetWRect(64,80,800,320);
+  Sizeable(-1,-1,0,0);
+  UseView(PLVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,2,"Товар",ArtCode,false,ArtCode);
+  RlColKey(100,100, "Прайс-лист",PLCode,false,PLCode);
+  if (HasStandardCRM) then begin
+    RlCol(180,180,"Клієнт",CustCode,false);
+    RlColKey(270,270, "Коментар",Comment,false,Comment);
+  end else begin
+    RlColKey(180,180, "Коментар",Comment,false,Comment); 
+  end;
+  RlColKey(-250,-250,"Серійний номер",SerialNr,false,SerialNr);
+  RlCol(-115,-30,"Ціна",ExVatPrice,true);
+  SearchField("Пошук");
   EndWindow;
 end;
 
