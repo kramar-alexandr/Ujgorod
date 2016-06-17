@@ -1779,7 +1779,7 @@ BEGIN
   if (blank(find)) then begin goto LTestForVARINS; end;
   itemcode = find;
   if (FindItemVAR2(itemcode,itemsize,mask,subsets)==false) then begin goto LTestForVARINS; end;
-  res = PrepareAndOpenVARWind(wn,itemcode,itemsize,mask,subsets);
+  //res = PrepareAndOpenVARWind(wn,itemcode,itemsize,mask,subsets);// Edit ************************** Friday, 17 June 2016 11:35:21
 LTestForVARINS:;
   TestForVARINS = res;
   RETURN;
