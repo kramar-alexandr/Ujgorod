@@ -60,6 +60,7 @@ external function Boolean IVVc_ExplodeRecepy(record INVc,val,record IVVc,string,
 external function Boolean QtyDepPriceL(string);
 external procedure IVVcGetCalcItemPrice(record INVc,record IVVc,Integer,var val);
 external function Boolean GetFirstItem(var string,var record INVc);
+external function Boolean GetFirstItemSer(var string,var record INVc,var string);// Edit ************************** Friday, 17 June 2016 10:10:01
 external function val CalcItemRepa(val,val,val,var string,val,val,val,val,val,roundmode);
 external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
 external function Boolean GetItemPriceDiscount3ser(string,string,val,var record INVc,string,val,val,val,val,val,string,string,string,string,
@@ -408,6 +409,7 @@ BEGIN
   string 60 sz,msk,mskrep;
   string 200 varsubset;
   record AccVc Accr;
+  string 100 serial;
 
   pritemf = true;
   MatRowGet(IVr,rownr,IVrw);  
@@ -419,7 +421,11 @@ BEGIN
     location = IVr.Location;
   end;
   if (touchscreenf) then begin
-    if (GetFirstItem(IVrw.ArtCode,INr)) then begin
+  	serial = "";// Edit ************************** Friday, 17 June 2016 10:08:34
+    if (GetFirstItemSer(IVrw.ArtCode,INr,serial)) then begin
+    	if(nonblank(serial))then begin// Edit ************************** Friday, 17 June 2016 10:09:14
+    		IVrw.SerialNr = serial;// Edit ************************** Friday, 17 June 2016 10:09:13
+    	end;// Edit ************************** Friday, 17 June 2016 10:09:16
       IVrw.ArtCode = INr.Code;
     end;
   end;
