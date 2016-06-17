@@ -428,7 +428,6 @@ BEGIN
       case kInvoiceRowTypeLoyaltyPointsPayment: res = res + IVrw.Sum;//MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);// Edit ************************** Thursday, 19 November 2015 16:16:50
       case kInvoiceRowTypeGiftVoucherPayment: res = res + IVrw.Sum;
     end;
-    logtext(0,res);
   end;
   
   if(res!=IVr.Sum4)then begin

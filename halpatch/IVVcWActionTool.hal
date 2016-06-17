@@ -63,7 +63,7 @@ external function Boolean GetFirstItem(var string,var record INVc);
 external function Boolean GetFirstItemSer(var string,var record INVc,var string);// Edit ************************** Friday, 17 June 2016 10:10:01
 external function val CalcItemRepa(val,val,val,var string,val,val,val,val,val,roundmode);
 external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
-external function Boolean GetItemPriceDiscount3ser(string,string,val,var record INVc,string,val,val,val,val,val,string,string,string,string,
+external function Boolean GetItemPriceDiscount3ser(var string,string,val,var record INVc,string,val,val,val,val,val,string,string,string,string,
                                                 var val,var string,var val,var string,var val,var string,Integer,var Boolean,Date,Time,
                                                 string,Boolean,var Boolean,string,var string,var val,string,string,var string);// Edit ************************** Wednesday, 15 June 2016 14:22:37
 external function Boolean INVc_AllowSales(record INVc,var LongInt);

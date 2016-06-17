@@ -20,6 +20,7 @@ external procedure FindPLQPrice(record PLQVc,record INVc,var val,var val);
 external function Boolean GetRebate(record INVc,var val,var val,string,string,var val,var Boolean,Date);
 external procedure GetStructureCostPrice(string,var val);
 external function Boolean GetFirstItem(var string,var record INVc);
+external function Boolean GetFirstItemSer(var string,var record INVc,var string);
 external procedure SetDefProjectUnit(string,var string);
 
 /*  This code will calculate the price if the price is not in the prices register, I don't think it should work that way
@@ -837,7 +838,7 @@ END;
 
 
 global
-function Boolean GetItemPriceDiscount3ser(string serial, string item,val qtp,var record INVc INr,string crncycode,
+function Boolean GetItemPriceDiscount3ser(var string serial, string item,val qtp,var record INVc INr,string crncycode,
          val frrate,val torate1,val torate2,val basrate1,val basrate2,
          string langcode,string custcat,string pricelist,string rebcode,
          var val price,var string descstr,var val discount,
@@ -874,6 +875,7 @@ BEGIN
 //  Boolean res2;
   record PDSalesAccBlock PDSalesAccRec;
   row LocationAccBlock LAbrw;
+  string 100 fserial;
 
   nomorepricing = false;
   exportf = aexport;
@@ -898,7 +900,8 @@ BEGIN
   tdisc = discount;
   basepricep = blankval;
 
-  infound = GetFirstItem(item,INr);
+  infound = GetFirstItemSer(item,INr,serial);
+  
   theitemcode = INr.Code;
   if (infound==false) then begin
     infound = ReadFirstItem(item,INr,true,forcepropervar);

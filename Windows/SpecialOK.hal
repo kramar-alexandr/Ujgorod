@@ -1706,7 +1706,6 @@ BEGIN
   if ((blank(varsitemcode)) or 
       (wclass=="VARMaskTClass") or 
       (wclass=="AvailVarsRClass")) then begin goto LTestForMATVARINS; end;//list of all windows where paste variety should not work, C - code!
-      LogText(0,varsitemcode);
   if (FindItemVAR2(varsitemcode,itemsize,mask,subsets)==false) then begin
 //LogText(0,itemsize & "  ..  " & mask & " ... " & subsets);
  goto LTestForMATVARINS; end;

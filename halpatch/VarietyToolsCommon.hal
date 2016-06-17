@@ -626,7 +626,7 @@ begin
   string 255 tstr;
   record ItemSettingBlock ISb;
   record BarcodeVc Barcoder;
-
+		
   BlockLoad(ISb);
 //  res = ReadFirstItem(ItemCode,INr,true,false);////makes Variety not working
   if (res==false) then begin
