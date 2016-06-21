@@ -48,6 +48,9 @@ external procedure SumupIntOR(var record IntORVc,var val);
 external procedure StockMovSumUp(var record StockMovVc);
 external procedure SplitVars(string,Array string,Array string,Array string);
 external function Boolean FindItemVAR(string,var string,var string,var string,var string);
+external function string 255 GetNextValue(var string);// Edit ************************** Tuesday, 21 June 2016 16:26:47
+external function string 255 removenextlistitem(var string,string);// Edit ************************** Tuesday, 21 June 2016 16:26:44
+
 
 global
 procedure PasteRowsToIVRemote(var record IVVc IVr,var Integer currow,array string incode,array val qty,Integer pos,Boolean TouchScreenLookf)
@@ -435,7 +438,10 @@ begin
 
   for (i=0;i<pos;i=i+1) begin
     if (vfound[incode[i]]==false) then begin 
-			POrw.ArtCode = incode[i];  
+			POrw.ArtCode = incode[i];
+			if(right(POrw.ArtCode,1)==".")then begin
+				POrw.ArtCode = mid(POrw.ArtCode,0,len(POrw.ArtCode)-1);
+			end;
       POrw.Quant = qty[i];
       POrw.Size = varsy[i+1];
 /*      
@@ -465,6 +471,7 @@ begin
 			if (FindItemVAR(incode[i],sz,mask,mskrep,varsubset)) then begin		//Edit----------------------Dima  13.06.2016
 				SplitVars(incode[i],maskvar,maskvarsz,amsk);
 				if blank(POrw.Size) begin //Edit-------------------Vitalii 14:56 21.06.2016
+					logtext(0,amsk[0]);
           POrw.ArtCode = amsk[0];
 				end;
         if blank(POrw.Size) begin //Edit-------------------Vitalii 14:56 21.06.2016
@@ -1171,3 +1178,43 @@ begin
   EBookkeepingEClassOnOKWindow = res;
   return;
 end;
+
+
+
+global
+procedure POVc_VARColorSClass(record POVc POr,integer rn,Integer type,Integer wn,Integer mwn,var Array string asernrstr,var Integer acnt)
+BEGIN
+  row POVc POrw;
+  Integer rwcnt,i;
+  string 20 thelocation;
+  string 60 sz,msk,mskrep;
+  string 200 varsubset,tstr;
+  record VARVc VARr;
+  boolean foundf;
+  
+  rwcnt = MatRowCnt(POr);
+  if (rn<=rwcnt) and (rn>=0) then begin
+    MatRowGet(POr,rn,POrw);
+    logtext(0,POrw.ArtCode);	
+    if (FindItemVAR(POrw.ArtCode,sz,msk,mskrep,varsubset)) then begin 
+    	logtext(0,msk);	
+			tstr = removenextlistitem(msk,";");
+			logtext(0,tstr);	
+			VARr.VARGCode = tstr;
+			foundf = true;
+			while (LoopKey("VARGCode",VARr,1,foundf)) begin
+				if (VARr.VARGCode!=tstr) then begin
+					foundf = false;
+				end;
+				if (foundf) then begin
+					asernrstr[i] = VARr.Code & "   " & VARr.Comment;
+					i = i + 1;
+					acnt = i;
+				end;
+			end;
+		end; 
+    
+
+  end;  
+  RETURN;
+END;

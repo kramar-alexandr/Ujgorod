@@ -1828,7 +1828,7 @@ begin
   flipnr = 1;
   Flip(flipnr); flipnr = flipnr + 1;		//Edit----------------------Dima  10.06.2016
 	MatCol(1,150,"Колекція",0,Collection,false,0);
-  MatCol(1,200,"Колір",0,Color,false,0);
+  MatCol(1,200,"Колір",0,Color,false,VARColorSClass);// Edit ************************** Tuesday, 21 June 2016 15:33:31
   MatCol(1,250,"Розмір",0,Size,false,MATVARINSClass);
   MatCol(1,300,"Найменування",0,Spec,false,0);
   MatCol(1,-170,"Ціна од-ці",0,Price,true,0);

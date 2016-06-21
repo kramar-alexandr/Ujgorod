@@ -721,6 +721,11 @@ BEGIN
           ivsum = ivsum - IVrw.Sum;
       end;
     end;
+    
+    if ((IVp.RetnValue>0 and IVp.Sum4>0) or (IVp.RetnValue<0 and IVp.Sum4<0)) then begin
+			ivsum = ivsum + IVp.RetnValue;
+		end;
+    
     if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin ivsum = -ivsum; end;
     ARr.InvoiceNr = IVp.SerNr;
     

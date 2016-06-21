@@ -194,3 +194,13 @@ begin
 
   EndWindow;
 end;
+
+window VARColorSClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Визначте колір товару",VARColorSClass,CGother,HBlRecType);
+  SetWRect(240,80,600,348);
+  StringList(9,9,-19,-19);
+  SearchField("Пошук");
+  EndWindow;
+end;

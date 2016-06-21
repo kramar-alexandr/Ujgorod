@@ -728,9 +728,9 @@ BEGIN
                             IVp.CustCode,IVp.SerNr,1,blankval,IVp.PayDate,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber,"","");//0
     end else begin
 */    
-      AddEuroCurncyTrRow(gTRp,IVp.ARAcc,lcuobj,"",tstr,rs,true,dc1,TotSum,
+      /*AddEuroCurncyTrRow(gTRp,IVp.ARAcc,lcuobj,"",tstr,rs,true,dc1,TotSum,// Edit ************************** Tuesday, 21 June 2016 17:07:58
                        IVp.CurncyCode,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,
-                       IVp.BaseRate2,IVp.RetnValue,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber);//0
+                       IVp.BaseRate2,IVp.RetnValue,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber);*///0// Edit ************************** Tuesday, 21 June 2016 17:07:54
 //    end;
     if (GetAccName(changeacc,tstr,60)==false) then begin
       errstrno = 1907;

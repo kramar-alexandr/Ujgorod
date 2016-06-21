@@ -7,6 +7,11 @@ external procedure ExtractObj(string,var Integer,var string);
 external function string 255 removenextlistitem(var string,string);
 external function string 255 GetNextValue(var string);
 external function string 255 AddStr(string,string,string);
+remote procedure POVc_VARColorSClass(record POVc,integer,Integer,Integer,Integer,var Array string,var Integer);// Edit ************************** Tuesday, 21 June 2016 16:13:14
+external procedure PasteFromSysList(Integer,Integer);// Edit ************************** Tuesday, 21 June 2016 16:29:16
+external function string 255 StringFromSysList(Integer,Integer);// Edit ************************** Tuesday, 21 June 2016 16:30:17
+
+
 
 procedure ExtractSemicolStr(string ostr,var Integer pos,var string rstr)
 begin
@@ -944,5 +949,46 @@ begin
   end;
   
   GetItemVARDescription = res;
+  return;
+end;
+
+global
+function Boolean VARColorSClassOnOpenWindow(Integer wn)
+begin
+  Integer mwn;
+  Array string 100 asernrstr;
+  Integer acnt,i,rn;
+  record POVc POr;
+  
+  mwn = MotherWindow(wn);
+  switch (GetWindowFileName(mwn)) begin
+    case "POVc": 	GetWindowRecord(mwn,POr);
+									rn = WindowActiveRow(mwn);
+    							POVc_VARColorSClass(POr,rn,1,wn,mwn,asernrstr,acnt);
+  end;
+  for (i=0;i<acnt;i=i+1) begin
+    SetListString(wn,len(asernrstr[i]),asernrstr[i],false);
+  end;      
+  VARColorSClassOnOpenWindow = false;
+  return;
+end;
+
+
+global
+function Boolean VARColorSClassOnOKWindow(Integer wn)
+begin
+  Integer mwn;
+  Integer line;
+  string 255 tstr;
+  longint pos;
+  string 255 tstrserial;
+
+  mwn = MotherWindow(wn);
+
+	tstr = StringFromSysList(wn,200);
+	pos = 0;
+	GetNextSubstring(tstr,pos," ",tstrserial);
+	PasteFromSysList(wn,len(tstrserial));
+  VARColorSClassOnOKWindow = false;
   return;
 end;
