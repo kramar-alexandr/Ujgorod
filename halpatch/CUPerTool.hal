@@ -176,7 +176,7 @@ procedure CUPer_PrintInvoice(record RcVc RepSpec,LongInt IVSerNr,record CUVc CUp
                              Integer pos1,Integer pos2,var string cuperlastprepcur,Integer fwdbalinvoices,
                              var string statmentcurrency,var string remainingcurrencies,vector Boolean vreportedcurncy)
 BEGIN
-  val v,cashv,cuscurval,lossv,prepv;
+  val v,v1,cashv,cuscurval,lossv,prepv;
   row IVVc IVrw;
   Integer i,rwcnt;
   string 255 tstr;
@@ -245,7 +245,13 @@ change does not increase invoice values
       end else begin //Edit***************************Sasha2,14:03 21.06.2016 {
         switch (IVrw.stp) begin
           case 14: cashv = cashv + IVrw.Sum;
-          case 15: cashv = cashv + IVrw.Sum; //MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
+          case 15: 
+            if (IVr.CurncyCode==IVrw.CurncyCode) then begin
+              cashv = cashv + IVrw.Sum; //MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
+            end else begin
+              CurValToOtherCur(IVr.InvDate,IVrw.CurncyCode,IVrw.Sum,IVr.CurncyCode,v1,DefaultCurRoundOff);
+              cashv = cashv + v1;
+            end;
           case 16: cashv = cashv + IVrw.Sum;
         end;  
       end; //Edit***************************Sasha2,14:03 21.06.2016  }
