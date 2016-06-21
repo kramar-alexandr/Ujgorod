@@ -31,7 +31,7 @@ external function Boolean IVDchrsum(var record IVVc,Integer);
 external function Boolean SetUnitFactor(string,var val,val,val,val,var val,var val,var val,var string,Boolean);
 external procedure RoundRowSum(string,string,string,var val);
 external procedure CalcSum(val,val,val,val,var val,Integer);
-external function Boolean GetItemPriceDiscount3ser(string,string,val,var record INVc,string,val,val,val,val,val,string,string,string,string,
+external function Boolean GetItemPriceDiscount3ser(var string,string,val,var record INVc,string,val,val,val,val,val,string,string,string,string,
                                                 var val,var string,var val,var string,var val,var string,Integer,var Boolean,Date,Time,
                                                 string,Boolean,var Boolean,string,var string,var val,string,string,var string);// Edit ************************** Wednesday, 15 June 2016 14:51:39
 external function Boolean FindLastInvoiceRowForSerial(LongInt,string ,string,var row IVVc);
