@@ -19,7 +19,7 @@ remote function Boolean MATVARINSClassOnOKWindowPaste(var string,var string,var 
                  var Array string,var Array string);
 remote procedure PasteRowsToPOQTRemote(var record POQTVc,var Integer,array string,array val,Integer);
 remote procedure PasteRowsToIntORRemote(var record IntORVc,var Integer,array string,array val,Integer);
-remote procedure PasteRowsToPORemote(var record POVc,var Integer,array string,array val,Integer);
+remote procedure PasteRowsToPORemoteMy(var record POVc,var Integer,array string,array string,array val,Integer);
 remote procedure PasteRowsToPURemote(var record PUVc,var Integer,array string,array val,Integer);
 remote procedure PasteRowsToQTRemote(var record QTVc,var Integer,array string,array val,Integer);
 remote procedure PasteRowsToORRemote(var record ORVc,var Integer,array string,array val,Integer);
@@ -971,13 +971,13 @@ begin
   return;
 end;
 
-procedure PasteRowsToPO(Integer wn,Integer currow,array string incode,array val qty,Integer pos)
+procedure PasteRowsToPO(Integer wn,Integer currow,array string incode, array string varsy, array val qty,Integer pos)
 begin
   record POVc POr;
 
   GetWindowRecord(wn,POr);
   DeselectWindow(wn,false);
-  PasteRowsToPORemote(POr,currow,incode,qty,pos);
+  PasteRowsToPORemoteMy(POr,currow,incode,varsy,qty,pos);
   PutWindowRecord(wn,POr);
   WindowFieldGoto(wn,POr,currow,"ArtCode",true);
   return;
@@ -1270,7 +1270,6 @@ begin
   record VarMatrxEntryVc VarMEr;
   string 255 location;
   Date dt;
-  
   GetWindowRecord(wn,VarMEr);
   FindMotherWindowLocation(wn,location,dt);
   if (nonblank(VarMEr.ItemCode)) then begin
@@ -1362,7 +1361,7 @@ begin
         case "PUDClass":
           PasteRowsToPU(mwn,GetWindowCurRow(mwn),incode,qty,pos);
         case "PODClass":
-          PasteRowsToPO(mwn,GetWindowCurRow(mwn),incode,qty,pos);
+          PasteRowsToPO(mwn,GetWindowCurRow(mwn),incode,varsy,qty,pos);
         case "IntORDClass":
           PasteRowsToIntOR(mwn,GetWindowCurRow(mwn),incode,qty,pos);
         case "POQTDClass":

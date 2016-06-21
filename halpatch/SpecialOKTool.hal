@@ -399,7 +399,7 @@ end;
 //This function receive array of items with variants
 //We split these strings on three values: ArtCode,Color,Size
 global
-procedure PasteRowsToPORemote(var record POVc POr,var Integer currow,array string incode,array val qty,Integer pos)
+procedure PasteRowsToPORemoteMy(var record POVc POr,var Integer currow,array string incode,array string varsy,array val qty,Integer pos)
 begin
   row POVc POrw;
   row POVc prevPOrw;
@@ -422,6 +422,7 @@ begin
     for (i=0;i<pos;i=i+1) begin
       if (POrw.ArtCode==incode[i]) then begin
         POrw.Quant = qty[i];
+        POrw.Size = varsy[i+1];
         MatRowPut(POr,ri,POrw);
         POVc_PasteQuant(POr,ri);
         MatRowGet(POr,currow,POrw);
@@ -436,6 +437,7 @@ begin
     if (vfound[incode[i]]==false) then begin 
 			POrw.ArtCode = incode[i];  
       POrw.Quant = qty[i];
+      POrw.Size = varsy[i+1];
 /*      
       if (ReadFirstItem(POrw.ArtCode,INr,true,true)) then begin
         POrw.Spec = INr.Name;
@@ -446,6 +448,7 @@ begin
         if (POVc_PasteArtCode(POr,currow,true)) then begin end;
         MatRowGet(POr,currow,POrw);
         POrw.Quant = qty[i];
+        POrw.Size = varsy[i+1];
         MatRowPut(POr,currow,POrw);
         POVc_PasteQuant(POr,currow);
         MatRowGet(POr,currow,POrw);
@@ -453,6 +456,7 @@ begin
         if (POVc_PasteArtCode(POr,currow,true)) then begin end;
         MatRowGet(POr,currow,POrw);
         POrw.Quant = qty[i];
+        POrw.Size = varsy[i+1];
         MatRowPut(POr,currow,POrw);
         POVc_PasteQuant(POr,currow);
         MatRowGet(POr,currow,POrw);
@@ -460,9 +464,15 @@ begin
       
 			if (FindItemVAR(incode[i],sz,mask,mskrep,varsubset)) then begin		//Edit----------------------Dima  13.06.2016
 				SplitVars(incode[i],maskvar,maskvarsz,amsk);
-				POrw.ArtCode = amsk[0];
-				POrw.Color = amsk[1];
-				POrw.Size = amsk[2];
+				if blank(POrw.Size) begin //Edit-------------------Vitalii 14:56 21.06.2016
+          POrw.ArtCode = amsk[0];
+				end;
+        if blank(POrw.Size) begin //Edit-------------------Vitalii 14:56 21.06.2016
+          POrw.Color = amsk[1];
+        end;
+        if blank(POrw.Size) begin //Edit-------------------Vitalii 14:56 21.06.2016
+          POrw.Size = amsk[2];
+        end;
 				MatRowPut(POr,currow,POrw);
 			end;
       
