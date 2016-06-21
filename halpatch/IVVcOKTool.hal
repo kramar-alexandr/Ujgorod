@@ -1270,6 +1270,12 @@ BEGIN
 			ARp.RVal = ARp.RVal + sign*AbsoluteVal(IVp.RetnValue); //Edit***************************Sasha2,11:06 22.04.2015
 		end;
   end;
+  
+  if(AbsoluteVal(ARp.RVal)<1 or AbsoluteVal(ARp.BookRVal)<1)then begin// Edit ************************** Tuesday, 21 June 2016 11:27:33
+  	ARp.RVal = 0;
+  	ARp.BookRVal = 0;
+  end;
+  
   if (cashf) then begin
 /*
 nonsense ?     

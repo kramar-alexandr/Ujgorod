@@ -303,6 +303,7 @@ begin
   record BrazilEInvTypeVc BEInvTyper;
   record CYBlock CYb;
   Boolean TouchScreenFinishButtonf;
+  roundmode rnd;// Edit ************************** Tuesday, 21 June 2016 10:38:51
 
   if (long4==3) then begin TouchScreenFinishButtonf = true; end;
   res = 0;
@@ -1610,15 +1611,21 @@ LkInvoiceTypeCredit:;
     if (HasLocalization("UKR")) then begin// Edit ************************** Friday, 22 April 2016 15:11:11
       if (IVp.FiscalFlag!=0) then begin
         testf = false;
+        
+        rnd = defaultcurroundoff;// Edit ************************** Tuesday, 21 June 2016 10:44:55
+        rnd.decimals = 0;// Edit ************************** Tuesday, 21 June 2016 10:44:55
+				rnd.mode = kRoundingModeTruncate;// Edit ************************** Tuesday, 21 June 2016 10:44:56
+        
         if (IVp.BaseSum4>=0) then begin
-          if (cash<IVp.BaseSum4) then begin
+          if (round(cash,rnd)<round(IVp.BaseSum4,rnd)) then begin// Edit ************************** Tuesday, 21 June 2016 10:44:57
             testf = true;
           end;
         end else begin
-          if (cash>IVp.BaseSum4) then begin
+          if (round(cash,rnd)>round(IVp.BaseSum4,rnd)) then begin// Edit ************************** Tuesday, 21 June 2016 10:44:58
             testf = true;
           end;
         end;
+        
         if (testf) then begin
           RecordCheckError(24177,"",MatRowCnt(IVp),"Sum");      
           res = -1; 
@@ -1628,23 +1635,27 @@ LkInvoiceTypeCredit:;
     end;
     if (((IVp.InvType==kInvoiceTypeCash or IVp.InvType==kInvoiceTypeCashInvoiceReceiptPRT) or (ARAccb.NoOverPayIV!=0)) and (TouchScreenInterface)) then begin//is POS client
       testf = false;
+      rnd = defaultcurroundoff;// Edit ************************** Tuesday, 21 June 2016 10:45:05
+			rnd.decimals = 0;// Edit ************************** Tuesday, 21 June 2016 10:45:06
+			rnd.mode = kRoundingModeTruncate;// Edit ************************** Tuesday, 21 June 2016 10:45:07
+			
       if (IVp.Sum4>=0) then begin
-        if (cash<IVp.Sum4) then begin
+        if (round(cash,rnd)<round(IVp.Sum4,rnd)) then begin// Edit ************************** Tuesday, 21 June 2016 10:46:13
           testf = true;
         end;
         if (TouchScreenInterface==false) then begin
           if (ARAccb.NoOverPayIV!=0) then begin
-            if (cash>IVp.Sum4) then begin
+            if (round(cash,rnd)>round(IVp.Sum4,rnd)) then begin// Edit ************************** Tuesday, 21 June 2016 10:46:10
               testf = true;
             end;
           end;
         end;
       end else begin
-        if (cash>IVp.Sum4) then begin
+        if (round(cash,rnd)>round(IVp.Sum4,rnd)) then begin// Edit ************************** Tuesday, 21 June 2016 10:46:09
           testf = true;
         end;
         if (ARAccb.NoOverPayIV!=0) then begin
-          if (cash<IVp.Sum4) then begin
+          if (round(cash,rnd)<round(IVp.Sum4,rnd)) then begin// Edit ************************** Tuesday, 21 June 2016 10:46:08
             testf = true;
           end;
         end;

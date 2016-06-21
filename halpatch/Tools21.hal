@@ -557,6 +557,7 @@ function Boolean UnOKAllowed_IVVc(record IVVc IVp,Boolean prepayf,val notpaidsum
 BEGIN
   Boolean res;
   record IVVc lIVr;
+  roundmode rnd;// Edit ************************** Tuesday, 21 June 2016 11:33:28
   
   if (prepayf) then begin res = true; end;
   if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin
@@ -569,7 +570,10 @@ BEGIN
     if (IVp.CredInv>0) then begin res = true; end;
   end;
   if (IVp.InvType==kInvoiceTypeCash or IVp.InvType==kInvoiceTypeCashInvoiceReceiptPRT) then begin res = true; end;
-  if (round(notpaidsum,defaultcurroundoff)==0) then begin // Edit ************************** Thursday, 16 June 2016 10:20:33
+  rnd = defaultcurroundoff;// Edit ************************** Tuesday, 21 June 2016 10:44:55
+	rnd.decimals = 0;// Edit ************************** Tuesday, 21 June 2016 10:44:55
+	rnd.mode = kRoundingModeTruncate;// Edit ************************** Tuesday, 21 June 2016 10:44:56
+  if (round(notpaidsum,rnd)==0) then begin // Edit ************************** Thursday, 16 June 2016 10:20:33
 		res = true; 
   end;
   
@@ -638,6 +642,7 @@ BEGIN
   record MainStockBlock MSb;
   val tempsum;
   record BaseCurBlock BCr;
+  roundmode rnd;// Edit ************************** Tuesday, 21 June 2016 11:30:35
   
   blockload(BCr);
   
@@ -718,8 +723,13 @@ BEGIN
     end;
     if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin ivsum = -ivsum; end;
     ARr.InvoiceNr = IVp.SerNr;
+    
+    rnd = defaultcurroundoff;
+    rnd.decimals = 0;// Edit ************************** Tuesday, 21 June 2016 10:44:55
+		rnd.mode = kRoundingModeTruncate;// Edit ************************** Tuesday, 21 June 2016 10:44:56
+    
     if (ReadFirstMain(ARr,1,true)) then begin
-      if (ARr.RVal!=ivsum) then begin
+      if (round(ARr.RVal,rnd)!=round(ivsum,rnd)) then begin// Edit ************************** Tuesday, 21 June 2016 11:32:00
         res = 22059;
         goto LIsUnOKAllowed_IVVc;
       end;
