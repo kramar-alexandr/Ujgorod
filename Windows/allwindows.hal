@@ -536,11 +536,12 @@ if (HasTouchScreenLook==false) then begin
   Flip(1);
   //  MatCol(t=kInvoiceRowTypeNormal,194,"Найменування",0,Spec,false,0);
   t=kInvoiceRowTypeNormal;
-  MatCol(t,144,"Опис",0,Spec,false,0);
-  MatCol(t,-235,"Ціна",0,Price,true,0);
+  MatCol(t,144,"Сер. №",0,SerialNr,false,SerialNrSClass); //Edit***************************Sasha2,12:01 21.06.2016
+  MatCol(t,300,"Опис",0,Spec,false,0);
+  MatCol(t,-165,"Ціна",0,Price,true,0);
   //  MatColTL(t,-235,"",0,M45Val,Normal,0,Price,true,0);
-  MatCol(t,-135,"%",0,vRebate,true,0);
-  MatCol(t,-100,"Сума",0,Sum,true,0);
+  MatCol(t,-100,"%",0,vRebate,true,0);
+  MatCol(t,-65,"Сума",0,Sum,true,0);
   MatCol(t=kInvoiceRowTypeStructuredItemComponent,144,"Найменування",0,Spec,false,0);
   MatCol(t,-235,"Ціна",0,Price,true,0);
   //  MatColTL(t,-235,"",0,M45Val,Normal,0,Price,true,0);
