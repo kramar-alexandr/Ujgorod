@@ -20,6 +20,7 @@ external function val MulWithRateToBase1(var string,Date,val,roundmode);
 external procedure BeginCurncyTotals(var Integer);
 external function string 255 CreateInvoiceNumber(LongInt,string);
 external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
+external procedure ExtractObj(string,var Integer,var string); //Edit***************************Sasha2,14:35 21.06.2016
 
 // moved CustListTransCLOut to CUPerTool2.hal
 
@@ -185,7 +186,15 @@ BEGIN
   Boolean cash;
   val frrate,torate1,torate2,baserate1,baserate2;
   val opensum;
-
+  record POSCurrenciesBlock POSCb; //Edit***************************Sasha2,14:29 21.06.2016
+  string 20 poscur; //Edit***************************Sasha2,14:29 21.06.2016
+  integer pos; //Edit***************************Sasha2,14:29 21.06.2016
+  
+  BlockLoad(POSCb); //Edit***************************Sasha2,14:29 21.06.2016 {
+	if(nonblank(POSCb.Currencies))then begin
+		ExtractObj(POSCb.Currencies,pos,poscur);
+	end; //Edit***************************Sasha2,14:29 21.06.2016 }
+  
   IVr.SerNr = IVSerNr;
   if (ReadFirstMain(IVr,1,true)==false) then begin goto LCUPer_PrintInvoice; end;
   if (RepSpec.flags[2]!=0) then begin
@@ -240,7 +249,13 @@ change does not increase invoice values
         switch (IVrw.stp) begin
           case 14: cashv = cashv + IVrw.Sum;
           case 15: cashv = cashv + MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
-          case 16: cashv = cashv + IVrw.Sum;
+          case 16: 
+            if (NonBlank(poscur) and poscur!=bascur.BaseCur1) then begin //Edit***************************Sasha2,14:32 21.06.2016 {
+              CurValToOtherCur(IVr.InvDate,poscur,IVrw.Sum,bascur.BaseCur1,v1,DefaultCurRoundOff);
+              cashv = cashv + v1;
+            end else begin
+              cashv = cashv + MulRateToBase1(IVr.CurncyCode,IVrw.Sum,IVr.FrRate,IVr.ToRateB1,IVr.ToRateB2,IVr.BaseRate1,IVr.BaseRate2,DefaultCurRoundOff);
+            end; //Edit***************************Sasha2,14:32 21.06.2016 }
         end;  
       end else begin //Edit***************************Sasha2,14:03 21.06.2016 {
         switch (IVrw.stp) begin
@@ -252,7 +267,13 @@ change does not increase invoice values
               CurValToOtherCur(IVr.InvDate,IVrw.CurncyCode,IVrw.Sum,IVr.CurncyCode,v1,DefaultCurRoundOff);
               cashv = cashv + v1;
             end;
-          case 16: cashv = cashv + IVrw.Sum;
+          case 16: 
+            if (NonBlank(poscur) and poscur!=IVr.CurncyCode) then begin
+              CurValToOtherCur(IVr.InvDate,poscur,IVrw.Sum,IVr.CurncyCode,v1,DefaultCurRoundOff);
+              cashv = cashv + v1;
+            end else begin
+              cashv = cashv + IVrw.Sum;
+            end;
         end;  
       end; //Edit***************************Sasha2,14:03 21.06.2016  }
     end;
