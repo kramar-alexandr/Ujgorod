@@ -63,7 +63,7 @@ begin
 	
 	RecordBegin(PLVc,-,"pl2");
   NewAutosyncRegister(kSyncDirectionToClient,true);
-  ImpExpLevel(0);
+  //ImpExpLevel(0);
   RecordField(PLCode,M4Code,5,0);
   RecordField(Comment,M4Str,60,0);
   RecordField(ArtCode,M4Code,20,INVc);
