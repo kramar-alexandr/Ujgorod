@@ -2241,3 +2241,33 @@ begin
   end;
   EndWindow;
 end;
+
+window VARMaskTClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Маски різновидів товарів",VARMaskTClass,CGHbl,HBlRecType);
+  SetBlid(VARMaskBlock);
+  SetWRect(20,80,700,291);
+  Sizeable(-1,-1,0,0);
+  h = 20; v = 27;
+  MatrixBegin(h,vm=v,-50,-20,VARMaskRowType,999);
+  Flip(0);
+  MatCol(1,32,"З товару",0,FrItem,false,ForSaleINSClass);
+  MatCol(1,94,"На товар",0,ToItem,false,ForSaleINSClass);
+  MatCol(1,164,"Група товарів",0,ItemGroup,false,ITSClass);
+  Flip(1);
+  MatCol(1,234,"Довжина",0,ItemSize,false,0);
+  MatCol(1,284,"Маска",0,VARMask,false,DISClass);
+  Flip(2);
+  MatCol(1,234,"Порядок у звіті",0,VARRepOrder,false,VARMasksSClass);
+  Flip(3);
+  MatCol(1,234,"Підмаски",0,VARSubsets,false,VARSubsetsSClass);
+  EndMatrix;
+  vs = 20;
+  v = vm+1; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");
+  v=v+vs;  VTab(-35,v,-16,v+vs,ToolFlip,2,"B");
+  v=v+vs;  VTab(-35,v,-16,v+vs,ToolFlip,3,"C");
+  vs = 20;
+  EndWindow;
+end;

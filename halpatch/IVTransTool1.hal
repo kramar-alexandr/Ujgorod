@@ -576,9 +576,11 @@ BEGIN
                             IVp.CustCode,IVp.SerNr,1,blankval,IVp.PayDate,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber,"","");//0
   end else begin
 */  
+		if(IVp.InvType!=kInvoiceTypeCash)then begin
     AddEuroCurncyTrRow(gTRp,IVp.ARAcc,lcuobj,"",tstr,ors,true,dc2,TotSum,
                        IVp.CurncyCode,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,
                        IVp.BaseRate2,IVrw.Sum,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber);//0
+    end;
 //  end;
 
   if (IVrw.stp==kInvoiceRowTypeCashPayment) then begin
