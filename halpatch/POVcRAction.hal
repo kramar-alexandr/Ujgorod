@@ -461,10 +461,10 @@ begin
 	
 	for(i=0;i<MatRowCnt(POr);i=i+1) begin
 		MatRowGet(POr,i,POrw);
-		if (blank(POrw.SerialNr) and nonblank(POrw.ArtCode)) then begin
+		//if (blank(POrw.SerialNr) and nonblank(POrw.ArtCode)) then begin
 			POrw.SerialNr = POrw.ArtCode & "." & POrw.Color & "." & POrw.Size & "." & POrw.Collection;
 			MatRowPut(POr,i,POrw);
-		end;		
+		//end;		
 	end;  
 end;
 
@@ -502,6 +502,7 @@ begin
   UpdatePOOut(POr,true,false);
   UpdatePRPO(PO2r,false);
   UpdatePRPO(POr,true);
+  AssembleSerialNrPOVc(POr); // Edit ************************** Tuesday, 21 June 2016 17:51:01
   if (POr.OKFlag==1) and (PO2r.OKFlag==0) then begin 
     if (SetInSet(CurrentUser,POr.OKPersons)==false) then begin
       if (nonblank(POr.OKPersons)) then begin
