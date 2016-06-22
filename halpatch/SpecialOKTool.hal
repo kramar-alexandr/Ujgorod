@@ -471,7 +471,6 @@ begin
 			if (FindItemVAR(incode[i],sz,mask,mskrep,varsubset)) then begin		//Edit----------------------Dima  13.06.2016
 				SplitVars(incode[i],maskvar,maskvarsz,amsk);
 				if blank(POrw.Size) begin //Edit-------------------Vitalii 14:56 21.06.2016
-					logtext(0,amsk[0]);
           POrw.ArtCode = amsk[0];
 				end;
         if blank(POrw.Size) begin //Edit-------------------Vitalii 14:56 21.06.2016
@@ -1195,11 +1194,8 @@ BEGIN
   rwcnt = MatRowCnt(POr);
   if (rn<=rwcnt) and (rn>=0) then begin
     MatRowGet(POr,rn,POrw);
-    logtext(0,POrw.ArtCode);	
     if (FindItemVAR(POrw.ArtCode,sz,msk,mskrep,varsubset)) then begin 
-    	logtext(0,msk);	
 			tstr = removenextlistitem(msk,";");
-			logtext(0,tstr);	
 			VARr.VARGCode = tstr;
 			foundf = true;
 			while (LoopKey("VARGCode",VARr,1,foundf)) begin
