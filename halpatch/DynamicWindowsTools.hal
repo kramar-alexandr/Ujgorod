@@ -1175,6 +1175,7 @@ begin
   		end;		
 	end;
   
+
   if (i==0) then begin
     i = 1; // Then we get one line in the matrix of a one variety item.
   end;
