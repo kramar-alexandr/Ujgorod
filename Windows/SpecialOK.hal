@@ -1299,6 +1299,7 @@ begin
   Integer j,pos;
   record IVCashVc IVCashr;
   record IVVc IVr;
+  Array string 40 size;// Edit ************************** Thursday, 23 June 2016 11:59:00
 
   mwn = MotherWindow(wn);
   GetWindowRecord(wn,VarMEr);
@@ -1315,7 +1316,7 @@ begin
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(VarMEr,i,VarMErw);
       j = 1;
-      BuildVarString(tstr,VarMErw.A,varsx[j],varsy[i+1],maskvar2,maskvarsz2,maskvar,sepstr,incode,qty,pos,true); j=j+1;
+      /*BuildVarString(tstr,VarMErw.A,varsx[j],varsy[i+1],maskvar2,maskvarsz2,maskvar,sepstr,incode,qty,pos,true); j=j+1;
       BuildVarString(tstr,VarMErw.B,varsx[j],varsy[i+1],maskvar2,maskvarsz2,maskvar,sepstr,incode,qty,pos,true); j=j+1;
       BuildVarString(tstr,VarMErw.C,varsx[j],varsy[i+1],maskvar2,maskvarsz2,maskvar,sepstr,incode,qty,pos,true); j=j+1;
       BuildVarString(tstr,VarMErw.D,varsx[j],varsy[i+1],maskvar2,maskvarsz2,maskvar,sepstr,incode,qty,pos,true); j=j+1;
@@ -1340,7 +1341,14 @@ begin
       BuildVarString(tstr,VarMErw.W,varsx[j],varsy[i+1],maskvar2,maskvarsz2,maskvar,sepstr,incode,qty,pos,true); j=j+1;
       BuildVarString(tstr,VarMErw.X,varsx[j],varsy[i+1],maskvar2,maskvarsz2,maskvar,sepstr,incode,qty,pos,true); j=j+1;
       BuildVarString(tstr,VarMErw.Y,varsx[j],varsy[i+1],maskvar2,maskvarsz2,maskvar,sepstr,incode,qty,pos,true); j=j+1;
-      BuildVarString(tstr,VarMErw.Z,varsx[j],varsy[i+1],maskvar2,maskvarsz2,maskvar,sepstr,incode,qty,pos,true); j=j+1;
+      BuildVarString(tstr,VarMErw.Z,varsx[j],varsy[i+1],maskvar2,maskvarsz2,maskvar,sepstr,incode,qty,pos,true); j=j+1;*/
+      if(VarMErw.A!=0)then begin
+				qty[pos] = VarMErw.A;
+				size[pos+1] = varsy[i+1];
+				incode[pos] = tstr;
+				pos = pos + 1;
+      end;
+      
     end;
     if (pos>0) then begin
       switch (GetWindowClass(mwn)) begin
@@ -1361,7 +1369,7 @@ begin
         case "PUDClass":
           PasteRowsToPU(mwn,GetWindowCurRow(mwn),incode,qty,pos);
         case "PODClass":
-          PasteRowsToPO(mwn,GetWindowCurRow(mwn),incode,varsy,qty,pos);
+          PasteRowsToPO(mwn,GetWindowCurRow(mwn),incode,size,qty,pos);// Edit ************************** Thursday, 23 June 2016 11:59:33
         case "IntORDClass":
           PasteRowsToIntOR(mwn,GetWindowCurRow(mwn),incode,qty,pos);
         case "POQTDClass":
