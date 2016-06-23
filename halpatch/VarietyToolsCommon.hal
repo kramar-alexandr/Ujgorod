@@ -662,14 +662,17 @@ begin
 /*
     Barcoder.Barcode = ItemCode;
     if (ReadFirstMain(Barcoder,1,true)) then begin
-*/
+*/	
     Barcoder.Barcode = ItemCode;
     if (ReadFirstKey("Barcode",Barcoder,1,true)) then begin
       ItemCode = Barcoder.Itemcode;
-      if (ReadFirstItem2(Barcoder.Itemcode,INr)) then begin // Can't call ReadFirstItem, Risk for eternal loop
+      INr.Code = ItemCode;
+     // if (ReadFirstItem2(Barcoder.Itemcode,INr)) then begin // Can't call ReadFirstItem, Risk for eternal loop// Edit ************************** Thursday, 23 June 2016 11:05:46
+     if(readfirstmain(INr,1,true))then begin// Edit ************************** Thursday, 23 June 2016 11:05:47
         INr.Code = Barcoder.Itemcode;
         INr.BarCode = Barcoder.Barcode;
         serial = Barcoder.SerialNr;// Edit ************************** Friday, 17 June 2016 10:06:24
+        logtext(0,serial);
         res = true;
       end;
     end;
