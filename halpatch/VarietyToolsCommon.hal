@@ -366,6 +366,7 @@ begin
 //    FillMaskVAR(itemcode,itemsize,mskrep,maskvar,maskvarsz);// mskrep aint working well
     FillMaskVAR(itemcode,itemsize,mask,maskvar,maskvarsz);    
     FillOneItemOneVAR(itemcode,"",varsubset,maskvar,vars,pos,false);
+    logtext(0,vars.length);
     res = true;
   end;
   FillAndPrepareVarCodes = res;
