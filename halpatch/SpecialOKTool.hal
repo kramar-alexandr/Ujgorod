@@ -417,11 +417,12 @@ begin
   Array string 2 maskvarsz; 
   string 60 sz,mskrep,varsubset;
   string 255 mask;  
+  string 255 color,colect;
   
   
   BlockLoad(VBr);
   rwcnt = MatRowCnt(POr);
-  for (ri=0;ri<rwcnt;ri=ri+1) begin
+  /*for (ri=0;ri<rwcnt;ri=ri+1) begin
     MatRowGet(POr,ri,POrw);
     for (i=0;i<pos;i=i+1) begin
       if (POrw.ArtCode==incode[i]) then begin
@@ -433,10 +434,16 @@ begin
        // vfound[POrw.ArtCode] = true;
       end;
     end;
-  end;
+  end;*/
   currow = rwcnt-1;			//Edit----------------------Dima  13.06.2016
   if (currow<0) then begin currow=0; end;
-
+	
+	if(currow<rwcnt and currow>-1)then begin
+		MatRowGet(POr,currow,POrw);
+		color = POrw.Color;
+		colect = POrw.Collection;
+	end;
+	
   for (i=0;i<pos;i=i+1) begin
     if (vfound[incode[i]]==false) then begin 
 			POrw.ArtCode = incode[i];
@@ -456,6 +463,8 @@ begin
         MatRowGet(POr,currow,POrw);
         POrw.Quant = qty[i];
         POrw.Size = varsy[i+1];
+        POrw.Color = color;
+				POrw.Collection = colect;
         MatRowPut(POr,currow,POrw);
         POVc_PasteQuant(POr,currow);
         MatRowGet(POr,currow,POrw);
@@ -464,6 +473,8 @@ begin
         MatRowGet(POr,currow,POrw);
         POrw.Quant = qty[i];
         POrw.Size = varsy[i+1];
+        POrw.Color = color;
+				POrw.Collection = colect;
         MatRowPut(POr,currow,POrw);
         POVc_PasteQuant(POr,currow);
         MatRowGet(POr,currow,POrw);
@@ -471,6 +482,9 @@ begin
       
 			if (FindItemVAR(incode[i],sz,mask,mskrep,varsubset)) then begin		//Edit----------------------Dima  13.06.2016
 				SplitVars(incode[i],maskvar,maskvarsz,amsk);
+				
+				POrw.Color = color;
+				POrw.Collection = colect;
 				if blank(POrw.Size) begin //Edit-------------------Vitalii 14:56 21.06.2016
           POrw.ArtCode = amsk[0];
 				end;
