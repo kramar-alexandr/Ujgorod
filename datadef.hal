@@ -7,7 +7,7 @@ SourceFile("halcust\\Reports",0);
 begin
 
 
-  RecordBegin(VARVc,VARView,"VARVc3");
+  RecordBegin(VARVc,VARView,"VARVc31");
   NewAutosyncRegister(kSyncDirectionToClient,true);
   RecordField(Code,M4Code,10,0);
   RecordField(Comment,M4Str,60,0);
@@ -27,6 +27,7 @@ begin
   KeyBegin(Comment);
   KeySegment(Comment);
   KeySegment(Code);
+  KeySegment(VARGCode);
   EndRecord;
   
   BlockBegin(ZebraPrinterBlock,-,""); // Edit ************************** Monday, 16 May 2016 12:12:45
