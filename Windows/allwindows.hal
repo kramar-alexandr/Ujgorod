@@ -2255,10 +2255,10 @@ begin
   Flip(0);
   MatCol(1,32,"З товару",0,FrItem,false,ForSaleINSClass);
   MatCol(1,94,"На товар",0,ToItem,false,ForSaleINSClass);
-  MatCol(1,164,"Класифікація товарів",0,ItemGroup,false,ITSClass);
+  MatCol(1,164,"Класифікація товарів",0,ItemGroup,false,DISClass);
   Flip(1);
   MatCol(1,234,"Довжина",0,ItemSize,false,0);
-  MatCol(1,284,"Маска",0,VARMask,false,DISClass);
+  MatCol(1,284,"Маска",0,VARMask,false,VARMasksSClass);
   Flip(2);
   MatCol(1,234,"Порядок у звіті",0,VARRepOrder,false,VARMasksSClass);
   Flip(3);
