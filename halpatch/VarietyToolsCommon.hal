@@ -672,7 +672,6 @@ begin
         INr.Code = Barcoder.Itemcode;
         INr.BarCode = Barcoder.Barcode;
         serial = Barcoder.SerialNr;// Edit ************************** Friday, 17 June 2016 10:06:24
-        logtext(0,serial);
         res = true;
       end;
     end;
