@@ -141,6 +141,20 @@ begin
   	KeySegment(Barcode);
   EndRecord;*/
 	
+	BlockBegin(VARMaskBlock,-,"");
+  NewAutosyncHBlock(kSyncDirectionToClient);
+  ImpExpLevel(1);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,VARMaskRowType,1);
+  ArrayField(FrItem,M4Code,20,INVc);
+  ArrayField(ToItem,M4Code,20,INVc);
+  ArrayField(ItemSize,M4Str,2,0);
+  ArrayField(VARMask,M4UStr,60,0);
+  ArrayField(VARRepOrder,M4UStr,60,0);
+  ArrayField(VARSubsets,M4UStr,200,0);
+  ArrayField(ItemGroup,M4Code,100,0);//5->10// Edit ************************** Thursday, 23 June 2016 09:24:03
+  EndArray;
+  EndBlock;	
 
 return;
 end;
