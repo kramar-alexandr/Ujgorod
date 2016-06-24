@@ -1,5 +1,71 @@
+external function roundmode SetRoundModeD(Integer);
 
+global
+procedure CalcEANCHS(var string str)
+begin
+integer c1,c2,lenth,i,chsum,litle;
+val sum;
+  sum = 0;
+  lenth = len(str);
+  if (lenth==12)then begin
+    for(i=0;i<12;i=i+2)begin
+      c1 = evaltoval(mid(str,i,1));
+      c2 = evaltoval(mid(str,i+1,1));
+      c2=c2*3;
+      sum = sum+c1+c2;
+    end;
+    if(round(sum/10,SetRoundModeD(0))>sum/10) then begin
+      litle = round(sum/10,SetRoundModeD(0))-1;
+    end else begin
+      litle = round(sum/10,SetRoundModeD(0));
+    end;
+    chsum  = 10-(10*(sum/10-litle));
+    if(chsum==10) then begin chsum = 0; end;
+    str = str & chsum;
+  end else begin
+    str = "";
+  end;
+  
+return;
+end;
 
+global
+procedure StringValIncrement(var string barcode,Integer increment)
+begin
+  integer lenght,i,lastindex,leftover,base,incr;
+  array integer digit;
+  boolean testf;
+    
+    testf = true;
+    lenght = len(barcode);
+    incr = increment;
+    for (i=0;i<lenght;i=i+1) begin
+      digit[i] = StringToInt(mid(barcode,i,1));
+      lastindex = i;
+    end;
+    digit[lastindex] = digit[lastindex] + incr;
+    while (digit[lastindex]>9 and testf) begin
+      leftover = Mod(digit[lastindex],10);
+      base = digit[lastindex] - leftover;
+      if (base>0) then begin
+        digit[lastindex] = leftover;
+        incr = base/10;
+        lastindex = lastindex - 1;
+        digit[lastindex] = digit[lastindex] + incr;
+      end;
+      if (lastindex==0 and digit[lastindex]>9) then begin
+        testf = false;
+      end;
+    end;
+    barcode = "";
+    if (testf) then begin
+      for (i=0;i<lenght;i=i+1) begin
+        barcode = barcode & digit[i];
+      end;
+    end;
+ 
+  return; 
+end;
 
 global updating procedure CleaningMn() //Edit----------------------Dima  09.06.2016
 begin
