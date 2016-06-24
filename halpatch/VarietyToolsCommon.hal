@@ -855,7 +855,8 @@ BEGIN
   
   RecordNew(INp);
   if (nonblank(artcode)) then begin
-  if (CorrectItemVAR(artcode,theitemcode,comment,forcepropervar)) then begin
+  //if (CorrectItemVAR(artcode,theitemcode,comment,forcepropervar)) then begin// Edit ************************** Friday, 24 June 2016 12:59:16
+		theitemcode = artcode;
     INp.Code = theitemcode;
     res = ReadFirstMain(INp,1,true);
     if (addname) then begin
@@ -868,7 +869,7 @@ BEGIN
         INp.Name = name;
       end;
     end;
-  end;
+  //end;// Edit ************************** Friday, 24 June 2016 12:59:17
   end;
   ReadFirstItemInclClosed = res;
   RETURN;
