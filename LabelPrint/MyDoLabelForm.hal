@@ -17,6 +17,8 @@ external procedure GetFullCurncyRate(var string,Date,var val,var val,var val,var
 external function roundmode SetRoundModeD(Integer); //Edit***************************Sasha2,12:22 23.10.2014
 external function Boolean GetFirstItem(var string,var record INVc);
 external function Boolean ReadFirstItem(string,var record INVc,Boolean,Boolean);
+external procedure ExtractObj(string,var Integer,var string); //Edit***************************Sasha2,14:35 21.06.2016
+
 
 
 
@@ -78,7 +80,7 @@ begin
   return;
 end;
 
-procedure PrintItemLabel(record RcVc RepSpec,string artcode,val exprice,string pricecode,string mycurcode,date setdate,record DocVc Docr)
+procedure PrintItemLabel(record RcVc RepSpec,string artcode,val exprice,string pricecode,string mycurcode,date setdate,record DocVc Docr,row PUVc PUrw)
 BEGIN
   Integer i,rwcnt;
   row INVc INrw;
@@ -101,12 +103,15 @@ BEGIN
   record BarcodeVc Barcoder;
   record INVc INr;
   string 20 oldprice;
+  record DIVc DIr;
+  integer pos;
+  string 50 class;
   
   
   ReadFirstItem(artcode,INr,true,true);
 
   blockload(BCr);
-  if(exprice<=0)then begin
+  /*if(exprice<=0)then begin
   
     workprice = pricecode;
     
@@ -138,8 +143,9 @@ BEGIN
       
     PLr.ArtCode = INr.Code;
     PLr.PLCode = workprice;
+    PLr.SerialNr = PUrw.SerialNr;
     
-    if(readfirstmain(PLr,2,true))then begin
+    if(readfirstkey("SerialNr",PLr,3,true))then begin
       if(PLr.PLCode==workprice and PLr.ArtCode==INr.Code)then begin
         price = Round(PLr.ExVatPrice/fr*to1*lfr/lto1,SetRoundModeD(0));
         novat = Round(price/120*100,SetRoundModeD(2));
@@ -151,14 +157,23 @@ BEGIN
     novat = Round(price/120*100,SetRoundModeD(2));
     vat = price-novat;
     
-  end;
+  end;*/
   
   priceA = ValToString(price,M4Val,"",".",1);
 	priceB = ValToString(price - evaltoval(priceA),M4Val,"",".",1);
 	if(len(priceB)==1)then begin
 		priceB = "0" & priceB;
 	end;
-
+	
+	PLr.ArtCode = INr.Code;
+	PLr.PLCode = "RRP";
+	PLr.SerialNr = PUrw.SerialNr;
+	
+	price = 0;
+	if(readfirstkey("SerialNr",PLr,3,true))then begin
+			price = PLr.ExVatPrice;
+	end;
+	
   if (FIELDINFORM("F_PRIS")) then begin
     tstr = price;
     OUTFORMFIELD("F_PRIS",tstr);
@@ -166,11 +181,24 @@ BEGIN
   
   PLr.ArtCode = artcode;
   PLr.PLCode = "OLD";
-  readfirstmain(PLr,2,true);
-  oldprice = PLr.ExVatPrice;
-  OUTFORMFIELD("F_AGREEDPRICE",oldprice)
+  PLr.SerialNr = PUrw.SerialNr;
+  if(readfirstkey("SerialNr",PLr,3,true))then begin
+		oldprice = PLr.ExVatPrice;
+		OUTFORMFIELD("F_AGREEDPRICE",oldprice);
+  end;
   
-  OUTFORMFIELD("F_TOPAYEXCLFREIGHT",artcode);
+  
+  /*pos = 0;
+  tstr = "";
+  ExtractObj(PUrw.SerialNr,pos,class); 
+  while(nonblank(class))begin
+  	INr.Code = class;
+  	if(readfirstmain(INr,1,true))then begin
+			tstr = INr.Code;
+  	end;
+  	ExtractObj(INr.DispGroups,pos,class);
+  end;*/
+  OUTFORMFIELD("F_TOPAYEXCLFREIGHT",PUrw.SerialNr);
   
 
   if (FIELDINFORM("F_BARCODE")) then begin
@@ -186,7 +214,21 @@ BEGIN
 		end;
   end;
   
-  OUTFORMFIELD("F_ITEMCODE",INr.Code);
+  //OUTFORMFIELD("F_ITEMCODE",INr.Code);
+  // Edit ************************** Friday, 24 June 2016 09:15:42
+  pos = 0;
+  ExtractObj(INr.DispGroups,pos,class); 
+  while(nonblank(class))begin
+  	DIr.Code = class;
+  	if(readfirstmain(DIr,1,true))then begin
+  		if(DIr.CType=="BRAND")then begin
+  			OUTFORMFIELD("F_ITEMCODE",DIr.Name);
+  		end;
+  	end;
+  	ExtractObj(INr.DispGroups,pos,class);
+  end;
+
+  
   if (FIELDINFORM("F_ITEMNAME")) then begin
     OUTFORMFIELD("F_ITEMNAME",INr.Name);
   end;
@@ -282,7 +324,7 @@ LBREAK:;
 						RepSpec.f4 = "";
 						RepSpec.f5 = "";
 						price = PUrw.UPrice;
-						PrintItemLabel(RepSpec,PUrw.ArtCode,price,prlist,PUr.CurncyCode,currentdate,Docr);
+						PrintItemLabel(RepSpec,PUrw.ArtCode,price,prlist,PUr.CurncyCode,currentdate,Docr,PUrw);
 						if (labelgridf) then begin
 							if (curcp>=maxcps) then begin
 								formisopen = false;
