@@ -22,5 +22,7 @@ begin
 	Maintenance("Очистити регістри",MyVClass,CleaningMn,modDBMain);						//Edit----------------------Dima  09.06.2016
 	Maintenance("Встановити тип серійного обліку для товарів",SetSerialTypesForINVClass,SetSerialNumberTypeForItemsMn,modDBMain);	//Edit----------------------Dima  10.06.2016
 
+	
+	SString(50000,"Ціна закупки");
 	return;
 end;
