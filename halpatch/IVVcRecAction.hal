@@ -306,7 +306,9 @@ begin
   roundmode rnd;// Edit ************************** Tuesday, 21 June 2016 10:38:51
   record LocationVc Locr;
   
-  
+  // Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 29 June 2016 10:43:47
+	
   Locr.Code = IVp.Location;
   if(readfirstmain(Locr,1,true))then begin// Edit ************************** Wednesday, 29 June 2016 10:37:19
   	if(nonblank(Locr.Objects))then begin
@@ -315,14 +317,15 @@ begin
   end;
   if(nonblank(IVp.MachineName))then begin
   		if(nonblank(Locr.Objects))then begin
-				Locr.Objects = Locr.Objects & "," & "KASSA" & IVp.MachineName;
+				IVp.Objects = Locr.Objects & "," & "KASSA" & IVp.MachineName;
 			end else begin
-				Locr.Objects = "KASSA1" & IVp.MachineName;
+				IVp.Objects = "KASSA1" & IVp.MachineName;
 			end;
 
   end;
   
-
+	// Edit End ---------------------------------------------- Edit End
+	
   if (long4==3) then begin TouchScreenFinishButtonf = true; end;
   res = 0;
   curcomp = CurrentCompany;    
