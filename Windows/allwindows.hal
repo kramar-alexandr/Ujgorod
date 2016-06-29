@@ -2361,7 +2361,7 @@ begin
       end;*/
       if (HasAdvancedStock) then begin
         MatCol(1,184,"На складі",0,InStock,true,0); 
-        MatCol(1,94,"Найменування",0,Spec,false,0); //214
+        MatCol(1,250,"Найменування",0,Spec,false,0); //214
       end else begin
         pos = 154;
         if (HasSerialNumbers) then begin
