@@ -2411,6 +2411,7 @@ end;
       SpecialMenu("Пошук товару",'f',1,"ItemSearchDsm");
 
     end;
+    SpecialMenu("Створити інвентарізаційну відомість",'',1,"CreateStockTakeSheetDsm"); //Edit***************************Sasha2,10:02 29.06.2016
   end;
   EndWindow;
 end;
