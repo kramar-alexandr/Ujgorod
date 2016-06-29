@@ -106,7 +106,8 @@ begin
         if (pricefoundf) then begin
           PLr.PLCode = PFr.BasePriceList;
           PLr.ArtCode = INp.Code;
-          pricefoundf = ReadFirstMain(PLr,2,true);
+          PLr.SerialNr = serial;// Edit ************************** Wednesday, 29 June 2016 10:07:17
+          pricefoundf = ReadFirstMain(PLr,4,true);// Edit ************************** Wednesday, 29 June 2016 10:07:17
           if pricefoundf then begin
             newpr = PLr.ExVatPrice;
           end;
