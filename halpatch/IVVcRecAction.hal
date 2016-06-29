@@ -319,7 +319,7 @@ begin
   		if(nonblank(Locr.Objects))then begin
 				IVp.Objects = Locr.Objects & "," & "KASSA" & IVp.MachineName;
 			end else begin
-				IVp.Objects = "KASSA1" & IVp.MachineName;
+				IVp.Objects = "KASSA" & IVp.MachineName;
 			end;
 
   end;
