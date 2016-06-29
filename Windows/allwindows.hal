@@ -2353,14 +2353,14 @@ begin
     end else begin
       MatCol(1,32,"Товар",0,ArtCode,false,INSClass);
 //    MatCol(1,94,"Var",0,VARList,false,VARSClass);
-//    MatCol(1,144,"Кіл",0,Qty,true,0);
+    	MatCol(1,144,"Кіл",0,Qty,true,0);
       /*if (HasVarieties) then begin //Edit***************************Sasha2,15:15 24.06.2016
         MatCol(1,94,"Кіл-ть",0,Qty,true,MATVARINSClass);
       end else begin
         MatCol(1,94,"Розрах.",0,Qty,true,0); //!!PRODTRANSLATE
       end;*/
       if (HasAdvancedStock) then begin
-        //MatCol(1,154,"На складі",0,InStock,true,0); //Edit***************************Sasha2,15:15 24.06.2016
+        MatCol(1,184,"На складі",0,InStock,true,0); 
         MatCol(1,94,"Найменування",0,Spec,false,0); //214
       end else begin
         pos = 154;
@@ -2413,5 +2413,34 @@ end;
     end;
     SpecialMenu("Створити інвентарізаційну відомість",'',1,"CreateStockTakeSheetDsm"); //Edit***************************Sasha2,10:02 29.06.2016
   end;
+  EndWindow;
+end;
+
+
+window GenSTVClass:1// Edit ************************** Wednesday, 29 June 2016 12:01:49
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Визначте створення записів інвентаризації",GenSTVClass,CGMnt,RcType);
+  SetWRect(20,80,430,310);
+  vs = 20; v=6; h = 130;
+  EditFieldTL(h,v, 150,"Товар",M4UStr,Normal,50,f2,false,INSClass);
+  EditFieldTL(h,v+=vs, 150,"Група товарів",M4Code,Normal,10,FirstAcc,false,ITSClass); 
+  if (HasItemClassification) then begin
+  EditFieldTL(h,v+=vs, 150,"Класифікація товару", M4UStr,Normal,60,f6,false,DISClass); 
+  end;
+  EditFieldTL(h,v+=vs, 150,"Склад",M4Code,Normal,10,f1,false,LocationSClass); 
+  if (StandardHansa==false) then begin
+  EditFieldTL(h,v+=vs, 100,"Полиця", M4UStr,Normal,10,LastAcc,false,0);
+  EditFieldTL(h,v+=vs, 150,"Місце",   M4Code,Normal,10,AccStr,false,PosSClass);
+  end;
+  
+  CheckBox(h+100,v+41,0,"Заповнити кількість",flags[2]);
+  
+  ButtonFrame(h-50,vm=(v+=41),123,3,"Сортування");
+  RadioButton(h-50,v,0,0,"Товар",flags[1]);
+  RadioButton(h-50,v+=16,1,0,"Група товарів",flags[1]);
+  RadioButton(h-50,v+=16,2,0,"Полиця",flags[1]);
+  StaticText(h=10,v+=40,"Якщо сортування за групою товарів або полицею, вкажіть склад",false);
   EndWindow;
 end;
