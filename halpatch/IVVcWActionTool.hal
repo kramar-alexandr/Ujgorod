@@ -434,6 +434,7 @@ BEGIN
     exportflag = exportflag + AddPortugueseType;
   end;
   // Edit ************************** Wednesday, 15 June 2016 14:22:17
+  IVrw.Quant = 1;// Edit ************************** Thursday, 30 June 2016 09:38:33
   if (GetItemPriceDiscount3ser(IVrw.SerialNr,IVrw.ArtCode,IVrw.Quant,INr,IVr.CurncyCode,
                             IVr.FrRate,IVr.ToRateB1,IVr.ToRateB2,IVr.BaseRate1,IVr.BaseRate2,
                             IVr.LangCode,IVr.CustCat,IVr.PriceList,IVr.RebCode,
@@ -449,6 +450,7 @@ BEGIN
       warning = USetStr(ErrorCode);
     end;
     IVrw.Price = price;
+    
     IVrw.Spec = curitemname;
     IVrw.vRebate = vreb;
     IVrw.VATCode = vatcode;
