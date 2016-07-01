@@ -909,7 +909,7 @@ BEGIN
         location = IVr.Location;
       end;
       // Edit ************************** Wednesday, 15 June 2016 14:43:55
-      if (GetItemPriceDiscount3ser(IVrw.SerialNr,IVrw.ArtCode,IVrw.Quant,INr,IVr.CurncyCode,
+      if (IVrw.Quant>=0 and GetItemPriceDiscount3ser(IVrw.SerialNr,IVrw.ArtCode,IVrw.Quant,INr,IVr.CurncyCode,
                               IVr.FrRate,IVr.ToRateB1,IVr.ToRateB2,IVr.BaseRate1,IVr.BaseRate2,
                               IVr.LangCode,IVr.CustCat,IVr.PriceList,IVr.RebCode,
                               price,curitemname,vreb,vatcode,baseprice,salesacc,

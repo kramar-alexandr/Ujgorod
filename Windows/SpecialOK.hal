@@ -31,6 +31,8 @@ external function Boolean TouchScreenLook();
 remote function Boolean FindItemVAR(string,var string,var string,var string,var string);
 external procedure StripEndingSpaces(var string);
 external procedure DisplayStrArray(array string);
+external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);// Edit ************************** Thursday, 30 June 2016 18:15:27
+external procedure IVVc_PastePrice(var record IVVc,record IVVc,Integer,var string);// Edit ************************** Thursday, 30 June 2016 18:28:33
 
 
 global
@@ -426,7 +428,13 @@ begin
   string 255 tstr;
   record IVCashVc IVCashr;
   longint pos;
+  integer pos1;
   string 255 tstrserial;
+  record IVVc IVr,oldIVr;
+  row IVVc IVrw;
+  integer rn,rwcnt,j;
+  array string 20 resobj;
+  string 100 price,serial,rebate,sum,res,inwarning,fifo,fiforow;
 
   mwn = MotherWindow(wn);
   switch (GetWindowClass(mwn)) begin
@@ -436,6 +444,57 @@ begin
       DeselectWindow(mwn,false);
       PutWindowString(mwn,"ivcashcommand",tstr);
       CloseWindow(wn);
+      //WindowFieldGoto(mwn,IVCashr,-1,"ivcashcommand",true);
+      WindowFieldGotoForTouchScreen(mwn,-1,"ivcashcommand",false);
+      KeyPadEnter(mwn);
+    case "IVDClass":
+      tstr = StringFromSysList(wn,200);
+      tstr = FindPOSCommandText(kPOSCommandsTypeSerialNr) & tstr;
+      GetWindowrecord(mwn,IVr);
+      
+      rn = WindowActiveRow(mwn);
+			rwcnt = MatRowCnt(IVr);
+			if (rn<=rwcnt) and (rn>=0) then begin
+				MatRowGet(IVr,rn,IVrw);  			
+   			if(IVrw.Quant>=0)then begin
+   				tstr = StringFromSysList(wn,200);
+					pos = 0;
+					GetNextSubstring(tstr,pos," ",tstrserial);
+					PasteFromSysList(wn,len(tstrserial));
+   			end else begin
+   		// Edit Start ---------------------------------------------- Edit Start
+	//Thursday, 30 June 2016 18:45:09
+			tstr = StringFromSysList(wn,200);
+					pos = 0;
+					GetNextSubstring(tstr,pos," ",tstrserial);
+					
+					PasteFromSysList(wn,len(tstrserial));
+					
+					pos1 = 0;
+					j=0;
+					ExtractObjWithSeparator(" ",tstr,true,pos1,res);
+					resobj[j] = res;
+					while (nonblank(res)) begin
+						resobj[j] = res;
+						ExtractObjWithSeparator(" ",tstr,true,pos1,res);
+						j=j+1;
+					end;
+					GetWindowrecord(mwn,IVr);
+					recordcopy(oldIVr,IVr);
+					IVrw.Price = stringtoval(resobj[2],M4Val);
+					IVrw.vRebate = stringtoval(resobj[3],M4Val);
+					IVrw.FIFO = stringtoval(resobj[5],M4Val);
+					IVrw.FIFORowVal = stringtoval(resobj[6],M4Val);
+					matrowput(IVr,rn,IVrw);
+					IVVc_PastePrice(IVr,oldIVr,rn,inwarning);
+					putwindowrecord(mwn,IVr);
+					WindowFieldGoto(mwn,IVr,rn,"SerialNr",true);
+					
+   			end;
+	// Edit End ---------------------------------------------- Edit End
+	
+   			
+			end; 
       //WindowFieldGoto(mwn,IVCashr,-1,"ivcashcommand",true);
       WindowFieldGotoForTouchScreen(mwn,-1,"ivcashcommand",false);
       KeyPadEnter(mwn);
