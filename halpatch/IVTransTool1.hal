@@ -485,6 +485,8 @@ BEGIN
   record POSCurrenciesBlock POSCb;// Edit ************************** Friday, 22 April 2016 14:56:39
   string 20 poscur;
   integer pos;
+  integer mtrw,i;
+  row TRVc TRrw;
   
   // Edit Start ---------------------------------------------- Edit Start
 	//Friday, 22 April 2016 14:58:23
@@ -528,12 +530,7 @@ BEGIN
     errstrno = 2191;
     goto LIVVc_CASHRow;
   end;
-/*  
-  if (GetAccName(IVrw.SalesAcc,tstr,60)==false) then begin
-    errstrno = 2191;
-    goto LIVVc_CASHRow;
-  end;
-*/  
+  
 	if(blank(IVrw.CurncyCode))then begin
 		IVrw.CurncyCode = poscur;
     GetFullCurncyRate(IVrw.CurncyCode,IVp.InvDate,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2);
@@ -542,18 +539,10 @@ BEGIN
 	
   rs = MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
   rs2 = MulRateToBase2(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
-/*
-  if (IVp.ARonTR!=0) then begin
-    AddEuroCurncyNomARTrRow(gTRp,PMrw.AccNr,cuobj,"",tstr,rs,blankval,true,dc1,TotSum,
-                      IVrw.CurncyCode,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,
-                      IVrw.BaseRate2,IVrw.Sum,blankval,
-                      IVp.CustCode,IVp.SerNr,1,blankval,IVp.PayDate,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"","","");
-  end else begin
-*/
+
     AddEuroCurncyTrRow(gTRp,PMrw.AccNr,cuobj,"",tstr,rs,false,dc1,TotSum,
                        IVrw.CurncyCode,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,
                        IVrw.BaseRate2,IVrw.Sum,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"");
-//  end;      
     
   if (GetAccName(IVp.ARAcc,tstr,60)==false) then begin
     errstrno = 1908;
@@ -567,20 +556,36 @@ BEGIN
   if (ARAccRec.ARUseObj!=0) then begin
     lcuobj = cuobj;
   end;
+  
+  mtrw = matrowcnt(gTRp);
+  For(i=0;i<mtrw;i=i+1) begin
+	  matrowget(gTRp,i,TRrw);
+	  logtext(0,TRrw.AccNumber & " " & TRrw.DebVal & " " & TRrw.CredVal);
+	end; 
+	
+	Logtext(0,"**********" & CheckTTRPerRow("IVVc",IVp.ARAcc,lcuobj,dc2,taccnumber,0));
+  
   if (CheckTTRPerRow("IVVc",IVp.ARAcc,lcuobj,dc2,taccnumber,0)) then begin end;
-/*
-  if (IVp.ARonTR!=0) then begin
-    AddEuroCurncyNomARTrRow(gTRp,IVp.ARAcc,lcuobj,"",tstr,ors,blankval,true,dc2,TotSum,
-                            IVp.CurncyCode,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,
-                            IVp.BaseRate2,IVrw.Sum,blankval,
-                            IVp.CustCode,IVp.SerNr,1,blankval,IVp.PayDate,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber,"","");//0
-  end else begin
-*/  
+
 		if(IVp.InvType!=kInvoiceTypeCash)then begin// Edit ************************** Wednesday, 22 June 2016 18:33:19
-    AddEuroCurncyTrRow(gTRp,IVp.ARAcc,lcuobj,"",tstr,ors,true,dc2,TotSum,
-                       IVp.CurncyCode,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,
-                       IVp.BaseRate2,IVrw.Sum,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber);//0
+			if((IVrw.Sum>0 and IVp.Sum4>0) or (IVrw.Sum<0 and IVp.Sum4<0))then begin
+				AddEuroCurncyTrRow(gTRp,IVp.ARAcc,lcuobj,"",tstr,ors,true,dc2,TotSum,
+													 IVp.CurncyCode,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,
+													 IVp.BaseRate2,IVrw.Sum,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber);//0
+			end else begin
+				AddEuroCurncyTrRow(gTRp,IVp.ARAcc,lcuobj,"",tstr,ors,false	,dc2,TotSum,
+													 IVp.CurncyCode,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,
+													 IVp.BaseRate2,IVrw.Sum,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber);//0
+			end;
     end;
+    
+  mtrw = matrowcnt(gTRp);
+  For(i=0;i<mtrw;i=i+1) begin
+	  matrowget(gTRp,i,TRrw);
+	  logtext(0,TRrw.AccNumber & " " & TRrw.DebVal & " " & TRrw.CredVal);
+	end; 
+	
+	Logtext(0,"**********2");
 //  end;
 
   if (IVrw.stp==kInvoiceRowTypeCashPayment) then begin
@@ -609,28 +614,7 @@ BEGIN
       end;
       AddEuroCurncyTrRow(gTRp,ARAccRec.RateLossAcc,"","",tstr,rateloss,true,dc2,TotSum,
                            bascur.BaseCur2,blankval,blankval,blankval,blankval,blankval,rateloss2,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"");
-    end;
-/*
-    if (TotSum!=0) then begin
-      rs = TotSum;
-      if (TotSum>0) then begin
-        if (GetAccName(ARAccRec.BankRateGainAcc,tstr,60)) then begin
-          AddEuroTrRow(gTRp,ARAccRec.BankRateGainAcc,"","",tstr,rs,IVrw.BaseRate1,IVrw.BaseRate2,true,true,TotSum,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"","","");
-        end;
-      end else begin
-        if (GetAccName(ARAccRec.BankRateLossAcc,tstr,60)) then begin
-          AddEuroTrRow(gTRp,ARAccRec.BankRateLossAcc,"","",tstr,rs,IVrw.BaseRate1,IVrw.BaseRate2,true,false,TotSum,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"","","");
-        end;
-      end;
-      if (totsum!=0) then begin
-        if (GetAccName(ARAccRec.RateRndOffAcc,tstr,60)==false) then begin
-          errstrno = 1904;
-          goto LIVVc_CASHRow;
-        end;
-        AddEuroTrRow(gTRp,ARAccRec.RateRndOffAcc,"","",tstr,rs,IVrw.BaseRate1,IVrw.BaseRate2,true,dc2,TotSum,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"","","");
-      end;  
-    end;
-*/    
+    end;  
   end;
     
   errstrno = 0;
