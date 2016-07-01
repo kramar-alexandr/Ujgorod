@@ -492,13 +492,13 @@ begin
       if (NonBlank(PUrw.SerialNr)) then begin
         BarCoder.SerialNr = PUrw.SerialNr;
         if (ReadFirstKey("SerialNr",BarCoder,1,true)==false) then begin
-          BarCoder.Itemcode = PUrw.ArtCode;
-          if (ReadFirstKey("Itemcode",BarCoder,1,true)) then begin
-            if (Blank(BarCoder.SerialNr)) then begin
-              BarCoder.SerialNr = PUrw.SerialNr;
-              RECORDSTORE(BarCoder,true);
-            end;
-          end else begin
+          //BarCoder.Itemcode = PUrw.ArtCode;
+          //if (ReadFirstKey("Itemcode",BarCoder,1,true)) then begin
+           //if (Blank(BarCoder.SerialNr)) then begin
+            //BarCoder.SerialNr = PUrw.SerialNr;
+              //RECORDSTORE(BarCoder,true);
+            //end;
+          //end else begin
             RECORDNEW(BarCoder);
             BarCoder.SerialNr = PUrw.SerialNr;
             BarCoder.Itemcode = PUrw.ArtCode;
@@ -537,7 +537,7 @@ begin
           	  BarCoder.Barcode = minEan;
           	  RECORDSTORE(BarCoder,true);
             end;  
-          end;
+          //end;
         end else begin
           if (Blank(BarCoder.Itemcode)) then begin
             BarCoder.Itemcode = PUrw.ArtCode;
