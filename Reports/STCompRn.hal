@@ -457,7 +457,8 @@ begin
     MatRowGet(combStockTaker,combi,combStockTakerw);
     if (vtreatedf[combStockTakerw.ArtCode & "??" & combStockTakerw.Position]==false) then begin
       RecordCopy(RepSpec,orgRepSpec);
-      RepSpec.LastAcc = combStockTakerw.Position;     
+      RepSpec.LastAcc = combStockTakerw.Position;  
+      logtext(0,"DoSTCompOneItem " & INr.Code);   
       DoSTCompOneItem(RepSpec,INr,varf,right(combStockTakerw.ArtCode,len(combStockTakerw.ArtCode)-len(INr.Code)),itemout,instock,instock2,counted,diff,totinprice);
       vtreatedf[combStockTakerw.ArtCode & "??" & combStockTakerw.Position] = true;
     end;
