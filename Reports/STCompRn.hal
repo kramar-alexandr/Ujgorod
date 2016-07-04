@@ -107,7 +107,7 @@ BEGIN
                   instock = instock + StockTakerw.InStock;
                 end;
                 if (nonblank(StockTakerw.SerialNr)) then begin
-                	logtext(0,StockTakerw.SerialNr & " " & StockTaker.Location);
+                	logtext(0,StockTaker.SerNr & " " & StockTakerw.SerialNr & " " & StockTaker.Location);
                   batcha[arrcnt] = StockTakerw.SerialNr;
                   counteda[arrcnt] = StockTakerw.Qty;
                   posa[arrcnt] = StockTakerw.Position;
