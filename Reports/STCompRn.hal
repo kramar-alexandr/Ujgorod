@@ -34,9 +34,7 @@ BEGIN
   record MainStockBlock MainStockRec;
   string 255 keystr;
   Date td;
-	
-	logtext(0,"FindLastST " & item);
-	
+		
   lastdatep = td;
   unitprice = blankval;
   instock = blankval;
@@ -109,7 +107,6 @@ BEGIN
                   instock = instock + StockTakerw.InStock;
                 end;
                 if (nonblank(StockTakerw.SerialNr)) then begin
-                	logtext(0,StockTaker.SerNr & " " & StockTakerw.SerialNr & " " & StockTaker.Location);
                   batcha[arrcnt] = StockTakerw.SerialNr;
                   counteda[arrcnt] = StockTakerw.Qty;
                   posa[arrcnt] = StockTakerw.Position;
@@ -208,7 +205,6 @@ begin
   uprice = INr.InPrice;
 	
 	
-	logtext(0,"DoSTCompOneItem " & & INr.Code);
   FindLastST(RepSpec,INr.Code,INr.SerNrf,RepSpec.RegDate,laststdate,units,instock,counteda,batcha,posa,arrcnt,uprice,variety);
 
   dat1 = laststdate;
@@ -291,7 +287,6 @@ LCASE0:;
                   SerBalr.Item = IN2r.Code;
                   SerBalr.Location = RepSpec.AccStr;
                   SerBalr.Serial = batcha[i];
-                  logtext(0,SerBalr.Item & ";" & SerBalr.Location & ";" & SerBalr.Serial);
                   if(!usedserial[SerBalr.Item & ";" & SerBalr.Location & ";" & SerBalr.Serial])then begin// Edit ************************** Monday, 4 July 2016 10:58:04
 										if (ReadFirstKey("Serial",SerBalr,3,true)) then begin
 											diff = counteda[i] - SerBalr.Quant;
@@ -360,6 +355,7 @@ begin
   plhit = true;
   if (INr.ItemType==1) then begin
     varf = FindItemVAR(INr.Code,sz,msk,mskrep,varsubset);
+    varf = false;// Edit ************************** Monday, 4 July 2016 12:35:09
     uprice = INr.InPrice;
     if (varf) then begin
       FindLastSTForItem(RepSpec,INr.Code,RepSpec.RegDate,combStockTaker);
@@ -429,7 +425,7 @@ begin
   vector Boolean vtreatedf;
   
   varf = FindItemVAR(INr.Code,sz,msk,mskrep,varsubset);
-
+	varf = false;// Edit ************************** Monday, 4 July 2016 12:35:30
   FindLastSTForItem(orgRepSpec,INr.Code,orgRepSpec.RegDate,combStockTaker);
 
   found = true;
