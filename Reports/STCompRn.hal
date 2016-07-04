@@ -34,7 +34,9 @@ BEGIN
   record MainStockBlock MainStockRec;
   string 255 keystr;
   Date td;
-
+	
+	logtext(0,"FindLastST " & item);
+	
   lastdatep = td;
   unitprice = blankval;
   instock = blankval;
