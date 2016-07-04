@@ -290,6 +290,7 @@ LCASE0:;
                   SerBalr.Item = IN2r.Code;
                   SerBalr.Location = RepSpec.AccStr;
                   SerBalr.Serial = batcha[i];
+                  logtext(0,SerBalr.Item & ";" & SerBalr.Location & ";" & SerBalr.Serial);
                   if(!usedserial[SerBalr.Item & ";" & SerBalr.Location & ";" & SerBalr.Serial])then begin// Edit ************************** Monday, 4 July 2016 10:58:04
 										if (ReadFirstKey("Serial",SerBalr,3,true)) then begin
 											diff = counteda[i] - SerBalr.Quant;
