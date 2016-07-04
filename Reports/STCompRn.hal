@@ -206,7 +206,9 @@ begin
 
   plhit = true;
   uprice = INr.InPrice;
-
+	
+	
+	logtext(0,"DoSTCompOneItem " & & INr.Code);
   FindLastST(RepSpec,INr.Code,INr.SerNrf,RepSpec.RegDate,laststdate,units,instock,counteda,batcha,posa,arrcnt,uprice,variety);
 
   dat1 = laststdate;
@@ -458,7 +460,6 @@ begin
     if (vtreatedf[combStockTakerw.ArtCode & "??" & combStockTakerw.Position]==false) then begin
       RecordCopy(RepSpec,orgRepSpec);
       RepSpec.LastAcc = combStockTakerw.Position;  
-      logtext(0,"DoSTCompOneItem " & INr.Code);   
       DoSTCompOneItem(RepSpec,INr,varf,right(combStockTakerw.ArtCode,len(combStockTakerw.ArtCode)-len(INr.Code)),itemout,instock,instock2,counted,diff,totinprice);
       vtreatedf[combStockTakerw.ArtCode & "??" & combStockTakerw.Position] = true;
     end;
