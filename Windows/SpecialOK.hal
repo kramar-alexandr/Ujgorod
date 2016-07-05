@@ -32,7 +32,7 @@ remote function Boolean FindItemVAR(string,var string,var string,var string,var 
 external procedure StripEndingSpaces(var string);
 external procedure DisplayStrArray(array string);
 external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);// Edit ************************** Thursday, 30 June 2016 18:15:27
-external procedure IVVc_PastePrice(var record IVVc,record IVVc,Integer,var string);// Edit ************************** Thursday, 30 June 2016 18:28:33
+remote procedure IVVc_PastePrice(var record IVVc,record IVVc,Integer,var string);// Edit ************************** Thursday, 30 June 2016 18:28:33
 
 
 global
