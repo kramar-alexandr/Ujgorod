@@ -139,7 +139,7 @@ end;
 	//Wednesday, 6 July 2016 11:21:59
 	
 global
-procedure SRSumUp(var record SRPriceVc SRp)
+procedure SRPriceSumUp(var record SRPriceVc SRp)
 begin
   Integer i,rwcnt;
   row SRPriceVc SRrw;
