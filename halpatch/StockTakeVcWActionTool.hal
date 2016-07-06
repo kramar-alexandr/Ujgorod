@@ -48,7 +48,9 @@ BEGIN
   string 60 sz,msk,mskrep;
   string 200 varsubset;
   string 100 serial,firstitem;// Edit ************************** Thursday, 23 June 2016 14:12:42
-		
+	Record BarcodeVc BCr;
+  record PLVc PLr;
+  
   MatRowGet(StockTakep,rownr,StockTakerw);  
   if ((changed!=0) or ((blank(StockTakerw.Spec)) and (nonblank(StockTakerw.ArtCode)))) then begin
     res = true;
@@ -69,7 +71,28 @@ BEGIN
         inwarn = INr.WarnText1;
       end;
       StockTakerw.SerialNr = serial;// Edit ************************** Thursday, 23 June 2016 14:05:24
-
+			
+			// Edit Start ---------------------------------------------- Edit Start
+	//Monday, 4 July 2016 16:21:07
+	
+          BCr.Itemcode = StockTakerw.ArtCode;
+          BCr.SerialNr = serial;
+          if(readfirstkey("SerialNr",BCr,1,true))then begin
+          	if(BCr.Itemcode==StockTakerw.ArtCode)then begin
+          		StockTakerw.BarCode = BCr.Barcode;
+          	end;
+          end;
+          PLr.ArtCode = StockTakerw.ArtCode;
+          PLr.SerialNr = serial;
+          PLr.PLCode = "RRP";
+          if(readfirstkey("SerialNr",PLr,3,true))then begin
+          	StockTakerw.Price = PLr.ExVatPrice;
+          end;
+          StockTakerw.Qty = 1;
+          
+	// Edit End ---------------------------------------------- Edit End
+			
+			
       StockTakerw.Coefficient = INr.UnitCoefficient;
       StockTakerw.ArtCode = INr.Code;
       StockTakerw.Spec = INr.Name;

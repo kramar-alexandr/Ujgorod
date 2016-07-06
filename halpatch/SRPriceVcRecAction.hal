@@ -1,0 +1,639 @@
+external procedure B1ToB2ValRM(val,val,val,var val,roundmode);
+external function roundmode GetCostRoundModeRB();
+external function Boolean StockRecordForLocationAllowed(string,string,string,date,integer,var Integer,var string);
+external procedure VerifyRowObjects(String,String,String,String,var Integer,var String,var Boolean,Array string,Array string,var Integer);
+external procedure WarnFutureDate(Boolean,Date);
+external function Boolean DisallowFutureDateCheck(Boolean,Date,string,Integer);
+external function Boolean ReadFirstItemInclClosed(string,var record INVc,Boolean,Boolean);
+external function roundmode GetCostRoundMode(record RoundBlock);
+external updating procedure UpdateTrans_Stock(record TRVc);
+external updating procedure UpdateRecalcStockNeeded(Integer);
+external updating procedure DeleteTransaction(LongInt,Integer);
+external function Boolean ItemHistExists(string,LongInt);
+external updating procedure StoreUnOKHistory(string,LongInt,Date,Time,string);
+external function Integer FIFOPerSerialNr(record INVc,record CostAccBlock);
+external updating procedure UpdateLocationWeightedAv(string,string,val,val,val,val,Boolean);
+external function Boolean TestArtCode(string,string,record INVc);
+external function Boolean CanOKStockRecord(var Integer);
+external procedure GetCurUser(var record UserVc);
+external procedure Base1ToBase2(var val,Date,var val);
+external procedure FindStockValueAtPosition(string,string,string,var record PISVc);
+external procedure GetPRName(string, var string);
+external function Boolean ReadFirstItem(string,var record INVc,Boolean,Boolean);
+external function Boolean IsSerialNrCorrect(string);
+external function string 255 CheckTrans(var record TRVc,Integer,Boolean);
+external updating procedure SaveTrans(record TRVc);
+external function Boolean ExistStockTrans(string,Date,var Integer,var string,string,LongInt,record MainStockBlock);
+external function Boolean SerialNrAvail(string,string,string,val);
+external function Boolean CheckStructureItemsLevel(string,string,string,val);
+external function Integer CheckObjs(string,string,var string);
+external function Boolean Date2Test(string,Date,string,Integer);
+external procedure B1ToB2Val(val,val,val,var val);
+external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
+external updating procedure UpdateInstock(string,string,string,string,date,val,val,val,val,val,val,val,val,val);
+external function Boolean ShouldItemUpdateStock(string);
+external procedure FindStockValue(string,string,var record ItemStatusVc);
+external procedure CalcSum(val,val,val,val,var val,Integer);
+external procedure GetPRInvSep(string,var Integer,var Integer);
+external function Integer GetItemTypeGroup(string,var string);
+external updating function val NextLocOKNr(string);
+
+global
+function LongInt SRPriceVcRecordDefaults(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt stat,LongInt long4)
+begin
+  record AccBlock ARb;
+  record UserVc USr;
+  LongInt res;
+
+  BlockLoad(ARb);
+  SRr.TransDate = CurrentDate;
+  SRr.OKFlag = 0;
+  SRr.SerNr = -1;
+  if (SingleUserMode) then begin
+    SRr.SerNr = NextSerNr("SRPriceVc",SRr.TransDate,-1,false,"");
+  end;
+  GetCurUser(USr);
+  SRr.Location = USr.Location;
+  SRPriceVcRecordDefaults = res;
+  return;
+end;
+
+global
+function LongInt SRPriceVcRecordDuplicate(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  Integer i,rwcnt;
+  row SRPriceVc SRrw;
+
+  SRr.TransDate = CurrentDate;
+  SRr.OKFlag = 0;
+  SRr.SerNr = -1;
+  if (SingleUserMode) then begin
+    SRr.SerNr = NextSerNr("SRPriceVc",SRr.TransDate,-1,false,"");
+  end;
+  rwcnt = MatRowCnt(SRr);
+
+  SRPriceVcRecordDuplicate = res;
+  return;
+end;
+
+global
+updating function LongInt SRPriceVcRecordSave(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+
+  SRPriceVcRecordSave = res;
+  return;
+end;
+
+
+
+global
+updating function LongInt SRPriceVcRecordSaveAfter(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+
+
+  SRPriceVcRecordSaveAfter = res;
+  return;
+end;
+
+global
+updating function LongInt SRPriceVcRecordUpdate(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+
+  
+  SRPriceVcRecordUpdate = res;
+  return;
+end;
+
+
+global
+updating function LongInt SRPriceVcRecordUpdateAfter(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  val LocOKNr;
+  Boolean ihef;
+  
+  
+  SRPriceVcRecordUpdateAfter = res;
+  return;
+end;
+
+
+
+global
+updating function LongInt SRPriceVcRecordImport(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record ConvMasterBlock cvm;
+  Boolean gBase1ToBase2;
+
+  
+  SRPriceVcRecordImport = res;
+  return;
+end;
+
+global
+updating function LongInt SRPriceVcRecordImportAfter(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record ConvMasterBlock cvm;
+  record SRPriceVc locSRr;
+  Boolean gBase1ToBase2;
+  Integer err;
+
+  
+  SRPriceVcRecordImportAfter = res;
+  return;
+end;
+
+global
+function LongInt SRPriceVcRecordRemove(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  
+  SRPriceVcRecordRemove = res;
+  return;
+end;
+
+global
+function LongInt SRPriceVcRecordRemoveTest(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt long3,LongInt long4)
+begin
+  record DBLockBlock DBLockRec;
+  LongInt res;
+
+  res = 1;
+  if (SRr.OKFlag!=0) then begin
+    if (long3>0) then begin MessageBox(1560,"") end;
+    res = 0;
+  end;
+LSRPriceVcRecordRemoveTest:;
+  SRPriceVcRecordRemoveTest = res;
+  return;
+end;
+
+global
+updating function LongInt SRPriceVcRecordCheck(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt stat,LongInt check)
+begin
+  LongInt res,sernr,oldnr,newnr;
+  Integer insertmode,updatemode;
+  record MainStockBlock MSb;
+  Boolean transf,gentrans;
+  record SRPriceVc locSRr;
+  string 10 location,location2,srvaracc;
+  record LocationVc Locr;
+  row SRPriceVc SRrw;
+  row SRPriceVc SR2rw;            
+  string 255 objstr,accstr,errstr,errofield;
+  Integer i,rwcnt,j,cnt,errcode;
+  record AccVc Accr;
+  record INVc INr;
+  val prev,prevtot;
+  record TRVc gTRp;
+  Integer errorrow;
+  record ItemStatusVc ISr;
+  record PISVc PISr;
+  record CostAccBlock CAb;
+  Boolean unokf;
+  transaction string 255 gRuniningMaint;
+  Array string 255 otcheckaccs;
+  Array string 255 otcheckobjtyps;
+  Integer otcheckcnt;
+  Boolean initotcheckf;    
+
+  res = 0;
+  insertmode = 1;//Rs_insert
+  updatemode = 2;//Rs_update
+  BlockLoad(CAb);
+  BlockLoad(MSb);
+  if (stat==updatemode) then begin
+    if (SRr.SerNr<=0) and (SR2r.OKFlag==0) then begin
+      SRr.SerNr = SR2r.SerNr;
+    end;
+  end;     
+  oldnr = SRr.SerNr; 
+  transf = false;
+  if (SRr.OKFlag==1) then begin
+    if (stat==insertmode) then begin transf = true; end;
+    if (stat==updatemode) then begin
+      if (SR2r.OKFlag==0) then begin transf = true; end;
+    end;
+  end;
+  if (SRr.OKFlag==0) then begin
+    if (stat==updatemode) then begin
+      if (SR2r.OKFlag==1) then begin unokf = true; end;
+    end;
+  end;
+  /*if (unokf) then begin
+    errcode = IsUnOKAllowed_SRPriceVc(SRr);
+    if (errcode!=0) then begin
+      RecordCheckError(errcode,"",-1,"TransDate");      
+      res = -1; 
+    end;
+    goto LSRPriceVcRecordCheck;
+  end; */ 
+  if (stat==updatemode) then begin
+    if (SR2r.OKFlag!=0) then begin
+      goto LSRPriceVcRecordCheck;
+    end;
+  end;
+  if (SRr.SerNr<=0) then begin
+    SRr.SerNr = NextSerNr("SRPriceVc",SRr.TransDate,-1,false,"");
+  end;
+  if ((stat==insertmode) or (SRr.SerNr!=SR2r.SerNr)) then begin
+    locSRr.SerNr = SRr.SerNr;
+    if (ReadFirstMain(locSRr,1,true)) then begin
+      RecordCheckError(1547,"",-1,"SerNr");      
+      res = -1;
+      goto LSRPriceVcRecordCheck;
+    end;
+  end;
+ /*if (SerNrTestSRPriceVc(SRr.SerNr,SRr.TransDate,gentrans)==false) then begin
+    if (check>0) then begin
+    RecordCheckError(1557,"",-1,"SerNr");      
+    res = -1; 
+    goto LSRPriceVcRecordCheck;
+  end;
+  end;
+  if (check==0) then begin
+    goto LSRPriceVcRecordCheck_GenTrans;
+  end;
+  if (Date2Test("SRPriceVc",SRr.TransDate,"TransDate",-1)==false) then begin
+    res = -1;
+    goto LSRPriceVcRecordCheck;
+  end;
+  if (DisallowFutureDateCheck(true,SRr.TransDate,"TransDate",-1)) then begin
+    res = -1;
+    goto LSRPriceVcRecordCheck;
+  end;
+  if (transf) then begin
+    if (UserCanAction("SROK",true)==false) then begin
+      RecordCheckError(1274,StringFromStringSet(3,"SROK"),-1,"SerNr");      
+      res = -1; 
+      goto LSRPriceVcRecordCheck;
+    end;
+    if (SRr.TransDate!=CurrentDate) then begin
+      RecordCheckError(20871,SRr.TransDate,-1,"TransDate");      
+      res = -1; 
+      goto LSRPriceVcRecordCheck;
+    end;
+  end;  
+
+  if (nonblank(SRr.Objects)) then begin
+    errcode = CheckObjs("",SRr.Objects,errstr);
+    if (errcode!=0) then begin
+      RecordCheckError(errcode,errstr,-1,"Objects");      
+      res = -1;
+      goto LSRPriceVcRecordCheck;
+    end;
+  end;   
+  if (nonblank(SRr.SRVarAcc)) then begin
+    Accr.AccNumber = SRr.SRVarAcc;
+    if (ReadFirstMain(Accr,1,true)==false) then begin
+      RecordCheckError(1007,SRr.SRVarAcc,-1,"SRVarAcc");  
+      res = -1;
+      goto LSRPriceVcRecordCheck;
+    end else begin
+      if ((Accr.blockedFlag!=0) or (Accr.GroupAcc!=0)) then begin
+        RecordCheckError(1084,SRr.SRVarAcc,-1,"SRVarAcc");  
+        res = -1;
+        goto LSRPriceVcRecordCheck;
+      end;
+    end;
+  end;  
+  rwcnt = MatRowCnt(SRr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(SRr,i,SRrw);
+    location = SRrw.Location;
+    if (nonblank(SRrw.Location)) then begin
+      if (MSb.Chronology==1) then begin//Chronology per Location
+        if (SRrw.Location!=SRr.Location) then begin
+          RecordCheckError(20857,"",i,"Location");      
+          res = -1;
+          goto LSRPriceVcRecordCheck;
+        end;
+      end;
+    end;
+    if (blank(location)) then begin
+      location = SRr.Location;
+    end;
+    if (check!=0) then begin
+      if (MSb.requireLocation!=0) then begin
+        if (blank(location)) then begin
+          RecordCheckError(1058,location,i,"Location");      
+          res = -1; 
+          goto LSRPriceVcRecordCheck;
+        end;
+      end;
+    end;
+    if (blank(location)) then begin
+      location = MSb.MainStock;
+    end;
+    
+    if (nonblank(location)) then begin
+      Locr.Code = location;
+      if (ReadFirstMain(Locr,1,true)==false) then begin
+        RecordCheckError(1120,location,i,"Location");      
+        res = -1;
+        goto LSRPriceVcRecordCheck;
+      end;
+    end;    
+    if (blank(SRrw.ArtCode)) then begin
+      RecordCheckError(1058,"",i,"NewFIFO");      
+      res = -1;
+      goto LSRPriceVcRecordCheck;
+    end;
+    if (StockRecordForLocationAllowed("SRPriceVc",location,SRrw.ArtCode,SRr.TransDate,SRr.OKFlag,errcode,errstr)==false) then begin
+      RecordCheckError(errcode,errstr,i,"ArtCode");      
+      res = -1;
+      goto LSRPriceVcRecordCheck;
+    end;
+    if (nonblank(SRrw.ArtCode)) then begin
+
+      if (SRrw.NewFIFO<0) then begin
+        RecordCheckError(1567,"",i,"NewFIFO");      
+        res = -1;
+        goto LSRPriceVcRecordCheck;
+      end;
+      if (SRrw.Qty<0) then begin
+        RecordCheckError(1574,"",i,"Qty");      
+        res = -1;
+        goto LSRPriceVcRecordCheck;
+      end;
+      if (transf) then begin
+        if (blank(SRrw.NewFIFO)) then begin
+          RecordCheckError(1058,"",i,"NewFIFO");      
+          res = -1;
+          goto LSRPriceVcRecordCheck;
+        end;
+      end;
+      if (Locr.RequirePos!=0) then begin
+        if (SRrw.Qty>0) and (blank(SRrw.PosCode)) then begin
+          RecordCheckError(1854,"",i,"PosCode"); 
+          res = -1;
+          goto LSRPriceVcRecordCheck;
+        end;
+      end;           
+      if (ReadFirstItem(SRrw.ArtCode,INr,true,true)==false) then begin
+        RecordCheckError(1233,"",i,"ArtCode");      
+        res = -1;
+        goto LSRPriceVcRecordCheck;
+      end;
+      if (UserCanAction("DisallowSerNrItemsOnSR",false)) then begin
+        if (INr.SerNrf!=0) then begin
+          RecordCheckError(20105,"",i,"ArtCode");      
+          res = -1;
+          goto LSRPriceVcRecordCheck;
+        end;
+      end;
+      if (UserCanAction("DisallownonSerNrItemsOnSR",false)) then begin
+        if (INr.SerNrf==0) then begin
+          RecordCheckError(20106,"",i,"ArtCode");      
+          res = -1;
+          goto LSRPriceVcRecordCheck;
+        end;
+      end;
+      srvaracc = SRrw.SRVarAcc;
+      if (blank(srvaracc)) then begin
+        srvaracc = SRr.SRVarAcc;
+      end;      
+      if (blank(srvaracc)) then begin
+        RecordCheckError(22041,"",-1,"SRVarAcc");      
+        res = -1;
+        goto LSRPriceVcRecordCheck;
+      end;
+      if (nonblank(srvaracc)) then begin
+        Accr.AccNumber = srvaracc;
+        if (ReadFirstMain(Accr,1,true)==false) then begin
+          RecordCheckError(1007,SRrw.SRVarAcc,i,"SRVarAcc");      
+          res = -1;
+          goto LSRPriceVcRecordCheck;
+        end else begin
+          if ((Accr.blockedFlag!=0) or (Accr.GroupAcc!=0)) then begin
+            RecordCheckError(1084,SRrw.SRVarAcc,i,"SRVarAcc");      
+            res = -1;
+            goto LSRPriceVcRecordCheck;
+          end;
+        end;
+      end;
+      if (SRrw.Qty<0) then begin
+        RecordCheckError(1574,"",i,"Qty");      
+        res = -1; 
+        goto LSRPriceVcRecordCheck;
+      end;
+      VerifyRowObjects("PL",SRr.Objects,SRrw.Objects,srvaracc,errcode,errstr,initotcheckf,otcheckaccs,otcheckobjtyps,otcheckcnt); 
+      if (errcode!=0) then begin
+        RecordCheckError(errcode,errstr,i,"Objects");      
+        res = -1;
+        goto LSRPriceVcRecordCheck;
+      end;
+      if (check!=0) then begin
+        if (transf) then begin
+          prevtot = 0;
+          for (j=0;j<rwcnt;j=j+1) begin
+            MatRowGet(SRr,j,SR2rw);
+            if (SR2rw.ArtCode==SRrw.ArtCode) then begin
+              prevtot = prevtot + SR2rw.Qty;
+            end;
+            if (MSb.SamePriceforItemonSR!=0) then begin
+              if (SR2rw.ArtCode==SRrw.ArtCode) then begin
+                if (SR2rw.NewFIFO!=SRrw.NewFIFO) then begin
+                  RecordCheckError(20087,"",j,"NewFIFO");      
+                  res = -1;
+                  goto LSRPriceVcRecordCheck;
+                end;
+              end;
+            end;
+          end;  
+          
+          prev = SRrw.Qty;
+          for (j=0;j<i;j=j+1) begin
+            MatRowGet(SRr,j,SR2rw);
+            location2 = SR2rw.Location;              
+            if (blank(location2)) then begin
+              location2 = SRr.Location;
+            end;
+            if (blank(location2)) then begin
+              location2 = MSb.MainStock;
+            end;
+            if ((SR2rw.ArtCode==SRrw.ArtCode) and (location2==location)) then begin
+              prev = prev + SR2rw.Qty;
+            end;
+          end;  
+          switch (INr.ItemType) begin
+            case 1:       
+              if (INr.SerNrf==0) or (FIFOPerSerialNr(INr,CAb)==0) then begin                 
+                FindStockValue(SRrw.ArtCode,";;;",ISr);
+                if (ISr.Instock!=prevtot) then begin
+                  RecordCheckError(22040,"",i,"Qty");      
+                  res = -1;
+                  goto LSRPriceVcRecordCheck;
+                end;
+                FindStockValue(SRrw.ArtCode,location,ISr);
+                if (ISr.Instock<prev) then begin
+                  RecordCheckError(1247,"",i,"Qty");      
+                  res = -1;
+                  goto LSRPriceVcRecordCheck;
+                end;
+              end;
+              if (Locr.RequirePos!=0) then begin
+                FindStockValueAtPosition(SRrw.ArtCode,location,SRrw.PosCode,PISr);
+                if (SRrw.Qty>PISr.LeftQty) then begin
+                  RecordCheckError(1397,"",i,"PosCode");      
+                  res = -1; 
+                  goto LSRPriceVcRecordCheck;
+                end;
+              end;                
+          end;
+        end;
+      end;
+      if ((check!=0) and (transf)) then begin
+        if ((nonblank(SRrw.ArtCode)) and (SRrw.Qty==0)) then begin
+          RecordCheckError(1058,"",i,"Qty");      
+          res = -1; 
+          goto LSRPriceVcRecordCheck;
+        end;
+        if (((INr.SerNrf>0) and (INr.SerNrf<3)) and (MSb.NoSerOnPU==0)) then begin
+          if ((nonblank(SRrw.SerialNr)) and (blank(SRrw.ArtCode))) then begin
+            RecordCheckError(1058,"",i,"ArtCode");      
+            res = -1; 
+            goto LSRPriceVcRecordCheck;
+          end;
+          if (IsSerialNrCorrect(SRrw.SerialNr)==false) then begin
+            RecordCheckError(24154,SRrw.SerialNr,i,"SerialNr");      
+            res = -1; 
+            goto LSRPriceVcRecordCheck;
+          end;        
+          if (blank(SRrw.SerialNr)) then begin
+            if (SRrw.Qty!=0) then begin
+              RecordCheckError(1239,"",i,"SerialNr");      
+              res = -1; 
+              goto LSRPriceVcRecordCheck;
+            end;
+          end;
+          if (INr.SerNrf==1) then begin
+            if (SRrw.Qty>1) then begin
+              RecordCheckError(1242,"",i,"SerialNr");      
+              res = -1; 
+              goto LSRPriceVcRecordCheck;
+            end;
+            if (SRrw.Qty>0) then begin
+              for (cnt=0;cnt<i;cnt=cnt+1) begin
+                MatRowGet(SRr,cnt,SR2rw);
+                if ((SRrw.ArtCode==SR2rw.ArtCode) and (SRrw.SerialNr==SR2rw.SerialNr)) then begin
+                  RecordCheckError(1242,"",i,"SerialNr");      
+                  res = -1; 
+                  goto LSRPriceVcRecordCheck;
+                end;
+              end;
+            end;          
+          end;
+          if (SRrw.Qty>0) then begin
+            if (INr.SerNrf==1) then begin
+              if (SerialNrAvail(SRrw.ArtCode,SRrw.SerialNr,location,SRrw.Qty)==false) then begin
+                RecordCheckError(1240,"",i,"SerialNr");      
+                res = -1; 
+                goto LSRPriceVcRecordCheck;
+              end;
+            end else begin
+              prev = 0;
+              for (cnt=0;cnt<i;cnt=cnt+1) begin
+                MatRowGet(SRr,cnt,SR2rw);
+                location2 = SR2rw.Location;              
+                if (blank(location2)) then begin
+                  location2 = SRr.Location;
+                end;
+                if (blank(location2)) then begin
+                  location2 = MSb.MainStock;
+                end;
+                if (nonblank(SRrw.Location)) then begin
+                  if ((SR2rw.ArtCode==SRrw.ArtCode) and (SR2rw.SerialNr==SRrw.SerialNr) and
+                     (location==location2)) then begin
+                     prev = prev + SR2rw.Qty;
+                  end;
+                end;
+              end;
+              prev = prev + SRrw.Qty;
+              if (SerialNrAvail(SRrw.ArtCode,SRrw.SerialNr,location,prev)==false) then begin
+                RecordCheckError(1240,"",i,"SerialNr");      
+                res = -1; 
+                goto LSRPriceVcRecordCheck;
+              end;
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+  if (check!=0) then begin 
+    UpdateSRFIFO(SRr);
+    SRSumup(SRr);
+  end;
+  if (transf) then begin 
+    sernr = -1;
+    if (stat==updatemode) then begin
+      sernr = SR2r.SerNr;
+    end;
+
+    if (check>0) then begin
+      if (MSb.Chronology!=0) then begin 
+        if (ExistStockTrans(SRr.Location,SRr.TransDate,errcode,errstr,"SRPriceVc",sernr,MSb)) then begin
+          RecordCheckError(errcode,errstr,-1,"TransDate");      
+          res = -1;
+          goto LSRPriceVcRecordCheck;
+        end;
+      end;
+    end;
+    if (CanOKStockRecord(errcode)==false) then begin
+      RecordCheckError(errcode,"",-1,"SerNr");      
+      res = -1; 
+      goto LSRPriceVcRecordCheck;
+    end;
+  end;
+LSRPriceVcRecordCheck_GenTrans:;
+  if (gentrans==false) then begin transf = false; end;
+  if (transf) then begin
+    errcode = MakeTransFromSR(gTRp,SRr,false,errofield,errorrow);
+    if (errcode!=0) then begin
+      RecordCheckError(errcode,"",errorrow,errofield);      
+      res = -1;
+      goto LSRPriceVcRecordCheck;
+    end;
+    if ((gTRp.Number>0) and (gTRp.IntYc==SRYc)) then begin
+      errstr = CheckTrans(gTRp,2,true);
+      if (nonblank(errstr)) then begin
+        RecordCheckError(1085,errstr,-1,"SerNr");      
+        res = -1;
+        goto LSRPriceVcRecordCheck;
+      end;
+      if (MatRowCnt(gTRp)>0) then begin
+        switch (gRuniningMaint) begin    
+          case "RecalcStockMn":
+            UpdateTrans_Stock(gTRp);          
+          otherwise
+            SaveTrans(gTRp);
+            AddTTrans_SRPriceVc(gTRp,SRr);
+        end;
+      end;
+    end;        
+  end;*/
+  
+LSRPriceVcRecordCheck:;
+  if (res!=0) then begin
+    SRr.SerNr = oldnr;
+  end;
+  SRPriceVcRecordCheck = res;
+  return;
+end;
+
+global
+function LongInt SRPriceVcRecordReset(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt long3,LongInt long4)
+begin
+  LongInt res;
+  
+  SRr.OKFlag = 0;
+  SRPriceVcRecordReset = res;
+  return;
+end;

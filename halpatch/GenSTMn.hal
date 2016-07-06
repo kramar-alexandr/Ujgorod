@@ -2,7 +2,7 @@ external function Boolean SetInSet2(string,string);
 external procedure CheckFlush(var Integer,Integer);
 external function Boolean ReadFirstItem(string,var record INVc,Boolean,Boolean);
 
-updating procedure AddISToStockTak(var record StockTakeVc STr,record ItemStatusVc ISr,string ingroup,string location,string shelfcode,string itemclass,
+updating procedure AddISToStockTak(record RcVc RepSpec,var record StockTakeVc STr,record ItemStatusVc ISr,string ingroup,string location,string shelfcode,string itemclass,
                    var string lastlocation,string position,var Integer flushcnt)
 begin
   record INVc INr;
@@ -13,6 +13,8 @@ begin
   integer rwcnt;
   record LocationVc Locr;
   record PISVc PISr;
+  Record BarcodeVc BCr;
+  record PLVc PLr;
 
   addrowf = true;
   if (lastlocation!=ISr.Location) then begin
@@ -76,8 +78,30 @@ begin
       if (skipf) and (TrHs) then begin
         if (SerBalr.Serial <> serial) then begin
           serial = SerBalr.Serial;
-          //STrw.Qty = SerBalr.Quant;// Edit ************************** Wednesday, 29 June 2016 12:07:10
-          //STrw.InStock = SerBalr.Quant;// Edit ************************** Wednesday, 29 June 2016 12:05:45
+          if(RepSpec.flags[2]==1)then begin// Edit ************************** Monday, 4 July 2016 14:10:55
+            STrw.Qty = SerBalr.Quant;// Edit ************************** Wednesday, 29 June 2016 12:07:10
+            STrw.InStock = SerBalr.Quant;// Edit ************************** Wednesday, 29 June 2016 12:05:45
+          end;
+          // Edit Start ---------------------------------------------- Edit Start
+	//Monday, 4 July 2016 16:21:07
+	
+          BCr.Itemcode = STrw.ArtCode;
+          BCr.SerialNr = SerBalr.Serial;
+          if(readfirstkey("SerialNr",BCr,1,true))then begin
+          	if(BCr.Itemcode==STrw.ArtCode)then begin
+          		STrw.BarCode = BCr.Barcode;
+          	end;
+          end;
+          PLr.ArtCode = STrw.ArtCode;
+          PLr.SerialNr = SerBalr.Serial;
+          PLr.PLCode = "RRP";
+          if(readfirstkey("SerialNr",PLr,3,true))then begin
+          	STrw.Price = PLr.ExVatPrice;
+          end;
+          
+          
+	// Edit End ---------------------------------------------- Edit End
+	
           STrw.SerialNr = SerBalr.Serial;
           STrw.BasePrice = INr.UPrice1;
           STrw.UnitXval = INr.Width;
@@ -123,8 +147,31 @@ begin
             if (PISr.Position!=position) then begin testf = false; end;
           end;
           if (testf) then begin
-            //STrw.Qty = PISr.Instock;// Edit ************************** Wednesday, 29 June 2016 12:07:17
-            //STrw.InStock = PISr.Instock;
+          	if(RepSpec.flags[2]==1)then begin// Edit ************************** Monday, 4 July 2016 14:10:55
+							//STrw.Qty = PISr.Instock;// Edit ************************** Wednesday, 29 June 2016 12:07:17
+							//STrw.InStock = PISr.Instock;
+            end;
+            
+            // Edit Start ---------------------------------------------- Edit Start
+	//Monday, 4 July 2016 16:21:07
+	
+          BCr.Itemcode = STrw.ArtCode;
+          BCr.SerialNr = SerBalr.Serial;
+          if(readfirstkey("SerialNr",BCr,1,true))then begin
+          	if(BCr.Itemcode==STrw.ArtCode)then begin
+          		STrw.BarCode = BCr.Barcode;
+          	end;
+          end;
+          PLr.ArtCode = STrw.ArtCode;
+          PLr.SerialNr = SerBalr.Serial;
+          PLr.PLCode = "RRP";
+          if(readfirstkey("SerialNr",PLr,3,true))then begin
+          	STrw.Price = PLr.ExVatPrice;
+          end;
+          
+          
+	// Edit End ---------------------------------------------- Edit End
+            
             STrw.BasePrice = INr.UPrice1;
             STrw.UnitXval = INr.Width;
             STrw.UnitYval = INr.Height;
@@ -138,8 +185,31 @@ begin
       end;
 
     end else begin
-      //STrw.Qty = ISr.Instock;// Edit ************************** Wednesday, 29 June 2016 12:07:28
-      //STrw.InStock = ISr.Instock;// Edit ************************** Wednesday, 29 June 2016 12:07:24
+    	if(RepSpec.flags[2]==1)then begin// Edit ************************** Monday, 4 July 2016 14:10:55
+				//STrw.Qty = ISr.Instock;// Edit ************************** Wednesday, 29 June 2016 12:07:28
+				//STrw.InStock = ISr.Instock;// Edit ************************** Wednesday, 29 June 2016 12:07:24
+      end;
+      
+      // Edit Start ---------------------------------------------- Edit Start
+	//Monday, 4 July 2016 16:21:07
+	
+          BCr.Itemcode = STrw.ArtCode;
+          BCr.SerialNr = SerBalr.Serial;
+          if(readfirstkey("SerialNr",BCr,1,true))then begin
+          	if(BCr.Itemcode==STrw.ArtCode)then begin
+          		STrw.BarCode = BCr.Barcode;
+          	end;
+          end;
+          PLr.ArtCode = STrw.ArtCode;
+          PLr.SerialNr = SerBalr.Serial;
+          PLr.PLCode = "RRP";
+          if(readfirstkey("SerialNr",PLr,3,true))then begin
+          	STrw.Price = PLr.ExVatPrice;
+          end;
+          
+          
+	// Edit End ---------------------------------------------- Edit End
+      
       STrw.BasePrice = INr.UPrice1;
       STrw.UnitXval = INr.Width;
       STrw.UnitYval = INr.Height;
@@ -211,7 +281,7 @@ begin
         if (vvarietyf[ISr.Code & ISr.Variety & ISr.Location]==true) then begin testf = false; end;
         if (testf) then begin
           vvarietyf[ISr.Code & ISr.Variety & ISr.Location] = true;
-          AddISToStockTak(STr,ISr,RepSpec.FirstAcc,ISr.Location,RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);
+          AddISToStockTak(RepSpec,STr,ISr,RepSpec.FirstAcc,ISr.Location,RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);
         end;
       end;
     case 1:
@@ -253,7 +323,7 @@ begin
               if (ReadFirstMain(ISr,2,true)) then begin
                 testf = true;
                 if (ISr.Instock>0) then begin
-                  AddISToStockTak(STr,ISr,INr.Group,alocstr[apos],RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);
+                  AddISToStockTak(RepSpec,STr,ISr,INr.Group,alocstr[apos],RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);
                 end;
               end;
             end;
@@ -300,7 +370,7 @@ begin
               if (ReadFirstMain(ISr,2,true)) then begin
                 testf = true;
                 if (ISr.Instock>0) then begin
-                  AddISToStockTak(STr,ISr,INr.Group,alocstr[apos],RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);
+                  AddISToStockTak(RepSpec,STr,ISr,INr.Group,alocstr[apos],RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);
                 end;
               end;
             end;
