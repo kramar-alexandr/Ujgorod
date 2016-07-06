@@ -2551,7 +2551,7 @@ begin
   //SpecialMenu("Відкрити запис операцій",'t',1,"OpenTRFromSR");
   end;
   SpecialMenu("Друк етикеток",'e',1,"ItemSearchDsm");
-  SpecialMenu("Пошук товару",'f',1,"ItemSearchDsm");
+  //SpecialMenu("Пошук товару",'f',1,"ItemSearchDsm");
   EndWindow;
 end;
 

@@ -1,0 +1,432 @@
+//external function string 40 ObjSClassPasteSpecialWindowClass(string);
+remote procedure SRPriceVc_PasteSerialNr(var record SRPriceVc,Integer);
+external function val CalculateSerialNrQuantity(string,string,string,Boolean,val,val,val,val);
+//external function Integer OpenArtStat(Integer,record RcVc,Boolean);
+//external procedure WarnFutureDate(Boolean,Date);
+remote function Boolean SRPriceVc_PasteLocation(var record SRPriceVc,Integer);
+//remote function Boolean SRPriceVc_PasteACShort(var record SRPriceVc,Integer);
+remote procedure SRPriceVc_PasteNewFIFO(var record SRPriceVc,Integer);
+//remote function Integer CreateQualConFromSD(record SDVc,Integer,var record QualConVc,Integer);
+//external procedure FindOTforAcc(string,var string);
+//external function Boolean TestForMATVARINS(Integer);
+//remote procedure SRPriceVc_PastePosCode(var record SRPriceVc,Integer);
+external function string 40 SerialNrSClassSpecPName(string);
+remote function Boolean SRPriceVc_PasteArtCode(var record SRPriceVc,Integer,Boolean,var string);
+//external function Boolean WarnOldRecords(Date,string,LongInt );
+//external function Boolean DateWarned(Date,string);
+//external procedure SendArtStat(string,string,string,val,val,val,Date,Integer);
+external procedure SRPriceSumUp(var record SRPriceVc);
+
+/*global
+function Boolean SRPriceDClassVcSwitchRow(Integer wn,Integer rownr)
+begin        
+  record SRPriceVc SRr;  
+  row SRPriceVc SRrw; 
+  Integer rwcnt;
+  Boolean res;
+  val t,tproc,unitprdisc,s,rowsum,sum;
+  string 255 recepy,location;
+
+  res = true;
+  GetWindowRecord(wn,SRr);
+  rwcnt = MatRowCnt(SRr);  
+  if ((rownr<rwcnt) and (rownr>=0)) then begin
+    MatRowGet(SRr,rownr,SRrw);
+    recepy = "";
+    location = SRrw.Location;
+    if (blank(location)) then begin   
+      location = SRr.Location;
+    end;
+    //SendArtStat(SRrw.ArtCode,location,recepy,t,tproc,unitprdisc,SRr.TransDate,0);
+    SetWindowNameArg(wn,SRrw.ArtCode & ":" & location);
+  end;
+  SRPriceDClassVcSwitchRow = res;  
+  return;
+end;*/
+
+global
+function Boolean SRPriceDClassVcUnitXvalEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  row SRPriceVc SRrw;
+  record SRPriceVc SRr;
+  Boolean res;
+  
+  res = true;
+  if ((changedf) and (rownr>=0)) then begin
+    GetWindowRecord(wn,SRr);
+    MatRowGet(SRr,rownr,SRrw);
+    SRrw.Qty = CalculateSerialNrQuantity(SRrw.ArtCode,"","",false,SRrw.UnitXval,SRrw.UnitYval,SRrw.UnitZval,SRrw.Qty);
+    MatRowPut(SRr,rownr,SRrw);
+    SRPriceSumUp(SRr);    
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassVcUnitXvalEFAfter = res;
+  return;
+end;
+
+global
+function Boolean SRPriceDClassVcUnitYvalEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  row SRPriceVc SRrw;
+  record SRPriceVc SRr;
+  Boolean res;
+  
+  res = true;
+  if ((changedf) and (rownr>=0)) then begin
+    GetWindowRecord(wn,SRr);
+    MatRowGet(SRr,rownr,SRrw);
+    SRrw.Qty = CalculateSerialNrQuantity(SRrw.ArtCode,"","",false,SRrw.UnitXval,SRrw.UnitYval,SRrw.UnitZval,SRrw.Qty);
+    MatRowPut(SRr,rownr,SRrw);
+    SRPriceSumUp(SRr);    
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassVcUnitYvalEFAfter = res;
+  return;
+end;
+
+global
+function Boolean SRPriceDClassVcUnitZvalEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  row SRPriceVc SRrw;
+  record SRPriceVc SRr;
+  Boolean res;
+  
+  res = true;
+  if ((changedf) and (rownr>=0)) then begin
+    GetWindowRecord(wn,SRr);
+    MatRowGet(SRr,rownr,SRrw);
+    SRrw.Qty = CalculateSerialNrQuantity(SRrw.ArtCode,"","",false,SRrw.UnitXval,SRrw.UnitYval,SRrw.UnitZval,SRrw.Qty);    
+    MatRowPut(SRr,rownr,SRrw);
+    SRPriceSumUp(SRr);    
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassVcUnitZvalEFAfter = res;
+  return;
+end;
+
+global
+function Boolean SRPriceDClassVcSerialNrEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record SRPriceVc SRr;
+  Boolean res;
+  
+  res = true;
+  if ((changedf) and (rownr>=0)) then begin
+    GetWindowRecord(wn,SRr);
+    SRPriceVc_PasteSerialNr(SRr,rownr);
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassVcSerialNrEFAfter = res;
+  return;
+end;
+
+function Boolean SRPriceDClassVcTransDateEFAfter(Integer wn,Boolean changedf)
+begin
+  row SRPriceVc SRrw;
+  record SRPriceVc SRr;
+  Boolean res;
+  
+  res = true;
+  if (changedf) then begin
+    GetWindowRecord(wn,SRr);
+    /*if (DateWarned(SRr.TransDate,"SRPriceVc")) then begin
+      MessageBox(1045,"");
+    end;*/
+    /*if (WarnOldRecords(SRr.TransDate,"SRPriceVc",SRr.SerNr)) then begin
+      MessageBox(2020,"");
+    end;*/
+    //WarnFutureDate(true,SRr.TransDate);
+//JJCS    
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassVcTransDateEFAfter = res;
+  return;
+end;
+
+function Boolean SRPriceDClassVcArtCodeEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record SRPriceVc SRr;
+  Boolean res;
+  string 255 inwarn;
+  
+  res = true;
+  if (changedf) then begin
+    GetWindowRecord(wn,SRr);
+    if (SRPriceVc_PasteArtCode(SRr,rownr,changedf,inwarn)) then begin
+      if (nonblank(inwarn)) then begin
+        MessageBox(0,inwarn);
+      end;
+      PutWindowRecord(wn,SRr);    
+      //if (SRPriceDClassVcSwitchRow(wn,rownr)) then begin end;
+    end else begin
+      Beep;
+    end;
+  end;
+  SRPriceDClassVcArtCodeEFAfter = res;
+  return;
+end;
+
+function Boolean SRPriceDClassVcNewFIFOEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  Boolean res;
+  record SRPriceVc SRr;
+    
+  res = true;
+  if (changedf) then begin    
+    GetWindowRecord(wn,SRr);
+    SRPriceVc_PasteNewFIFO(SRr,rownr);
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassVcNewFIFOEFAfter = res;
+  return;
+end;
+
+/*function Boolean SRPriceDClassVcPosCodeEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record SRPriceVc SRr;
+  Boolean res;
+  
+  res = true;
+  if ((changedf) and (rownr>=0)) then begin
+    GetWindowRecord(wn,SRr);
+    //SRPriceVc_PastePosCode(SRr,rownr);
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassVcPosCodeEFAfter = res;
+  return;
+end;*/
+
+/*function Boolean SRPriceDClassVcACShortEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record SRPriceVc SRr;
+  Boolean res;
+  
+  if (changedf) then begin
+    GetWindowRecord(wn,SRr);
+    res = SRPriceVc_PasteACShort(SRr,rownr);
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassVcACShortEFAfter = res;
+  return;
+end;*/
+
+
+function Boolean SRPriceDClassVcLocationEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record SRPriceVc SRr;
+  Boolean res;
+  
+  if (changedf) then begin
+    GetWindowRecord(wn,SRr);
+    res = SRPriceVc_PasteLocation(SRr,rownr);
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassVcLocationEFAfter = res;
+  return;
+end;
+
+global
+function Boolean SRPriceDClassVcAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  switch (fieldname) begin
+    case "ArtCode": res = SRPriceDClassVcArtCodeEFAfter(wn,rownr,changed!=0);
+    case "NewFIFO": res = SRPriceDClassVcNewFIFOEFAfter(wn,rownr,changed!=0);
+    //case "TransDate": res = SRPriceDClassVcTransDateEFAfter(wn,changed!=0);
+    case "SerialNr": res = SRPriceDClassVcSerialNrEFAfter(wn,rownr,changed!=0);
+    //case "UnitZval": res = SRPriceDClassVcUnitZvalEFAfter(wn,rownr,changed!=0);
+    //case "UnitYval": res = SRPriceDClassVcUnitYvalEFAfter(wn,rownr,changed!=0);
+    //case "UnitXval": res = SRPriceDClassVcUnitXvalEFAfter(wn,rownr,changed!=0);
+    //case "PosCode": res = SRPriceDClassVcPosCodeEFAfter(wn,rownr,changed!=0);
+    //case "ACShort": res = SRPriceDClassVcACShortEFAfter(wn,rownr,changed!=0);
+    case "Location": res = SRPriceDClassVcLocationEFAfter(wn,rownr,changed!=0);
+  end;
+  SRPriceDClassVcAfterEditField = res;
+  return;
+end;
+
+/*global
+function Boolean SRPriceDClassVcOnOverStrike(Integer wn,Integer rownr)
+begin
+  record SRPriceVc SRr;
+  Boolean res;
+
+  if (rownr>=0) then begin
+    GetWindowRecord(wn,SRr);    
+    SRPriceSumUp(SRr);
+    PutWindowRecord(wn,SRr);    
+  end;
+  res = true;
+  SRPriceDClassVcOnOverStrike = true;
+  return;
+end;*/
+
+/*global
+procedure ItemStatusSRDsm()
+begin
+  Integer wn,nwn;
+  Boolean testf;
+  record RcVc RepSpec;
+  
+  wn = CurWindow;
+  nwn = OpenArtStat(wn,RepSpec,false);
+  testf = SRPriceDClassVcSwitchRow(wn,WindowActiveRow(wn));
+  return;
+end;*/
+
+global 
+function Boolean SRPriceDClassVcDeleteRowTest(Integer wn,Integer rownr)
+begin
+  Boolean res;
+  record SRPriceVc SRr;
+  row SRPriceVc SRrw;
+
+  res = true;
+  if (WindowState(wn)==Rs_update) then begin
+    GetPrevWindowRecord(wn,SRr);    
+    if (SRr.OKFlag!=0) then begin res = false; end;
+  end;
+  if (WindowState(wn)==Rs_normal) then begin
+    GetWindowRecord(wn,SRr);    
+    if (SRr.OKFlag!=0) then begin res = false; end;
+  end;
+  if (res) then begin
+    MatRowGet(SRr,rownr,SRrw);
+    res = blank(SRrw.ArtCode);
+    if (res==false) then begin
+      res = nonblank(SRrw.SerialNr);
+    end;
+  end;
+  SRPriceDClassVcDeleteRowTest = res;
+  return;
+end;
+
+global 
+function Boolean SRPriceDClassVcInsertRowTest(Integer wn, Integer rownr)
+begin
+  Boolean res;
+  record SRPriceVc SRr;
+
+  res = true;
+  SRPriceDClassVcInsertRowTest = res;
+  return;
+end;
+
+global
+function Boolean SRPriceDClassVcActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record SRPriceVc SRr;
+  
+  res = true;
+  if (wnst==2) then begin//Rs_update
+    GetPrevWindowRecord(wn,SRr);
+    if (SRr.OKFlag!=0) then begin
+      res = false;
+      switch (fieldname) begin
+        case "Comment": res = true;
+        case "Qty": res = true;
+      end;
+    end;
+  end;
+  switch (fieldname) begin
+    //case "SerialNr": res = false;
+    case "Qty": res = false;
+    case "FIFO": res = false;
+    case "FIFORowVal": res = false;
+    //case "NewFIFORowVal": res = false;
+    //case "DiffFIFO": res = false;
+    //case "DiffFIFORowVal": res = false;
+  end;
+  SRPriceDClassVcActiveEditField = res;
+  return;
+end;
+
+global
+function Boolean SRPriceDClassVcOKFlagButtonAction(Integer wn,Integer value)
+begin
+  Boolean res;
+  Integer normalmode,updatemode;
+  record SRPriceVc SRr;
+
+  res = true;
+  normalmode = 0;//Rs_normal
+  updatemode = 2;//Rs_update
+  if (WindowState(wn)==normalmode) then begin
+    GetWindowRecord(wn,SRr);
+  end;  
+  if (WindowState(wn)==updatemode) then begin
+    GetPrevWindowRecord(wn,SRr);
+  end;  
+  if (SRr.OKFlag!=0) then begin
+    res = false;
+    if (UserCanAction("UnOKAll",false)) then begin
+      res = true;
+    end;
+  end;
+  SRPriceDClassVcOKFlagButtonAction = res;
+  return;
+end;
+
+/*function string 40 SRPriceDClassVcSpecPasteNameObjects(Integer wn)
+begin
+  record SRPriceVc SRr;
+  row SRPriceVc SRrw;
+  Integer rownr;
+  string 200 typ;
+  string 255 psname,accnr;
+
+  GetWindowRecord(wn,SRr);
+  rownr = WindowActiveRow(wn);
+  typ="";
+  if (rownr>=0) then begin
+    MatRowGet(SRr,rownr,SRrw);
+    accnr = SRrw.SRVarAcc;
+  end;
+  if (blank(accnr)) then begin
+    accnr = SRr.SRVarAcc;
+  end;
+  FindOTforAcc(accnr,typ);
+  if (nonblank(typ)) then begin
+    psname = "TRObjSClass";
+  end else begin    
+    psname = ObjSClassPasteSpecialWindowClass("ObjSClass");
+  end;
+  SRPriceDClassVcSpecPasteNameObjects = psname;
+  return;
+end;*/
+
+global
+function string 40 SRPriceDClassVcSpecPasteName(Integer wn,string defpsname)
+begin
+  string 255 psname;
+  
+  psname = defpsname;
+  switch (WindowActiveField(wn)) begin
+    case "SerialNr": psname = SerialNrSClassSpecPName(defpsname);
+    //case "Objects": psname = SRPriceDClassVcSpecPasteNameObjects(wn);
+  end;
+  SRPriceDClassVcSpecPasteName = psname;
+  return;
+end;
+/*
+global
+function Boolean SRPriceDClassVcBeforeEditField(Integer wn,string fieldname,Integer fn, Integer rownr)
+begin
+  Boolean res;
+  record SRPriceVc SRr;
+  row SRPriceVc SRrw;
+
+  switch (fieldname) begin  
+    case "Qty":     
+      GetWindowRecord(wn,SRr);      
+      MatRowGet(SRr,rownr,SRrw);
+      if (SRrw.Qty==0) then begin
+        if (TestForMATVARINS(wn)) then begin end;
+      end;
+  end;
+  SRPriceDClassVcBeforeEditField = res;
+  return;
+end;
+*/
