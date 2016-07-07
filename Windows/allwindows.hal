@@ -2483,12 +2483,12 @@ begin
   MatrixBegin(4,v,-50,-40,-,500);
   Flip(0);
   MatCol(1,32,"Товар",0,ArtCode,false,INSClass);
-  MatCol(1,94,"К-ть друк.",0,Qty,true,0);
+  MatCol(1,94,"К-ть",0,Qty,true,0);
   flipnr = 1;
   Flip(flipnr); flipnr = flipnr + 1;
   if (HasSerialNumbers) then begin
-  MatCol(1,144,"Сер.№",0,SerialNr,false,SerialNrSClass);
-  MatCol(1,244,"Опис",0,Spec,false,0);
+  MatCol(1,140,"Сер.№",0,SerialNr,false,SerialNrSClass);
+  MatCol(1,255,"Опис",0,Spec,false,0);
   end else begin
     MatCol(1,144,"Description",0,Spec,false,0); //!!PRODTRANSLATE
   end;

@@ -768,6 +768,31 @@ BEGIN
   RETURN;
 END;
 
+global //Edit***************************Sasha2,16:16 07.07.2016 {
+procedure SRPriceVc_SerialNrSClass(Integer type,Integer wn,Integer mwn,var Array string asernrstr,var Integer acnt)
+BEGIN
+  record SRPriceVc SRPricer;
+  row SRPriceVc SRPricerw;
+  Integer rn,rwcnt;
+  string 255 location
+  
+  GetWindowRecord(mwn,SRPricer);
+  rn = WindowActiveRow(mwn);
+  rwcnt = MatRowCnt(SRPricer); 
+  location = SRPricer.Location; LogText(0,"SRPricer:" & rn & " " & rwcnt);
+  if (rn<=rwcnt) and (rn>=0) then begin LogText(0,"SRPricer:" & location);
+    MatRowGet(SRPricer,rn,SRPricerw);
+    if (nonblank(SRPricerw.Location)) then begin
+      location = SRPricerw.Location;
+    end;
+    switch (type) begin
+      case 1: FillSerialNr(SRPricerw.ArtCode,location,asernrstr,acnt); LogText(0,"acnt:" & acnt);
+      case 2: FillSerialNr2(SRPricerw.ArtCode,location,asernrstr,acnt);
+    end;
+  end;  
+  RETURN;
+END; //Edit***************************Sasha2,16:16 07.07.2016 }
+
 global
 procedure SHVc_SerialNrSClass(Integer type,Integer wn,Integer mwn,var Array string asernrstr,var Integer acnt)
 BEGIN
