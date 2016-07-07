@@ -280,6 +280,9 @@ LSRPriceVc_PasteArtCode:;
     ISr.Location = location;
     if (ReadFirstMain(ISr,2,true)) then begin
       PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,"",ISr.Instock);
+    end else begin
+      ISr.Code = INr.Code;
+      PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,"",0);
     end;
   end; //Edit***************************Sasha2,14:23 07.07.2016 }
   SRPriceSumUp(SRp);
