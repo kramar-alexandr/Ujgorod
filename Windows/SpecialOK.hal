@@ -483,8 +483,8 @@ begin
 					recordcopy(oldIVr,IVr);
 					IVrw.Price = stringtoval(resobj[2],M4Val);
 					IVrw.vRebate = stringtoval(resobj[3],M4Val);
-					IVrw.FIFO = stringtoval(resobj[5],M4Val);
-					IVrw.FIFORowVal = stringtoval(resobj[6],M4Val);
+					IVrw.RetIVNum = stringtoval(resobj[5],M4Val);
+					IVrw.RetIVRow = stringtoval(resobj[6],M4Val);
 					matrowput(IVr,rn,IVrw);
 					IVVc_PastePrice(IVr,oldIVr,rn,inwarning);
 					putwindowrecord(mwn,IVr);

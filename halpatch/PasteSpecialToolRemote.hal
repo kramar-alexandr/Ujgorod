@@ -1726,7 +1726,6 @@ BEGIN
   		if(IHr.Qty>0)then begin testf = false; end;
   		
   		if(testf)then begin
-  			logtext(0,IHr.SerialNr);
   			IVr.SerNr = IHr.TransNr;
   			readfirstmain(IVr,1,true);
   			mtrw = matrowcnt(IVr);
@@ -1743,7 +1742,7 @@ BEGIN
   				IVrw.FIFORowVal = 0;
   			end;
   			
-  			asernrstr[acnt] = IHr.SerialNr & " " & IHr.TransDate & " " & IVrw.Price & " " & IVrw.vRebate & " " & IVrw.Sum & " " & IVrw.FIFO & " " & IVrw.FIFORowVal;
+  			asernrstr[acnt] = IHr.SerialNr & " " & IHr.TransDate & " " & IVrw.Price & " " & IVrw.vRebate & " " & IVrw.Sum & " " & IVr.SerNr & " " & IHr.Row;
 				acnt = acnt + 1;
   		end;
   	end;

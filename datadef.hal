@@ -223,6 +223,14 @@ begin
   KeySegment(TransDate);
   KeySegment(SerNr);
   EndRecord;
-		
+	
+	
+	RecordAddBegin(IVVc,"MyIVVc1"); 
+		ArrayField(RetIVNum,M4Long,0,0);
+		ArrayField(RetIVRow,M4Int,0,0); 
+	EndRecordAdd;
+			
 return;
 end;
+
+
