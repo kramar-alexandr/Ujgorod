@@ -2352,6 +2352,7 @@ begin
       end;
     end else begin
       MatCol(1,32,"Товар",0,ArtCode,false,INSClass);
+      EnterSkip(ArtCode);
 //    MatCol(1,94,"Var",0,VARList,false,VARSClass);
     	MatCol(1,144,"Кіл",0,Qty,true,0);
       /*if (HasVarieties) then begin //Edit***************************Sasha2,15:15 24.06.2016
