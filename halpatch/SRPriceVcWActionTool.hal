@@ -67,6 +67,55 @@ LFindPurchaseInvoiceNrForSerialNr:;
   return;
 end;
 
+//Edit***************************Sasha2,15:24 08.07.2016 {
+procedure FindLastCostPriceForSRPrice(string artCode,string serial,string location,var val lastcostprice,var string cur)
+begin
+  record ItemHistVc IHr;
+  record PUVc PUr;
+  Boolean TrHs,testf;
+  Integer keycnt;
+  string 20 keyname;
+  
+    lastcostprice = BlankVal;
+    cur = "";
+    if (blank(location)) then begin
+      goto LFindLastCostPriceForSRPrice;
+    end;
+    
+    if (NonBlank(serial)) then begin
+      IHr.ArtCode = artCode;
+      IHr.SerialNr = serial;
+      IHr.FileName = "PUVc";
+      keyname = "ArtCodeSerialNr";
+    end else begin
+      IHr.FileName = "PUVc";
+      IHr.ArtCode = artCode;
+      IHr.TransDate = CurrentDate;
+      keyname = "FNArtCode";
+    end;
+    TrHs = true;
+    RESETLOOP(IHr);
+    while (LoopBackKey(keyname,IHr,3,TrHs)) begin
+      testf = true;
+      if (NonBlank(serial) and (IHr.FileName!="PUVc" or IHr.ArtCode!=artCode or IHr.SerialNr!= serial)) then begin TrHs = false; testf = false; end;
+      if (Blank(serial) and (IHr.FileName!="PUVc" or IHr.ArtCode!=artCode)) then begin TrHs = false; testf = false; end;
+      if (IHr.Location!=location) then begin testf = false; end;
+      if (testf) then begin
+        lastcostprice = IHr.TotCostPrice/IHr.Qty;
+        PUr.SerNr = IHr.TransNr;
+        if (ReadFirstMain(PUr,1,true)) then begin
+          cur = PUr.CurncyCode;
+        end;
+        TrHs = false;
+      end;
+    end;
+    
+LFindLastCostPriceForSRPrice:;
+    
+  return;
+end; //Edit***************************Sasha2,15:24 08.07.2016 }
+
+//Edit***************************Sasha2,15:23 08.07.2016 {
 procedure FindPriceInPlAndUpdDiffs(var row SRPriceVc SRrw,string artCode,string serial)
 begin
   record PLVc PLr; 
@@ -90,7 +139,7 @@ begin
     end;
   
   return;
-end;
+end; //Edit***************************Sasha2,15:23 08.07.2016 }
   
 global  
 procedure PasteArtCodeToSRPrice(var record SRPriceVc SRp,Integer rownr,integer initrownr,record ItemStatusVc ISr,string serial,val q)
@@ -99,7 +148,8 @@ begin
   record INVc INr;
   LongInt vinr,virownr;
   record LocationVc Locr;
-  
+  val lastcostprice;
+  string 20 lastcostcur,location;
 
   ReadFirstItem(ISr.Code & ISr.Variety,INr,true,true);
   SRrw.Coefficient = INr.UnitCoefficient;
@@ -115,6 +165,14 @@ begin
   SRrw.VEInvoiceNr = FindPurchaseInvoiceNrForSerialNr(SRrw.ArtCode,SRrw.SerialNr,vinr,virownr);
   SRrw.Qty = q;
   FindPriceInPlAndUpdDiffs(SRrw,INr.Code,serial);
+  if (NonBlank(SRrw.Location)) then begin
+    location = SRrw.Location;
+  end else begin
+    location = SRp.Location;
+  end;
+  FindLastCostPriceForSRPrice(INr.Code,serial,location,lastcostprice,lastcostcur);
+  SRrw.LastCostPrice = lastcostprice;
+  SRrw.CurncyCode = lastcostcur;
   
 /*
 done when creating  NL Transaction
@@ -409,6 +467,8 @@ end;*/
 procedure SRPriceVc_PasteLocation_HandleRow(var row SRPriceVc SRrw,Integer rownr,string location)
 begin
   record ItemStatusVc ISr;
+  val lastcostprice;
+  string 20 lastcostcur;
   
     if (blank(SRrw.SerialNr)) then begin
       ISr.Code = SRrw.ArtCode;
@@ -424,6 +484,9 @@ begin
       end;
       FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,SRrw.SerialNr);
     end;
+    FindLastCostPriceForSRPrice(SRrw.ArtCode,SRrw.SerialNr,location,lastcostprice,lastcostcur);
+    SRrw.LastCostPrice = lastcostprice;
+    SRrw.CurncyCode = lastcostcur;
     
   return;
 end; //Edit***************************Sasha2,15:49 07.07.2016 }
@@ -463,6 +526,8 @@ begin
   string 20 location;
   record INVc INr;
   record SerNrTrackBlock SNrb;
+  val lastcostprice;
+  string 20 lastcostcur;
 
   MatRowGet(SRr,rownr,SRrw);
   oldquant = SRrw.Qty;
@@ -494,6 +559,15 @@ begin
       chsum = true;
     end;
   end;
+  if (Blank(SRrw.SerialNr)) then begin //Edit***************************Sasha2,16:12 08.07.2016 {
+    SRrw.LastCostPrice = BlankVal;
+    SRrw.CurncyCode = "";
+  end else begin
+    FindLastCostPriceForSRPrice(SRrw.ArtCode,SRrw.SerialNr,location,lastcostprice,lastcostcur);
+    SRrw.LastCostPrice = lastcostprice;
+    SRrw.CurncyCode = lastcostcur;
+  end; //Edit***************************Sasha2,16:12 08.07.2016 }
+  
   MatRowPut(SRr,rownr,SRrw);
   if (chsum) then begin
     SRPriceSumUp(SRr);

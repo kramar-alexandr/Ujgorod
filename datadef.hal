@@ -204,6 +204,8 @@ begin
   ArrayField(DiffFIFO,M45Val,0,0);
   ArrayField(DiffFIFORowVal,M45Val,0,0);
   ArrayField(VEInvoiceNr,M4Str,20,0);
+  ArrayField(LastCostPrice,M45Val,0,0); //Edit***************************Sasha2,14:42 08.07.2016
+  ArrayField(CurncyCode,M4Code,5,CurncyCodeVc); //Edit***************************Sasha2,14:41 08.07.2016
   EndArray;  
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);

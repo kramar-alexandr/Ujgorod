@@ -38,6 +38,43 @@ external procedure GetPRInvSep(string,var Integer,var Integer);
 external function Integer GetItemTypeGroup(string,var string);
 external updating function val NextLocOKNr(string);
 
+//Edit***************************Sasha2,11:35 08.07.2016 {
+updating procedure UpdateRRPPrices(record SRPriceVc SRPricer)
+begin
+  record PLVc PLr;
+  record INVc INr;
+  row SRPriceVc SRPricerw;
+  integer i,rwcnt;
+    
+    rwcnt = MatRowCnt(SRPricer);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(SRPricer,i,SRPricerw);
+      PLr.PLCode = "RRP";
+      PLr.ArtCode = SRPricerw.ArtCode;
+      PLr.SerialNr = SRPricerw.SerialNr;
+      if (ReadFirstKey("SerialNr",PLr,3,true)) then begin
+        if (PLr.ExVatPrice!=SRPricerw.NewFIFO) then begin
+          PLr.ExVatPrice = SRPricerw.NewFIFO;
+          RECORDSTORE(PLr,true);
+        end;
+      end else begin
+        if (SRPricerw.NewFIFO!=blankval and SRPricerw.NewFIFO!=0) then begin
+          RECORDNEW(PLr);
+          PLr.PLCode = "RRP";
+          PLr.ArtCode = SRPricerw.ArtCode;
+          INr.Code = SRPricerw.ArtCode;
+          ReadFirstMain(INr,1,true);
+          PLr.Comment = INr.Name;
+          PLr.SerialNr = SRPricerw.SerialNr;
+          PLr.ExVatPrice = SRPricerw.NewFIFO;
+          RECORDSTORE(PLr,true);
+        end;
+      end;
+    end;
+  
+  return;
+end; //Edit***************************Sasha2,11:35 08.07.2016 }
+
 global
 function LongInt SRPriceVcRecordDefaults(var record SRPriceVc SRr,record SRPriceVc SR2r,LongInt stat,LongInt long4)
 begin
@@ -93,7 +130,10 @@ updating function LongInt SRPriceVcRecordSaveAfter(var record SRPriceVc SRr,reco
 begin
   LongInt res;
 
-
+    if (SRr.OKFlag!=0) then begin
+      UpdateRRPPrices(SRr); //Edit***************************Sasha2,11:35 08.07.2016
+    end;
+    
   SRPriceVcRecordSaveAfter = res;
   return;
 end;
@@ -116,6 +156,9 @@ begin
   val LocOKNr;
   Boolean ihef;
   
+    if (SR2r.OKFlag==0 and SRr.OKFlag!=0) then begin
+      UpdateRRPPrices(SRr); //Edit***************************Sasha2,11:35 08.07.2016
+    end;
   
   SRPriceVcRecordUpdateAfter = res;
   return;

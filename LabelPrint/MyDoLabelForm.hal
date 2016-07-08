@@ -179,13 +179,18 @@ BEGIN
     OUTFORMFIELD("F_PRIS",tstr);
   end;
   
-  PLr.ArtCode = artcode;
+  if (FIELDINFORM("F_AGREEDPRICE")) then begin //Edit***************************Sasha2,14:06 08.07.2016 {
+    tstr = PUrw.ShipCost;
+    OUTFORMFIELD("F_AGREEDPRICE",tstr);
+  end; //Edit***************************Sasha2,14:06 08.07.2016 }
+  
+  /*PLr.ArtCode = artcode;
   PLr.PLCode = "OLD";
   PLr.SerialNr = PUrw.SerialNr;
   if(readfirstkey("SerialNr",PLr,3,true))then begin
 		oldprice = PLr.ExVatPrice;
 		OUTFORMFIELD("F_AGREEDPRICE",oldprice);
-  end;
+  end;*/
   
   
   /*pos = 0;

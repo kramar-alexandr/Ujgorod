@@ -2487,14 +2487,18 @@ begin
   flipnr = 1;
   Flip(flipnr); flipnr = flipnr + 1;
   if (HasSerialNumbers) then begin
-  MatCol(1,140,"Сер.№",0,SerialNr,false,SerialNrSClass);
-  MatCol(1,255,"Опис",0,Spec,false,0);
+  MatCol(1,130,"Сер.№",0,SerialNr,false,SerialNrSClass);
+  MatCol(1,235,"Опис",0,Spec,false,0);
   end else begin
     MatCol(1,144,"Description",0,Spec,false,0); //!!PRODTRANSLATE
   end;
-  MatCol(1,-240,"Стара ціна",0,FIFO,true,0);
-  MatCol(1,-160,"Нова ціна",0,NewFIFO,true,0);
-  MatCol(1,-80,"Різн.",0,DiffFIFO,true,0);
+  if (UserCanAction("HideLastCostPrice",false)==false) then begin
+    MatCol(1,-280,"Ціна закуп.",0,LastCostPrice,true,0);
+    MatCol(1,-220,"Вал.",0,CurncyCode,true,0);
+  end;
+  MatCol(1,-180,"Стара ціна",0,FIFO,true,0);
+  MatCol(1,-120,"Нова ціна",0,NewFIFO,true,0);
+  MatCol(1,-60,"Різн.",0,DiffFIFO,true,0);
   /*Flip(flipnr); flipnr = flipnr + 1;
   MatCol(1,144,"Опис",0,Spec,false,0);
   MatCol(1,-300,"Сум. в-ть",0,FIFORowVal,true,0);
@@ -2551,7 +2555,7 @@ begin
   if (HasModNL) then begin
   //SpecialMenu("Відкрити запис операцій",'t',1,"OpenTRFromSR");
   end;
-  SpecialMenu("Друк етикеток",'e',1,"ItemSearchDsm");
+  SpecialMenu("Друк етикеток",'e',1,"PrintLabelEANDsm"); //Edit***************************Sasha2,13:25 08.07.2016
   //SpecialMenu("Пошук товару",'f',1,"ItemSearchDsm");
   EndWindow;
 end;

@@ -26,5 +26,10 @@ begin
 
 	
 	SString(50000,"Ціна закупки");
+	
+	StrSetBegin(542); // Custom StrSet
+	  StrSetText(HideLastCostPrice,"Скрыть стоимость последней закупки");
+  EndStrSet;
+  
 	return;
 end;

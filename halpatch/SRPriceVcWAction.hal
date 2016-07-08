@@ -264,7 +264,7 @@ begin
 end;*/
 
 /*global
-procedure ItemStatusSRDsm()
+procedure ItemStatusSRPriceDsm()
 begin
   Integer wn,nwn;
   Boolean testf;
@@ -335,6 +335,8 @@ begin
     case "Qty": res = false;
     case "FIFO": res = false;
     case "FIFORowVal": res = false;
+    case "LastCostPrice": res = false;
+    case "CurncyCode": res = false;
     //case "SerialNr": res = false;
     //case "NewFIFORowVal": res = false;
     //case "DiffFIFO": res = false;
