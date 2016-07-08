@@ -78,9 +78,9 @@ begin
   
     lastcostprice = BlankVal;
     cur = "";
-    if (blank(location)) then begin
+    /*if (blank(location)) then begin
       goto LFindLastCostPriceForSRPrice;
-    end;
+    end;*/
     
     if (NonBlank(serial)) then begin
       IHr.ArtCode = artCode;
@@ -99,7 +99,7 @@ begin
       testf = true;
       if (NonBlank(serial) and (IHr.FileName!="PUVc" or IHr.ArtCode!=artCode or IHr.SerialNr!= serial)) then begin TrHs = false; testf = false; end;
       if (Blank(serial) and (IHr.FileName!="PUVc" or IHr.ArtCode!=artCode)) then begin TrHs = false; testf = false; end;
-      if (IHr.Location!=location) then begin testf = false; end;
+      //if (IHr.Location!=location) then begin testf = false; end;
       if (testf) then begin
         lastcostprice = IHr.TotCostPrice/IHr.Qty;
         PUr.SerNr = IHr.TransNr;
