@@ -863,3 +863,42 @@ begin
   return;
 end;
 
+global procedure CompileItemSerNrDsm()
+begin
+	integer wn;
+	record StockTakeVc STr;
+	row StockTakeVc STrw,OldSTrw;
+	integer winstate;
+	integer mtrw,i,j;
+	
+	wn = curwindow;
+	winstate = windowstate(wn);
+	if(winstate==Rs_normal)then begin
+		getwindowrecord(wn,STr);
+		mtrw = matrowcnt(STr);
+		For(i=0;i<mtrw;i=i+1) begin
+	  	matrowget(STr,i,STrw);
+	  	if(i>0)then begin
+	  		For(j=0;j<i;j=j+1) begin
+	  			matrowget(STr,j,OldSTrw);
+	  			if(STrw.ArtCode==OldSTrw.ArtCode and STrw.SerialNr==OldSTrw.SerialNr and STrw.Location==OldSTrw.Location)then begin
+	  				OldSTrw.Qty = OldSTrw.Qty + STrw.Qty;
+	  				matrowput(STr,j,OldSTrw);
+	  				matrowdelete(STr,i);
+	  				i=i-1;
+	  				mtrw = mtrw - 1;
+	  			end;
+				end; 
+	  	end;
+		end; 
+	end else begin
+	
+	end;
+	putwindowrecord(wn,STr);
+	
+return;
+end;
+
+
+
+

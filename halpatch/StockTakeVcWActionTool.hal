@@ -150,6 +150,7 @@ begin
   string 255 tstr;
   record SerBalVc SerBalr;
   Boolean serialfound;
+  string 100 oldserial;
 
   MatRowGet(StockTaker,rownr,STrw);
   if (blank(STrw.ArtCode)) then begin 
@@ -160,10 +161,13 @@ begin
         STrw.Qty = 1;
         STrw.Location = SerBalr.Location;
         STrw.Position = FindPositionWithSerialNr(StockTaker.Location,STrw.ArtCode,STrw.SerialNr,STrw.Location);
+        oldserial = STrw.SerialNr;
         MatRowPut(StockTaker,rownr,STrw);
         if (StockTakeVc_PasteArtCode(StockTaker,rownr,1,inwarn)) then begin
         end;   
         MatRowGet(StockTaker,rownr,STrw);
+        STrw.SerialNr = oldserial;
+        MatRowPut(StockTaker,rownr,STrw);
       end;
     end;  
   end;  
