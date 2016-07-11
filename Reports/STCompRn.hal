@@ -128,6 +128,8 @@ END;
 
 procedure PrintSTCompOneItem(record RcVc RepSpec,record INVc INr,Boolean varf,string variety,string serialnr,Date dat1,val diff,val units,val instock,val instock2,var val totinprice)
 begin
+  record BarCodeVc BarCoder;
+  record PLVc PLr;
   string 200 dblstr;  
   record INVc locINr;
   Boolean testf
@@ -154,7 +156,23 @@ begin
     OutString(2,0,locINr.Name,false);
     switch (RepSpec.flags[1]) begin
       case 0:    
-        OutDate(3,0,dat1,true);
+        if (RepSpec.flags[5]!=0) then begin //Edit***************************Sasha2,14:43 11.07.2016 {
+          BarCoder.SerialNr = serialnr;
+          if (ReadFirstKey("SerialNr",BarCoder,1,true)) then begin
+            OutString(170,0,BarCoder.Barcode,false);
+          end else begin
+            OutString(170,0,"",false);
+          end;
+          PLr.SerialNr = serialnr;
+          PLr.PLCode = "RRP";
+          PLr.ArtCode = INr.Code;
+          if (ReadFirstKey("SerialNr",PLr,3,true)) then begin
+            OutString(230,0,PLr.ExVatPrice,false);
+          end else begin
+            OutString(230,0,"",false);
+          end;
+        end;
+        //OutDate(3,0,dat1,true); //Edit***************************Sasha2,14:43 11.07.2016 }
         if (nonblank(serialnr)) then begin
           OutString(280,0,serialnr,false);
         end else begin
@@ -655,7 +673,11 @@ BEGIN
     OutString(2,0,USetStr(2326),false);
     switch (RepSpec.flags[1]) begin
       case 0:
-        OutString(3,0,USetStr(2773),true);
+        if (RepSpec.flags[5]!=0) then begin //Edit***************************Sasha2,14:36 11.07.2016 {
+          OutString(170,0,USetStr(8600),false);
+          OutString(230,0,USetStr(8854),false);
+        end;
+        //OutString(3,0,USetStr(2773),true); //Edit***************************Sasha2,14:36 11.07.2016 }
 //      OutString(280,0,USetStr(2779),false);
         if (RepSpec.flags[0]!=0) then  begin OutString(330,0,USetStr(7593),true); end;
         OutString(4,0,USetStr(2765),true);
