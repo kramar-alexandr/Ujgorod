@@ -1,3 +1,5 @@
+SetLangMode(LangUkrainian,"UKR",0);
+
 external function Boolean TestForMATVARINS(Integer);
 external procedure WarnFutureDate(Boolean,Date);
 external function Boolean FindLocalSerialPortDevice(Integer,LongInt,string,var record LSerialPortDeviceVc);
@@ -13,6 +15,9 @@ external procedure SerialNrDimensions(string,string,var val,var val,var val);
 external function val CalculateSerialNrQuantity(string,string,string,Boolean,val,val,val,val);
 remote function Boolean GetSVOSerialItem(string,string,record SVOSerVc);
 remote function Boolean GetFirstItem(var string,var record INVc);
+remote procedure StockTakeToExcel(record StockTakeVc, var string);
+remote function boolean GetPartFileToArea(string,var longint,var area);
+
 
 global
 function Boolean StockTakeDClassSwitchRow(Integer wn,Integer rownr)
@@ -899,6 +904,47 @@ begin
 return;
 end;
 
+global
+function Boolean StockTakeRowDClassOnClose(Integer wn,Integer wn2)
+begin
+  DeselectWindow(wn,false);
+  StockTakeRowDClassOnOKWindow(wn);
+  StockTakeRowDClassOnClose = false;
+  return;
+end;
+
+global
+updating procedure CreateStockTakeSheetDsm()
+begin
+  record StockTakeVc STr;
+  Integer wn;
+  string 255 filename,tstr,fnserv;
+	area tmparea;
+	boolean EOF;
+	LongInt arealen;
+  
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_normal) then begin
+    deselectwindow(wn,true);
+    GetWindowRecord(wn,STr);
+    tstr = "§нвентаризацґйний опис (ґнв. Ь" & STr.SerNr & ")";
+    filename = SaveFileDialog(tstr,"","xlsx");
+		if ((filename!=tstr) and nonblank(filename)) then begin
+			StockTakeToExcel(STr,fnserv);
+			if(fileexists(filename))then begin
+				delete_file(filename);
+			end;
+			arealen = 102400;
+      while (!EOF) begin
+        EOF = GetPartFileToArea(fnserv,arealen,tmparea);
+        writeareatofile(tmparea,filename,1);
+      end;
+      //CloseWindow(wn);
+			Messagebox(0,"Done!");
+		end;
+	end;
+  return;
+end;
 
 
 
