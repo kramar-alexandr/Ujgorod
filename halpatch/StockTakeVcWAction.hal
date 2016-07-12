@@ -922,6 +922,7 @@ begin
 	area tmparea;
 	boolean EOF;
 	LongInt arealen;
+  integer cnt;
   
   wn = CurWindow;
   if (WindowState(wn)==Rs_normal) then begin
@@ -931,14 +932,16 @@ begin
       tstr = "Інвентаризаційний опис (інв. №" & STr.SerNr & ")";
       filename = SaveFileDialog(tstr,"","xlsx");
       if ((filename!=tstr) and nonblank(filename)) then begin
-        StockTakeToExcel(STr,fnserv);
         if(fileexists(filename))then begin
           delete_file(filename);
         end;
+        StockTakeToExcel(STr,fnserv);
         arealen = 102400;
+        cnt = 0;
         while (!EOF) begin
           EOF = GetPartFileToArea(fnserv,arealen,tmparea);
-          writeareatofile(tmparea,filename,1);
+          writeareatofile(tmparea,filename,cnt);
+          cnt = 1;
         end;
         //CloseWindow(wn);
         Messagebox(0,"Готово!");
