@@ -160,6 +160,7 @@ begin
 	RecordAddBegin(StockTakeVc,"MyStockTakeVc1"); // Edit ************************** Monday, 4 July 2016 16:08:27
 		ArrayField(BarCode,M4Code,60,0);
 		ArrayField(Price,M4Val,0,0);
+    ArrayField(MyInStock,M4UVal,0,0);
   EndRecordAdd;	
 	
 	

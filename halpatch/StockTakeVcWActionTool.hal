@@ -220,6 +220,7 @@ BEGIN
 	string 16 reportName;
 	integer outlineLevel;
   array string 225 mas;
+  val h;
   
   string 255 group,tm,serialnum,barcode,class;
   integer i,j,k,rowcnt,pos,cnt;
@@ -278,7 +279,7 @@ BEGIN
     end;
     STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";price"] = STrw.Price;
     STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";qty"] = STrw.Qty;
-    STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";instock"] = STrw.InStock;
+    STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";instock"] = STrw.MyInStock;
   end;
   for (j=0;j<GroupArray.length-1;j=j+1) begin
     for (i=0;i<GroupArray.length-1;i=i+1) begin
@@ -907,15 +908,41 @@ BEGIN
         style = 2;
         StringCell(sheetnum,fileToSave,colnum,rownum,style,"закінчено",SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
         mergeCell[qtyMergeCell] = GetStringCellNum(colnum,rownum);
-        mas[maslen] = "<t>" & Chr(34) & "<" & Chr(47) & "t><" & Chr(47) & "r><r><rPr><u" & Chr(47) & "><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & "><family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & "><" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & ">        <" & Chr(47) & "t><" & Chr(47) & "r><r><rPr><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & ">";
+        mas[maslen] = "<t>" & Chr(34) & "<" & Chr(47) & "t><" & Chr(47) & "r><r><rPr><u" & Chr(47) & "><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & "><family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & "><" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & ">  ";
         maslen = maslen + 1;
-        mas[maslen] = "<rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & "><family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & "><" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & ">" & Chr(34) & " <" & Chr(47) & "t><" & Chr(47) & "r><r><rPr><u" & Chr(47) & "><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & "><family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & ">";
+        if GetDay(STr.TransDate)<10 then begin
+          mas[maslen] = " " & GetDay(STr.TransDate) & " ";
+        end else begin
+          mas[maslen] = GetDay(STr.TransDate);
+        end;
         maslen = maslen + 1;
-        mas[maslen] = "<" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & ">                             <" & Chr(47) & "t><" & Chr(47) & "r><r><rPr><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & "><family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & "><" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & "> 20<" & Chr(47) & "t><" & Chr(47) & "r>";
+        mas[maslen] = "  <" & Chr(47) & "t><" & Chr(47) & "r><r><rPr><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & "><family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & "><" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & ">" & Chr(34) & " <" & Chr(47) & "t><" & Chr(47) & "r><r>";
         maslen = maslen + 1;
-        mas[maslen] = "<r><rPr><u" & Chr(47) & "><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & "><family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & "><" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & ">      <" & Chr(47) & "t><" & Chr(47) & "r><r><rPr><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & ">";
+        mas[maslen] = "  <rPr><u" & Chr(47) & "><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & "><family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & "><" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & ">";
         maslen = maslen + 1;
-        mas[maslen] = "<family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & "><" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & "> р.<" & Chr(47) & "t>";
+        switch GetMonth(STr.TransDate) begin
+          case 1: tstr = "           січня           ";
+          case 2: tstr = "         лютого          ";
+          case 3: tstr = "         березня         ";
+          case 4: tstr = "          квітня           ";
+          case 5: tstr = "         травня          ";
+          case 6: tstr = "         червня          ";
+          case 7: tstr = "          липня           ";
+          case 8: tstr = "         серпня          ";
+          case 9: tstr = "        вересня          ";
+          case 10: tstr = "         жовтня          ";
+          case 11: tstr = "       листопада        ";
+          case 12: tstr = "         грудня          ";
+        end;
+        mas[maslen] = tstr;
+        maslen = maslen + 1;
+        mas[maslen] = "<" & Chr(47) & "t><" & Chr(47) & "r><r><rPr><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & "><family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & "><" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & "> 20<" & Chr(47) & "t><" & Chr(47) & "r><r>";
+        maslen = maslen + 1;
+        mas[maslen] = "<rPr><u" & Chr(47) & "><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & "><family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & "><" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & "> ";
+        maslen = maslen + 1;
+        mas[maslen] = GetYear(STr.TransDate) - 2000;
+        maslen = maslen + 1;
+        mas[maslen] = "<" & Chr(47) & "t><" & Chr(47) & "r><r><rPr><sz val=" & Chr(34) & "6.5" & Chr(34) & Chr(47) & "><color theme=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><rFont val=" & Chr(34) & "Times New Roman" & Chr(34) & Chr(47) & "><family val=" & Chr(34) & "1" & Chr(34) & Chr(47) & "><charset val=" & Chr(34) & "204" & Chr(34) & Chr(47) & "><" & Chr(47) & "rPr><t xml:space=" & Chr(34) & "preserve" & Chr(34) & "> р.<" & Chr(47) & "t>";
         maslen = maslen + 1;
         style = 18;
         StringCell(sheetnum,fileToSave,colnum,rownum,style,",,,b" & maslen,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
@@ -1053,7 +1080,7 @@ BEGIN
               barcode = BarCodeArray[BAi];
               qty1 = STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";instock"];
               qty2 = STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";qty"];
-              if (qty1!=0) and (qty1!=blankval) and (qty2!=0) and (qty2!=blankval) then begin
+              if (qty1!=0 and qty1!=blankval) or (qty2!=0 and qty2!=blankval) then begin
                 cnt = cnt + 1;
                 price = STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";price"];
                 sum1 = qty1*price;
@@ -1066,7 +1093,14 @@ BEGIN
                   nadlushok = 0;
                 end;
                 colnum = 1;
-                BeginRow(sheetnum,fileToSave,rownum,0,11.25);
+                h = 11.25;
+                if (len(group) > 9) or (len(tm) > 10) or (len(serialnum) > 22) or (len(barcode) > 14) then begin
+                  h = 22.5;
+                end;
+                if (len(group) > 18) or (len(tm) > 20) or (len(serialnum) > 44) or (len(barcode) > 28) then begin
+                  h = 33.75;
+                end;
+                BeginRow(sheetnum,fileToSave,rownum,0,h);
                   style = 5;
                   NumericCell(sheetnum,fileToSave,colnum,rownum,style,cnt);
                   style = 4;
