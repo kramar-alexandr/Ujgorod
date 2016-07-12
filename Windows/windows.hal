@@ -1,3 +1,13 @@
+external function Boolean HasItemGroups();
+external function Boolean HasItemClassification();
+external function Boolean HasMultiLocations();
+external function Boolean HasPositions();
+external function Boolean HasDepartments();
+external function Boolean HasModPO();
+external function Boolean StandardHansa();
+external function Boolean IsEnterprise();
+external function Boolean HasMultiCurrency();
+
 SetLangMode(LangUkrainian,"UKR",0);
 //SetLangMode(LangRussian,"RUS",0);
 
@@ -202,5 +212,72 @@ begin
   SetWRect(240,80,600,348);
   StringList(9,9,-19,-19);
   SearchField("Пошук");
+  EndWindow;
+end;
+
+window NewINRClass:2
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,h3,h4,v,v1,vm,vs,v2,temp;
+  WindowBegin("Визначте звіт по складу (модифікований)",NewINRClass,CGRcW,RcType);
+  h = 160; v = 6; vs = 20; h2 = 30; h3 = 180; h4 = 330;
+
+  if (IsEnterprise) then begin
+  SetWRect(20,80,/*580*/400,470);
+    h4 = 330;
+  end else begin
+    SetWRect(20,80,400,470);
+    h4 = 227;
+    h = 120;
+  end;
+
+  EditFieldTL(h,v,150,"Товар",M4UStr,Normal,50,f1,false,INSClass);
+  if (HasItemGroups) then begin
+  EditFieldTL(h,v+=vs,150,"Група",M4UStr,Normal,11,f3,false,ITSClass);
+  end;
+  if (HasItemClassification) then begin
+  EditFieldTL(h,v+=vs,150,"Класифікація товару", M4UStr,Normal,100,f4,false,DISClass); 
+  EditFieldTL(h,v+=vs,150,"Тип класифікації",M4UStr,Normal,60,f5,false,CTypeSClass);
+  end;
+  if (HasMultiLocations) then begin
+  EditFieldTL(h,v+=vs,80,"Склад",M4Code,Normal,10,f2,false,LocationSClass);
+  end;
+
+  if (HasPositions) then begin
+  EditFieldTL(h,v+=vs,150,"Місце",M4Code,Normal,10,FirstAcc,false,PosSClass);
+    end;
+  if (HasDepartments) then begin
+  EditFieldTL(h,v+=vs,150,"Відділ",M4UStr,Normal,10,AccStr,false,DepSClass);
+  end;
+  if (HasModPO) then begin
+  EditFieldTL(h,v+=vs,150,"Постачальник",M4UStr,Normal,20,LastAcc,false,VESClass);
+  end;
+  EditFieldTL(h,v+=vs,80,"Дата",M4Date,Normal,0,d1,false,PasteCurDate);
+  CheckBox(h,v+=vs,0,"Показ. сер. номер",flags[10]); v = v + 16;
+  if (IsEnterprise) then begin
+    CheckBox(h,v,0,"Вкл. закритий товар",flags[18]); v = v + 16;
+  end;
+  if (StandardHansa==true) then begin
+    v = v + vs;
+  end;
+  ButtonFrame(h2,vm=(v+=60),123,5,"Функція");
+  RadioButton(h2,v,0,0,"зведений",ArtMode);
+  RadioButton(h2,v+=16,1,0,"докладний",ArtMode);
+
+  EndFrame;
+  if (HasMultiCurrency) then begin
+    v = v + 45; v1 = v;
+  end;
+
+  temp = h3; //Edit***************************Sasha2,17:33 03.09.2014 !!!!!!was h4
+  v2 = v + 16;
+  v = v1;
+  
+  if (IsEnterprise==false) then begin
+    v = v2;
+  end;
+  v = vm - 30; //Edit***************************Sasha2,17:35 03.09.2014
+  temp = h3; //Edit***************************Sasha2,17:47 03.09.2014
+
   EndWindow;
 end;

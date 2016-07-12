@@ -14,3 +14,18 @@ BEGIN
   RETURN;
 END;
 
+
+global
+procedure NewINRClassReportDefaults(Integer wn)
+BEGIN
+  record RcVc RepSpec;
+  
+  DeselectWindow(wn,false);
+  GetWindowRecord(wn,RepSpec);
+  ReportDefaults(RepSpec,"NewINRClass");
+  RepSpec.flags[10] = 1;
+  RepSpec.ArtMode = 1;
+  PutWindowRecord(wn,RepSpec);
+  SelectWindow(wn);
+  RETURN;
+END;
