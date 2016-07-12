@@ -561,6 +561,7 @@ BEGIN
   setareazerosize(resarea);
   res = false;
   addfiletoarea(filename,filearea,false);
+  logtext(0,filename & " _ " & getarealength(filearea));
   if getarealength(filearea)<=arealen then begin
     res = true;
     setareazerosize(resarea);
