@@ -90,7 +90,7 @@ LValidateBulkSerialNoRow:;
 end;
 
 global
-updating function LongInt StockTakeVcRecordCheck(var record StockTakeVc StockTakep,record StockTakeVc StockTake2p,LongInt stat,LongInt check)
+updating function LongInt StockTakeVcR(var record StockTakeVc StockTakep,record StockTakeVc StockTake2p,LongInt stat,LongInt check)
 BEGIN
   LongInt res;
   record StockTakeVc lStockTaker;
@@ -319,7 +319,8 @@ BEGIN
       if (StockTakep.OKFlag!=0) and (StockTake2p.OKFlag==0) then begin
         SBr.Item = StockTakerw.ArtCode;
         SBr.Serial = StockTakerw.SerialNr;
-        if readfirstkey("ItemSerial",SBr,2,true) then begin
+        SBr.Location = StockTakep.Location;
+        if readfirstkey("ItemSerial",SBr,3,true) then begin
           StockTakerw.MyInStock = SBr.Quant;
           matrowput(StockTakep,i,StockTakerw);
         end;
