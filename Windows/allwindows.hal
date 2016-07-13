@@ -296,11 +296,13 @@ if (HasTouchScreenLook==false) then begin
   TileButton(1,"Умови");
   TileButton(2,"Товари");
   TileButton(3,"Валюта");
-  TileButton(4,"Ум. доставки");
-  TileButton(5,"Номери");
-  TileButton(6,"Прейскурант");
-  TileButton(7,"Юр. адреса");
-  TileButton(8,"Адреса доставки");
+  TileButton(4,"Номери");
+  TileButton(5,"Прейскурант");
+  if (UserCanAction("RestrictInvoiceForCashier",false)==false) then begin //Edit***************************Sasha2,14:43 13.07.2016
+    TileButton(6,"Ум. доставки");
+    TileButton(7,"Юр. адреса");
+    TileButton(8,"Адреса доставки");
+  end;
   Tile(1,110,false,"1",InvDate);
   vs = 20; h1 = 110; h2 = 290; h3 = 530; h4 = -100;
   EditField(h1,vm=(v=6),82,"Дата",Normal,InvDate,false,PasteCurDate);
@@ -308,20 +310,30 @@ if (HasTouchScreenLook==false) then begin
   EditField(h1,v+=vs,82,"Дата спл.",Normal,PayDate,false,PasteCurDate);
   EditField(h1,v+=vs,82,"Дата опер.",Normal,TransDate,false,PasteCurDate);
   EditField(h1,v+=vs,82,"Дата послуги",Normal,ServiceDelDate,false,PasteCurDate);
-  EditField(h2,v=vm,135,"Відповід.",Normal,OurContact,false,0);
-  EditField(h2,v+=vs,135,"Конт. особа",Normal,ClientContact,false,ContactSClass);
+  if (UserCanAction("RestrictInvoiceForCashier",false)==false) then begin //Edit***************************Sasha2,14:43 13.07.2016
+    EditField(h2,v=vm,135,"Відповід.",Normal,OurContact,false,0);
+    EditField(h2,v+=vs,135,"Конт. особа",Normal,ClientContact,false,ContactSClass);
+  end else begin
+    v=6-vs;
+  end;
   EditField(h2,v+=vs,135,"Об'єкти",Normal,Objects,false,ObjSClass);
-  EditField(h2,v+=vs,135,"Посилання",Normal,RefStr,false,0);
+  if (UserCanAction("RestrictInvoiceForCashier",false)==false) then begin //Edit***************************Sasha2,14:43 13.07.2016
+    EditField(h2,v+=vs,135,"Посилання",Normal,RefStr,false,0);
+  end;
   EditField(h2,v+=vs,135,"№ рах. у клієнта",Normal,CustOrdNr,false,0);
   EditField(h3,v=vm,80,"Продавець",Normal,SalesMan,false,UserSClass);
-  if (StandardHansa) then begin
-    EditField(h3,v+=vs,80,"Склад",Normal,Location,false,LocationSClass);
-  end else begin
-  EditField(h3,v+=vs,80,"Проект",Normal,PRCode,false,0);
-  end;  
-  EditField(h3,v+=vs,80,"Підстав.кред-ня",Normal,Reason,false,StandProblemsSClass); 
+  if (UserCanAction("RestrictInvoiceForCashier",false)==false) then begin //Edit***************************Sasha2,14:43 13.07.2016
+    if (StandardHansa) then begin
+      EditField(h3,v+=vs,80,"Склад",Normal,Location,false,LocationSClass);
+    end else begin
+      EditField(h3,v+=vs,80,"Проект",Normal,PRCode,false,0);
+    end;  
+    EditField(h3,v+=vs,80,"Підстав.кред-ня",Normal,Reason,false,StandProblemsSClass); 
+  end;
   EditField(h3,v+=vs,80,"Здача",ViewOnly,RetnValue,false,0); 
-  EditField(h3,v+=vs,80,"Л.Маш.",Normal,MachineName,false,0); 
+  if (UserCanAction("RestrictInvoiceForCashier",false)==false) then begin //Edit***************************Sasha2,14:43 13.07.2016
+    EditField(h3,v+=vs,80,"Л.Маш.",Normal,MachineName,false,0); 
+  end;
   if (HasLocalization("MEX")) then begin 
     EditField(h3,v+=vs,80,"Payment Mode",Normal,PMCode,false,PMSClass);
   end;
@@ -345,15 +357,17 @@ if (HasTouchScreenLook==false) then begin
   Tile(2,220,true,"2",Math);
   //  CheckBox(20,-20,0,"OK",OKFlag);
   if (CompileType!=ctiPhone) then begin
-  EditField(55,-41,50,"Валюта",Normal,CurncyCode,false,CurncyCodeSClass);
+    EditField(55,-41,50,"Валюта",Normal,CurncyCode,false,CurncyCodeSClass);
     if (UseTaxTemplatesforTaxCalc==false) then begin
-  if (UserCanAction("ViewCostPrice",true)) then begin
+      if (UserCanAction("ViewCostPrice",true)) then begin
         EditField(160,-41,70,"GP %",Normal,GPProc,true,0);
         EditField(160,-21,70,"Прибуток",ViewOnly,TotGP,true,0);
-  end;
-  EditField(290,-41,70,"Под. 2",ViewOnly,TAX2Sum,true,0);
-  EditField(290,-21,70,"Дод. под.",ViewOnly,TAX1Sum,true,0);
-  EditField(410,-41,95,"ПДВ",ViewOnly ,Sum3,true,0);
+      end;
+      if (UserCanAction("RestrictInvoiceForCashier",false)==false) then begin //Edit***************************Sasha2,14:43 13.07.2016
+        EditField(290,-41,70,"Под. 2",ViewOnly,TAX2Sum,true,0);
+        EditField(290,-21,70,"Дод. под.",ViewOnly,TAX1Sum,true,0);
+        EditField(410,-41,95,"ПДВ",ViewOnly ,Sum3,true,0);
+      end;
     end else begin
       if (UserCanAction("ViewCostPrice",true)) then begin
       //EditField(290,-41,70,"GP %",Normal,GPProc,true,0);
@@ -361,9 +375,11 @@ if (HasTouchScreenLook==false) then begin
       end;
       EditField(410,-41,95,"Податок",ViewOnly ,Sum3,true,0);
     end;
-  EditField(410,-21,95,"Осн.",ViewOnly,BaseSum4,true,0);
-  EditField(-150,-41,95,"Разом",ViewOnly ,Sum1,true,0);
-  EditField(-150,-21,95,"Всього",ViewOnly ,Sum4,true,0);
+    if (UserCanAction("RestrictInvoiceForCashier",false)==false) then begin //Edit***************************Sasha2,14:43 13.07.2016
+      EditField(410,-21,95,"Осн.",ViewOnly,BaseSum4,true,0);
+    end;
+    EditField(-150,-41,95,"Разом",ViewOnly ,Sum1,true,0);
+    EditField(-150,-21,95,"Всього",ViewOnly ,Sum4,true,0);
   end else begin
     EditField(55,-41,80,"Валюта",Normal,CurncyCode,false,CurncyCodeSClass);
     EditField(55,-21,80,"ПДВ",ViewOnly ,Sum3,true,0); 
@@ -768,32 +784,7 @@ if (HasTouchScreenLook==false) then begin
   EditField(h2=295,v,50,"Курс",Normal,FrRate,true,0);
   RateField(h3=360,v,50,":",Normal,"ToRateB1",true,h3+60,v+14,"Осн. валюта 1",false);
   RateField(h3,v+=vs,50,":",Normal,"ToRateB2",true,h3+60,v+14,"Осн. валюта 2",false);
-  Tile(4,110,false,"4",ShipDeal);
-  vs = 20; h1 = 110; h2 = 310; h3 = 530; h4 = -100;
-  EditField(h1,v=6,80,"Умови відвантаж.",Normal,ShipDeal,false,ShipDealSClass);
-  EditField(h1,v+=vs,80,"Спосіб відвантаж.",Normal,ShipMode,false,DMSClass);
-  if (StandardHansa==false) then begin
-  EditField(h1,v+=vs,80,"Маршрут",Normal,Sorting,false,DelRouteSClass);
-  EditField(h1,v+=vs,80,"Склад",Normal,Location,false,LocationSClass);
-    EditField(h1,v+=vs,80,"План. дата.відпр.",Normal,PlanSendDate,false,PasteCurDate);
-    EditField(h1,v+=vs,80,"План. час відпр.",Normal,PlanSendTime,false,PasteCurTime); 
-  end;
-  EditField(h1,v+=vs,80,"Філія",Normal,BranchID,false,AllCUSClass);
-  EditField(h2,v=vm,80,"Заг. кільк-ть",ViewOnly,TotQty,true,0);
-  EditField(h2,v+=vs,80,"Заг. вага",ViewOnly,TotWeight,true,0);
-  EditField(h2,v+=vs,80,"Заг. об'єм",ViewOnly,TotVolume,true,0);
-  EditField(h2,v+=vs,80,"Фрахт",Normal,FrPrice,true,0);
-  if (StandardHansa==false) then begin
-    EditField(h2,v+=vs,80,"План.  дата приб.",Normal,PlanArrDate,false,PasteCurDate); 
-    EditField(h2,v+=vs,80,"План.  час приб.",Normal,PlanArrTime,false,PasteCurTime);
-  EditField(h2,v+=vs,80,"Перевізник",Normal,FreightCode,false,FreightCompanySClass);
-  CheckBox(h3,v=vm,0,"Поновити склад",UpdStockFlag);
-    EditField(h3,v+=2*vs,80,"ПДВ фрахту",Normal,FrVATCode,true,VATCodeSClass);
-    EditField(h3,v+=vs,80,"Код транс. Інтр.",Normal,IntrastatTransCode,true,IntrastatTransCodeSClass);
-    EditField(h3,v+=vs,80,"Глоб. № трансп.",Normal,GlobalTransportNr,false,0);
-    EditField(h3,v+=vs,80,"Глоб. дата трансп.",Normal,GlobalTransportDate,false,PasteCurDate);
-  end;
-  Tile(5,170,false,"5",OrderNr);
+  Tile(4,170,false,"5",OrderNr);
   EditField(h1,v=vm,80,"№ рахунка",ViewOnly,OrderNr,false,0);
   if (StandardHansa==false) then begin
   EditField(h1,v+=vs,80,"Замовл. на обсл.",ViewOnly,SVONr,false,0);
@@ -850,7 +841,7 @@ if (HasTouchScreenLook==false) then begin
 //    CheckBox(h3,v+=16,0,"Including VAT",InclVAT);
   end;
   //  CheckBox(h3,v+=16,0,"E-Invoice Exported",EInvExpFlag);
-  Tile(6,150,false,"6",PriceList); vs = 20;
+  Tile(5,150,false,"6",PriceList); vs = 20;
   EditField(h1,v=vm,80,"Прейскурант",Normal,PriceList,false,PLDefSClass);
   EditField(h1,v+=vs,80,"Табл.знижок",Normal,RebCode,false,0);
   //  EditField(h1,v+=vs,80,"Disc. %",ViewOnly,DiscPerc,false,0);
@@ -888,71 +879,98 @@ if (HasTouchScreenLook==false) then begin
   EditField(h3,v+=vs,80,"Накопичувальні бали",ViewOnly,Points,true,0);
   end;
   if (HasTREO) then begin
-  EditField(h3,v+=vs,80,"Номер TREO",Normal,TREONr,false,0);
+    EditField(h3,v+=vs,80,"Номер TREO",Normal,TREONr,false,0);
   end;
-  Tile(7,250,false,"7",Addr1); vs = 20;
-  label = UserDefined("CUVc","InvAddr0");
-  if (blank(label)) then begin label = "Акт/накл. на"; end;
-  EditField(h=110,v=6,-20,label,Normal,Addr1,false,0);
-  label = UserDefined("CUVc","InvAddr1");
-  if (blank(label)) then begin label = "Адресу"; end;
-  EditField(h,v+=vs, -20,label,Normal,Addr2,false,0);
-  label = UserDefined("CUVc","InvAddr2");
-  EditField(h,v+=vs, -20,label,Normal,Addr3,false,0);
-  label = UserDefined("CUVc","InvAddr3");
-  EditField(h,v+=vs, -20,label,Normal,InvAddr3,false,0);
-  label = UserDefined("CUVc","InvAddr4");
-  EditField(h,v+=vs, -20,label,Normal,InvAddr4,false,0);
-  EditField(h,vm=(v+=vs),80,"Країна",Normal,InvCountry,false,CountrySClass);
-  if (HasLocalization("BRA")) then begin
-    EditField(h2-89,v,232,"",ViewOnly,InvCountryName,false,0);
-    h5 = -170;
-    width = 150;
-  end else begin
-    h5 = -270;
-    width = 135;
-  end;
-  EditField(h5,v,width,"Рахунок",Normal,BankCode,false,BankSClass);
-  if (StandardHansa==false) then begin
-    if (HasApprovals) then begin
-      SoftEditField(h3=h+4,v=(vm+=40),123,"Статус підтв-ння",ViewOnly,"AcceptanceStatusFlag",false,0,M4Str,255);
+  if (UserCanAction("RestrictInvoiceForCashier",false)==false) then begin //Edit***************************Sasha2,14:43 13.07.2016
+    Tile(6,110,false,"4",ShipDeal);
+    vs = 20; h1 = 110; h2 = 310; h3 = 530; h4 = -100;
+    EditField(h1,v=6,80,"Умови відвантаж.",Normal,ShipDeal,false,ShipDealSClass);
+    EditField(h1,v+=vs,80,"Спосіб відвантаж.",Normal,ShipMode,false,DMSClass);
+    if (StandardHansa==false) then begin
+    EditField(h1,v+=vs,80,"Маршрут",Normal,Sorting,false,DelRouteSClass);
+    EditField(h1,v+=vs,80,"Склад",Normal,Location,false,LocationSClass);
+      EditField(h1,v+=vs,80,"План. дата.відпр.",Normal,PlanSendDate,false,PasteCurDate);
+      EditField(h1,v+=vs,80,"План. час відпр.",Normal,PlanSendTime,false,PasteCurTime); 
     end;
-/*
-//oldapprovals    
-  ButtonFrame(h3=h+4,v=(vm+=40),123,6,"Статус затвердження");
-  RadioButton(h3,v,kAcceptanceStateNotRequired,0,"не потрібно",AcceptanceStatus);
-  RadioButton(h3,v+=16,kAcceptanceStateNotStarted,0,"не розпочато",AcceptanceStatus);
-  RadioButton(h3,v+=16,kAcceptanceStateNotRequested,0,"не було запиту",AcceptanceStatus);
-  RadioButton(h3,v+=16,kAcceptanceStatePending,0,"очікування",AcceptanceStatus);
-  RadioButton(h3,v+=16,kAcceptanceStateApproved,0,"затверджено",AcceptanceStatus);
-  RadioButton(h3,v+=16,kAcceptanceStateRejected,0,"незатверджено",AcceptanceStatus);  
-*/    
-    v = VATZoneButtonsLabelsukr(h3=290,v=vm,170,16);
-  end else begin
-    v = VATZoneButtonsLabelsukr(h3=290,v=vm+40,170,16);
+    EditField(h1,v+=vs,80,"Філія",Normal,BranchID,false,AllCUSClass);
+    EditField(h2,v=vm,80,"Заг. кільк-ть",ViewOnly,TotQty,true,0);
+    EditField(h2,v+=vs,80,"Заг. вага",ViewOnly,TotWeight,true,0);
+    EditField(h2,v+=vs,80,"Заг. об'єм",ViewOnly,TotVolume,true,0);
+    EditField(h2,v+=vs,80,"Фрахт",Normal,FrPrice,true,0);
+    if (StandardHansa==false) then begin
+      EditField(h2,v+=vs,80,"План.  дата приб.",Normal,PlanArrDate,false,PasteCurDate); 
+      EditField(h2,v+=vs,80,"План.  час приб.",Normal,PlanArrTime,false,PasteCurTime);
+    EditField(h2,v+=vs,80,"Перевізник",Normal,FreightCode,false,FreightCompanySClass);
+    CheckBox(h3,v=vm,0,"Поновити склад",UpdStockFlag);
+      EditField(h3,v+=2*vs,80,"ПДВ фрахту",Normal,FrVATCode,true,VATCodeSClass);
+      EditField(h3,v+=vs,80,"Код транс. Інтр.",Normal,IntrastatTransCode,true,IntrastatTransCodeSClass);
+      EditField(h3,v+=vs,80,"Глоб. № трансп.",Normal,GlobalTransportNr,false,0);
+      EditField(h3,v+=vs,80,"Глоб. дата трансп.",Normal,GlobalTransportDate,false,PasteCurDate);
+    end;
+    Tile(7,250,false,"7",Addr1); vs = 20;
+    label = UserDefined("CUVc","InvAddr0");
+    if (blank(label)) then begin label = "Акт/накл. на"; end;
+    EditField(h=110,v=6,-20,label,Normal,Addr1,false,0);
+    label = UserDefined("CUVc","InvAddr1");
+    if (blank(label)) then begin label = "Адресу"; end;
+    EditField(h,v+=vs, -20,label,Normal,Addr2,false,0);
+    label = UserDefined("CUVc","InvAddr2");
+    EditField(h,v+=vs, -20,label,Normal,Addr3,false,0);
+    label = UserDefined("CUVc","InvAddr3");
+    EditField(h,v+=vs, -20,label,Normal,InvAddr3,false,0);
+    label = UserDefined("CUVc","InvAddr4");
+    EditField(h,v+=vs, -20,label,Normal,InvAddr4,false,0);
+    EditField(h,vm=(v+=vs),80,"Країна",Normal,InvCountry,false,CountrySClass);
+    if (HasLocalization("BRA")) then begin
+      EditField(h2-89,v,232,"",ViewOnly,InvCountryName,false,0);
+      h5 = -170;
+      width = 150;
+    end else begin
+      h5 = -270;
+      width = 135;
+    end;
+    EditField(h5,v,width,"Рахунок",Normal,BankCode,false,BankSClass);
+    if (StandardHansa==false) then begin
+      if (HasApprovals) then begin
+        SoftEditField(h3=h+4,v=(vm+=40),123,"Статус підтв-ння",ViewOnly,"AcceptanceStatusFlag",false,0,M4Str,255);
+      end;
+  /*
+  //oldapprovals    
+    ButtonFrame(h3=h+4,v=(vm+=40),123,6,"Статус затвердження");
+    RadioButton(h3,v,kAcceptanceStateNotRequired,0,"не потрібно",AcceptanceStatus);
+    RadioButton(h3,v+=16,kAcceptanceStateNotStarted,0,"не розпочато",AcceptanceStatus);
+    RadioButton(h3,v+=16,kAcceptanceStateNotRequested,0,"не було запиту",AcceptanceStatus);
+    RadioButton(h3,v+=16,kAcceptanceStatePending,0,"очікування",AcceptanceStatus);
+    RadioButton(h3,v+=16,kAcceptanceStateApproved,0,"затверджено",AcceptanceStatus);
+    RadioButton(h3,v+=16,kAcceptanceStateRejected,0,"незатверджено",AcceptanceStatus);  
+  */    
+      v = VATZoneButtonsLabelsukr(h3=290,v=vm,170,16);
+    end else begin
+      v = VATZoneButtonsLabelsukr(h3=290,v=vm+40,170,16);
+    end;
+    EditField(h2=-170,v=vm,150,"Регіон",Normal,Region,false,RegionSClass); 
+    EditField(h2,v+=vs,150,"ІПН",Normal,VATNr,false,0);
+    EditField(h2,v+=vs,150,"GLN",ViewOnly,RecipientGLN,false,0);
+    EditField(h2,v+=vs,150,"Телефон",Normal,Phone,false,0);
+    EditField(h2,v+=vs,150,"Факс",Normal,Fax,false,0);
+    Tile(8,170,false,"8",ShipAddr0); vs = 20;
+    if (StandardHansa==false) then begin
+    EditField(h1,v=6,80,"Код адреси",Normal,DelAddrCode,false,DelAddr3SClass);
+    EditField(h1,v+=vs,-20,"Адреса",Normal,ShipAddr0,false,0);
+    end else begin
+      EditField(h1,v=6,-20,"Доставка",Normal,ShipAddr0,false,0);
+    end;
+    EditField(h1,v+=vs,-20,"доставки",Normal,ShipAddr1,false,0);
+    EditField(h1,v+=vs,-20,"",Normal,ShipAddr2,false,0);
+    EditField(h1,v+=vs,-20,"",Normal,ShipAddr3,false,0);
+    EditField(h1,v+=vs,-20,"",Normal,DelAddr3,false,0);
+    EditField(h1,v+=vs,-20,"",Normal,DelAddr4,false,0);
+    EditField(h1,v+=vs,80,"Країна",Normal,DelCountry,false,CountrySClass);
+    if (HasLocalization("BRA")) then begin  
+      EditField(h1+91,v,232,"",ViewOnly,DelCountryName,false,0);
+    end;  
+    EditField(h2,v,150,"GLN доставки",ViewOnly,DelRecipientGLN,false,0);
   end;
-  EditField(h2=-170,v=vm,150,"Регіон",Normal,Region,false,RegionSClass); 
-  EditField(h2,v+=vs,150,"ІПН",Normal,VATNr,false,0);
-  EditField(h2,v+=vs,150,"GLN",ViewOnly,RecipientGLN,false,0);
-  EditField(h2,v+=vs,150,"Телефон",Normal,Phone,false,0);
-  EditField(h2,v+=vs,150,"Факс",Normal,Fax,false,0);
-  Tile(8,170,false,"8",ShipAddr0); vs = 20;
-  if (StandardHansa==false) then begin
-  EditField(h1,v=6,80,"Код адреси",Normal,DelAddrCode,false,DelAddr3SClass);
-  EditField(h1,v+=vs,-20,"Адреса",Normal,ShipAddr0,false,0);
-  end else begin
-    EditField(h1,v=6,-20,"Доставка",Normal,ShipAddr0,false,0);
-  end;
-  EditField(h1,v+=vs,-20,"доставки",Normal,ShipAddr1,false,0);
-  EditField(h1,v+=vs,-20,"",Normal,ShipAddr2,false,0);
-  EditField(h1,v+=vs,-20,"",Normal,ShipAddr3,false,0);
-  EditField(h1,v+=vs,-20,"",Normal,DelAddr3,false,0);
-  EditField(h1,v+=vs,-20,"",Normal,DelAddr4,false,0);
-  EditField(h1,v+=vs,80,"Країна",Normal,DelCountry,false,CountrySClass);
-  if (HasLocalization("BRA")) then begin  
-    EditField(h1+91,v,232,"",ViewOnly,DelCountryName,false,0);
-  end;  
-  EditField(h2,v,150,"GLN доставки",ViewOnly,DelRecipientGLN,false,0);
   EnterSkip(InvDate);
   if (GuiType==kGuiMetro) then begin // Temporarily disabled on Windows 8
     SpecialMenu("Статус акту/накл.",'r',2,"IVInfoIVDsm");

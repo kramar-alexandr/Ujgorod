@@ -187,7 +187,6 @@ begin
   StrSetText(SVOToInv,"Акт/накладна з обслуговування і ремонту");
   StrSetText(SVOToOffHire,"Items In from Service Order");
   StrSetText(SVOToDispatch,"Items Out from Service Order");
-  StrSetText(LimitToResLoc,"Обмежити користувача за розашування кімнатив готелі");
   StrSetText(LockIgnoreTR,"Блокувати виключення для транзакцій");  
   StrSetText(LockIgnoreVI,"Блокувати виключення для розрахунків з постачальниками");  
   StrSetText(LockIgnoreIV,"Блокувати виключення для розрахунків з клієнтами");  
@@ -206,7 +205,6 @@ begin
   StrSetText(AllowNegIP,"Дозволяти від'ємні суми в платежі клієнта");
   StrSetText(AllowPOSIVNegQty,"Від'ємна к-сть на накладних ЕККА"); 
   StrSetText(AllowNegativePriceonIV,"Від'ємна ціна на накладних"); 
-  StrSetText(SMToTrans,"Операції з симуляцій");
   StrSetText(ActOK,"Затвердження діяльностей");
   StrSetText(AT2WrofOK,"Затвердження списання ОЗ");
   StrSetText(BudOK,"Затвердження бюджетів");
@@ -268,7 +266,6 @@ begin
   StrSetText(SVOToPO,"Purchase Order from Service Order");
   StrSetText(WSToPO,"Purchase Order from Work Sheet");
   StrSetText(StockMovOK,"Затвердження переміщень по складу");
-  StrSetText(ReloadBIData,"Перезавантажити дані БА");  
   StrSetText(AllowNPTSReprint,"Дозволяти повторний друк ЕККА, сенс, екран");
   //StrSetText(RequestSchedImport,"Request Scheduled Import");
   StrSetText(RequestSchedMaint,"Запросити графік обслуговувань");
@@ -281,16 +278,20 @@ begin
   StrSetText(JobGenPrepayment,"Резервування: Генерувати передплату");
   StrSetText(AddItemsRsrtEvent,"Resort Event: Add Item");
   StrSetText(RestaurantCustomerOnly,"Лише клієнти ресторану");
+  StrSetText(LimitToResLoc,"Обмежити користувача за розашування кімнатив готелі");
+  StrSetText(RestrictInvoiceForCashier,"Обрізати вікно акта/накладної для касира"); //Edit***************************Sasha2,14:35 13.07.2016
+  StrSetText(SMToTrans,"Операції з симуляцій");
+  StrSetText(POToDropSH,"Оповіщ. про відв. із зам. постач. ");
+  StrSetText(ReloadBIData,"Перезавантажити дані БА"); 
   StrSetText(PUToRetPU,"Повернення товарів з надходжень");
   StrSetText(ORToRet,"Повернення товарів з замовлень клієнтів");
   StrSetText(POToRetPU,"Повернення товарів з замовлення постачальнику");
   StrSetText(SVOToRet,"Повернення товарів із замовлення на обслуговування"); 
   StrSetText(WSToRet,"Повернення товарів із таблиці робіт"); 
-  StrSetText(HideLastCostPrice,"Приховати вартість останньої покупки");
+  StrSetText(HideLastCostPrice,"Приховати вартість останньої покупки"); //Edit***************************Sasha2,14:32 13.07.2016
   StrSetText(SentStockMovOK,"Створення переміщень");
   StrSetText(SVOToSVGM,"Service Stock Transaction from Service Order");
   StrSetText(SendVATDeclNor,"Sending Electronic #VAT# Declaration");
-  StrSetText(POToDropSH,"Оповіщ. про відв. із зам. постач. ");
   StrSetText(AuthQualCon,"Підписати перевірку якості");
   StrSetText(AllowSplitItem,"Дозволяти розділення товару в накладній (сенсорн. екран)");
   StrSetText(IntORToSD,"Списання зі складу зг. внутрішнього замовлення");
