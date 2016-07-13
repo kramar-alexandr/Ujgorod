@@ -1078,8 +1078,8 @@ BEGIN
               tm = TMArray[TAi];
               serialnum = SerialNumArray[SAi];
               barcode = BarCodeArray[BAi];
-              qty1 = STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";instock"];
-              qty2 = STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";qty"];
+              qty1 = STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";qty"];
+              qty2 = STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";instock"];
               if (qty1!=0 and qty1!=blankval) or (qty2!=0 and qty2!=blankval) then begin
                 cnt = cnt + 1;
                 price = STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";price"];
