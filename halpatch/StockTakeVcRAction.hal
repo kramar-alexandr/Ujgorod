@@ -90,7 +90,7 @@ LValidateBulkSerialNoRow:;
 end;
 
 global
-updating function LongInt StockTakeVcR(var record StockTakeVc StockTakep,record StockTakeVc StockTake2p,LongInt stat,LongInt check)
+updating function LongInt StockTakeVcRecordCheck(var record StockTakeVc StockTakep,record StockTakeVc StockTake2p,LongInt stat,LongInt check)
 BEGIN
   LongInt res;
   record StockTakeVc lStockTaker;
