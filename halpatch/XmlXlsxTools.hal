@@ -524,23 +524,6 @@ BEGIN
 	if(windowsmode==1)then begin
 		RunProgram("tmp" & Chr(92) & "buildXLSX.bat",Chr(34) & path & Chr(34));
 	end else begin
-		/*profolder = ProgramFolder;
-		SetAreaZeroSize(command);
-		AddTextToArea("-cf0M" & chr(10),command);
-		AddTextToArea(fileName & ".xlsx" & chr(10),command);
-		AddTextToArea(fileName & chr(10),command);
-
-		alen = GetAreaLength(command);
-		for (i=0;i<alen;i=i+1) begin
-			c = GetStringFromArea (command,i,1);
-			if(c==" ")then begin
-				AddTextToArea("\\",newcmd);
-			end;
-			AddTextToArea(c,newcmd);
-		end; 
-
-		WriteAreaToFile(newcmd,"/cmd",0);
-		RunProgram("jar.sh","");*/
 		if(fileexists("/" & path & "/.DS_Store"))then begin
 			delete_file("/" & path & "/.DS_Store");
 		end;
@@ -576,7 +559,7 @@ BEGIN
     end;
     writeareatofile(tmparea2,filename,0);
   end;
-  
+  logtext(0,"resarea = " & GetAreaLength(resarea));
   GetPartFileToArea = res;
   
   RETURN;

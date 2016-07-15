@@ -940,6 +940,7 @@ begin
         cnt = 0;
         while (!EOF) begin
           EOF = GetPartFileToArea(fnserv,arealen,tmparea);
+          logtext(0,"tmparea = " & GetAreaLength(tmparea));
           writeareatofile(tmparea,filename,cnt);
           cnt = 1;
         end;
