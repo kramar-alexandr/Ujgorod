@@ -540,26 +540,42 @@ function boolean GetPartFileToArea(string filename,var longint arealen, var area
 BEGIN
   area filearea,tmparea2;
   boolean res;
+  integer cnt;
   
+  cnt = 0;
   setareazerosize(resarea);
   res = false;
-  addfiletoarea(filename,filearea,false);
-  logtext(0,"getarealength(filearea)<=arealen " & getarealength(filearea) & "  " & arealen);
-  if (getarealength(filearea)<=arealen) then begin
-    res = true;
-    getareafromarea(filearea,0,getarealength(filearea),resarea);
-    arealen = 0;
-    delete_file(filename);
-  end else begin
-    GetAreaFromArea(filearea,0,arealen,resarea);
-    GetAreaFromArea(filearea,arealen,getarealength(filearea)-(arealen),tmparea2);
-    if (getarealength(tmparea2)<arealen) then begin
-      arealen = getarealength(tmparea2);
+  L2:;
+  if fileexists(filename) begin
+    addfiletoarea(filename,filearea,false);
+    if (getarealength(filearea)<=arealen) then begin
+      res = true;
+      getareafromarea(filearea,0,getarealength(filearea),resarea);
+      arealen = 0;
+      delete_file(filename);
+    end else begin
+      GetAreaFromArea(filearea,0,arealen,resarea);
+      GetAreaFromArea(filearea,arealen,getarealength(filearea)-(arealen),tmparea2);
+      if (getarealength(tmparea2)<arealen) then begin
+        arealen = getarealength(tmparea2);
+      end;
+      writeareatofile(tmparea2,filename,0);
     end;
-    writeareatofile(tmparea2,filename,0);
+    GetPartFileToArea = res;
+  end else begin
+    while !fileexists(filename) begin
+      MilliSleep(2000);
+      cnt = cnt + 1;
+      if cnt > 5 then begin
+        arealen = -1;
+        goto L1;
+      end;
+    end;
+    goto L2;
   end;
-  logtext(0,"resarea = " & GetAreaLength(resarea));
-  GetPartFileToArea = res;
+  
+  L1:;
+  
   
   RETURN;
 END;
