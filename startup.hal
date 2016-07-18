@@ -24,7 +24,8 @@ begin
 
 	Maintenance("Очистити регістри",MyVClass,CleaningMn,modDBMain);						//Edit----------------------Dima  09.06.2016
 	Maintenance("Встановити тип серійного обліку для товарів",SetSerialTypesForINVClass,SetSerialNumberTypeForItemsMn,modDBMain);	//Edit----------------------Dima  10.06.2016
-
+  Maintenance("Очистити INTransferr",MyVClass,Cleaning2Mn,modDBMain);
+	
 	
 	SString(50000,"Ціна закупки");
 	SString(50001,"Колір");
