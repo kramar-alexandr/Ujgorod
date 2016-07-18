@@ -74,15 +74,13 @@ begin
 	record IPVc IPr;
 	record RLinkVc RLr;
 	record POVc POr;
-	record PUVc PUr;
-	//record PLVc PLr;
+	record PUVc PUr; // только  unOK
 	record StockMovVc SMr;
 	record SDVc SDr;
 	record ItemStatusVc ISr;
 	record ItemHistVc IHr;
 	record SerBalVc SBr;
   record RetVc Retr;
-  
 	record RetPUVc RetPUr;
   record TRVc TRr;
   record OPVc OPr;
@@ -266,7 +264,22 @@ begin
 return;
 end;
 
-
+global updating procedure Cleaning2Mn() //Edit----------------------Dima  09.06.2016
+begin
+	record INTransferVc INTransferr;
+  Boolean TrHs;
+	
+	TrHs = true;
+	while (LoopMain(INTransferr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(INTransferr);
+	    StepBack(INTransferr);
+	  end;
+	end;
+	
+	LogText(0,"Registers were cleaned.......");
+return;
+end;
 
 global updating procedure SetSerialNumberTypeForItemsMn(record RcVc RepSpec)	//Edit----------------------Dima  10.06.2016
 begin
