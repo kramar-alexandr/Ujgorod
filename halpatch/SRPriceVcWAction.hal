@@ -16,6 +16,7 @@ remote procedure SRPriceVc_PasteNewFIFO(var record SRPriceVc,Integer);
 external function string 40 SerialNrSClassSpecPName(string);
 remote function Boolean SRPriceVc_PasteArtCode(var record SRPriceVc,Integer,Boolean,var string);
 external procedure SRPriceSumUp(var record SRPriceVc);
+remote function Boolean SRPriceVc_RecalcPrices(var record SRPriceVc,Integer);
 
 /*global
 function Boolean SRPriceDClassSwitchRow(Integer wn,Integer rownr)
@@ -225,6 +226,53 @@ begin
   return;
 end;
 
+//Edit***************************Sasha2,17:59 14.07.2016 {
+function Boolean SRPriceDClassHeaderRateEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record SRPriceVc SRr;
+  Boolean res;
+  
+  if (changedf) then begin
+    GetWindowRecord(wn,SRr);
+    if (SRr.CalcPriceFromCostf==1) then begin
+      res = SRPriceVc_RecalcPrices(SRr,rownr);
+    end;
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassHeaderRateEFAfter = res;
+  return;
+end; //Edit***************************Sasha2,18:00 14.07.2016 }
+
+//Edit***************************Sasha2,18:00 14.07.2016 {
+function Boolean SRPriceDClassHeaderMarkUpEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record SRPriceVc SRr;
+  Boolean res;
+  
+  if (changedf) then begin
+    GetWindowRecord(wn,SRr);
+    res = SRPriceVc_RecalcPrices(SRr,rownr);
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassHeaderMarkUpEFAfter = res;
+  return;
+end; //Edit***************************Sasha2,18:00 14.07.2016 }
+
+//Edit***************************Sasha2,18:00 14.07.2016 {
+function Boolean SRPriceDClassHeaderRebateEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record SRPriceVc SRr;
+  Boolean res;
+  
+  if (changedf) then begin
+    GetWindowRecord(wn,SRr);
+    res = SRPriceVc_RecalcPrices(SRr,rownr);
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassHeaderRebateEFAfter = res;
+  return;
+end; //Edit***************************Sasha2,18:00 14.07.2016 }
+
 global
 function Boolean SRPriceDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
@@ -232,9 +280,15 @@ begin
 
   switch (fieldname) begin
     case "ArtCode": res = SRPriceDClassArtCodeEFAfter(wn,rownr,changed!=0);
-    case "NewFIFO": res = SRPriceDClassNewFIFOEFAfter(wn,rownr,changed!=0);
+    //case "NewFIFO": res = SRPriceDClassNewFIFOEFAfter(wn,rownr,changed!=0); //SRPriceDClassNewFIFOEFAfter does not take into consideration markup and rebate
     case "SerialNr": res = SRPriceDClassSerialNrEFAfter(wn,rownr,changed!=0);
     case "Location": res = SRPriceDClassLocationEFAfter(wn,rownr,changed!=0);
+    case "HeaderRate": res = SRPriceDClassHeaderRateEFAfter(wn,-1,changed!=0);
+    case "HeaderMarkUp": res = SRPriceDClassHeaderMarkUpEFAfter(wn,-1,changed!=0);
+    case "HeaderRebate": res = SRPriceDClassHeaderRebateEFAfter(wn,-1,changed!=0);
+    case "Rate": res = SRPriceDClassHeaderRateEFAfter(wn,rownr,changed!=0);
+    case "MarkUp": res = SRPriceDClassHeaderMarkUpEFAfter(wn,rownr,changed!=0);
+    case "Rebate": res = SRPriceDClassHeaderRebateEFAfter(wn,rownr,changed!=0);
     //case "TransDate": res = SRPriceDClassTransDateEFAfter(wn,changed!=0);
     //case "UnitZval": res = SRPriceDClassUnitZvalEFAfter(wn,rownr,changed!=0);
     //case "UnitYval": res = SRPriceDClassUnitYvalEFAfter(wn,rownr,changed!=0);
@@ -246,6 +300,48 @@ begin
   SRPriceDClassAfterEditField = res;
   return;
 end;
+
+global //Edit***************************Sasha2,18:33 14.07.2016 {
+function Boolean SRPriceDClassCalcPriceFromCostfButtonAfter(Integer wn,Boolean changedf)
+begin        
+  record SRPriceVc SRr; 
+  Boolean res;
+
+  if (changedf) then begin
+    GetWindowRecord(wn,SRr);
+    res = SRPriceVc_RecalcPrices(SRr,-1);
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassCalcPriceFromCostfButtonAfter = res;  
+  return;
+end; //Edit***************************Sasha2,18:33 14.07.2016 }
+
+global //Edit***************************Sasha2,9:52 15.07.2016 {
+function Boolean SRPriceDClassCalcPriceFromCostfButtonAction(Integer wn,Integer value)
+begin
+  Boolean res;
+  Integer normalmode,updatemode;
+  record SRPriceVc SRr;
+  record SRPriceVc SR2r;
+
+  res = true;
+  normalmode = 0;//Rs_normal
+  updatemode = 2;//Rs_update
+  GetWindowRecord(wn,SRr);
+  if (WindowState(wn)==normalmode) then begin
+    if (SRr.OKFlag!=0) then begin
+      res = false;
+    end;
+  end;  
+  if (WindowState(wn)==updatemode) then begin
+    GetPrevWindowRecord(wn,SR2r);
+    if (SRr.OKFlag!=0 or SR2r.OKFlag!=0) then begin
+      res = false;
+    end;
+  end;  
+  SRPriceDClassCalcPriceFromCostfButtonAction = res;
+  return;
+end; //Edit***************************Sasha2,9:52 15.07.2016 }
 
 /*global
 function Boolean SRPriceDClassOnOverStrike(Integer wn,Integer rownr)
@@ -334,12 +430,14 @@ begin
   switch (fieldname) begin
     case "Qty": res = false;
     case "FIFO": res = false;
+    case "NewFIFO": res = false;
     case "FIFORowVal": res = false;
     case "LastCostPrice": res = false;
     case "CurncyCode": res = false;
+    case "DiffFIFO": res = false;
+    case "PLPrice": res = false;
     //case "SerialNr": res = false;
     //case "NewFIFORowVal": res = false;
-    //case "DiffFIFO": res = false;
     //case "DiffFIFORowVal": res = false;
   end;
   SRPriceDClassActiveEditField = res;

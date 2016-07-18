@@ -2773,19 +2773,19 @@ end;
 window SRPriceDClass:1
   wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,h2,h3,h4,v,vm,vs;
+  real h,h2,h3,h4,v,vm,vs,rightpos;
   Integer f,flipnr;
   
   WindowBegin("Переоцінка RRP",SRPriceDClass,CGview,-);
-  SetWRect(20,80,560,350);
+  SetWRect(20,80,900,350);
   Sizeable(-1,-1,0,0);
   FormName(SRPriceForm);
   UseView(SRPriceVc);
-  vs = 20; h2 = 260; h3 = 410; h4 = 580;
+  vs = 20; h2 = 260; h3 = 410; h4 = 650;
   EditField(h=80,v=6, 82,"№",Normal,SerNr,false,TSerSClass);
   EditField(h2,v,82,"Дата операції",Normal,TransDate,false,PasteCurDate);
   if (HasAdvancedStock) then begin
-  EditField(h3,v,100,"Причина",Normal,Reason,false,StandProblemsSClass);
+  EditField(h3,v,150,"Причина",Normal,Reason,false,StandProblemsSClass);
   end;
   CheckBox(h4,v,0,"OK",OKFlag);
   //EditField(h,v+=vs,82,"Коротк. код",Normal,ACShort,false,ACShortSClass);
@@ -2793,9 +2793,16 @@ begin
   //EditField(h2,v,82,"Розходж. ціни",Normal,SRVarAcc,false,AccSClass);
   end;
   EditField(h,v+=vs,82,"Склад",Normal,Location,false,LocationSClass);
+  EditField(h+42,v+=vs,40,"Курс ціни (XX:1 Вал.)",Normal,HeaderRate,false,0); //Edit***************************Sasha2,13:52 14.07.2016
+  EditField(h2,v,82,"Націнка,%",Normal,HeaderMarkUp,false,0); //Edit***************************Sasha2,13:52 14.07.2016
+  EditField(h3,v,82,"Знижка,%",Normal,HeaderRebate,false,0); //Edit***************************Sasha2,13:52 14.07.2016
   if (HasObjects) then begin
   //EditField(h2,v,200,"Об'єкти",Normal,Objects,false,ObjSClass);
   end;
+  ButtonFrame(h4,v=2*vs,100,2,"Розрахувати ціну від"); 
+  RadioButton(h4,v,0,0,"Ціни RRP",CalcPriceFromCostf); 
+  RadioButton(h4,v+=16,1,0,"Ціни закупки",CalcPriceFromCostf);
+  
   EnterSkip(Math);
   v = v + 42;
   vm = v + 1;
@@ -2811,13 +2818,20 @@ begin
   end else begin
     MatCol(1,144,"Description",0,Spec,false,0); //!!PRODTRANSLATE
   end;
+  rightpos = -460;
   if (UserCanAction("HideLastCostPrice",false)==false) then begin
-    MatCol(1,-280,"Ціна закуп.",0,LastCostPrice,true,0);
-    MatCol(1,-220,"Вал.",0,CurncyCode,true,0);
+    MatCol(1,rightpos,"Ціна закуп.",0,LastCostPrice,true,0);
+    MatCol(1,rightpos+=60,"Курс",0,Rate,true,0);
+    MatCol(1,rightpos+=40,"Вал.",0,CurncyCode,true,0);
+  end else begin
+    rightpos = rightpos + 40 + 60;
   end;
-  MatCol(1,-180,"Стара ціна",0,FIFO,true,0);
-  MatCol(1,-120,"Нова ціна",0,NewFIFO,true,0);
-  MatCol(1,-60,"Різн.",0,DiffFIFO,true,0);
+  MatCol(1,rightpos+=40,"Ціна RRP",0,PLPrice,true,0);
+  MatCol(1,rightpos+=60,"Стара ціна",0,FIFO,true,0);
+  MatCol(1,rightpos+=60,"Нац.%",0,MarkUp,true,0);
+  MatCol(1,rightpos+=50,"Нова ціна",0,NewFIFO,true,0);
+  MatCol(1,rightpos+=60,"Зниж.%",0,Rebate,true,0);
+  MatCol(1,rightpos+=50,"Різн.",0,DiffFIFO,true,0);
   /*Flip(flipnr); flipnr = flipnr + 1;
   MatCol(1,144,"Опис",0,Spec,false,0);
   MatCol(1,-300,"Сум. в-ть",0,FIFORowVal,true,0);
@@ -2894,5 +2908,74 @@ begin
   RlCol(270,270,"Коментар",Comment,false);
   SearchField("Пошук");
 //  SpecMenuItem("OK",'G',0);
+  EndWindow;
+end;
+
+window IVGPRClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Визначте прибуток по актах/накладних",IVGPRClass,CGRcW,RcType);
+  SetWRect(20,80,480,320);
+  vs = 20;
+  Tile(0,20,false,"",Period2Str);
+  PeriodField(150,v=6,"Період");
+  TileButtons(v,2);
+  Tile(1,280,false,"1",f3);
+  v = 6;
+  EditFieldTL(h=150,v, 150,"Акт/накладна №",   M4Str,Normal,30,f1,false,0);
+  EditFieldTL(h,v+=vs ,150,"Клієнт",M4UStr,Normal,50,f2,false,CUSClass);
+  if (HasSalesman or HasSalesmanBonus) then begin
+  EditFieldTL(h,v+=vs ,100,"Продавець",M4UStr,Normal,10,AccStr,false,UserSClass);
+  end;
+  if (HasSalesGroup) then begin
+    EditFieldTL(h,v+=vs ,50,"Група продажу",M4UStr,Normal,10,f5,false,SalesGroupSClass);  
+  end;
+  EditFieldTL(h,v+=vs ,150,"Товар",M4UStr,Normal,20,FirstAcc,false,INSClass);
+  if (HasItemClassification) then begin
+  EditFieldTL(h,v+=vs ,150,"Класифікація товару",M4UStr,Normal,200,f6,false,DISClass);
+  end;
+  if (HasItemGroups) then begin
+  EditFieldTL(h,v+=vs ,80,"Група товарів",M4UStr,Normal,5,LastAcc,false,ITSClass);
+  end;
+  EditFieldTL(h,v+=vs ,80,"Партія",M4UStr,Normal,-1,f7,false,0); //Edit***************************Sasha2,17:15 15.07.2016
+  if (HasObjects) then begin
+  EditFieldTL(h,v+=vs ,150,"Об'єкт",M4UStr,Normal,60,ObjStr,false,ObjSClass);
+  EditFieldTL(h,v+=vs ,150,"Об'єкт з рядка (детально)",M4UStr,Normal,60,f3,false,ObjSClass);
+  end;
+  EditFieldTL(h,v+=vs ,50,"Умови сплати",M4UStr,Normal,5,TransStr,false,PDSClass);
+  ButtonFrame(h=60,vm=(v+=45),123,2,"Функція");
+  RadioButton(h,v,0,0,"зведений",ArtMode);
+  RadioButton(h,v+=16,1,0,"докладний",ArtMode);
+  ButtonFrame(h=250,v=vm,123,2,"Статус");    //changed
+  CheckBox(h,v,0,"незатверджені",flags[1]);
+  CheckBox(h,v+=16,0,"затверджені",flags[2]);
+  Tile(2,310,false,"2",f4);
+  h=150; v = 6;
+  if (HasMultiLocations) then begin
+    EditFieldTL(h,v,100,"Locations",M4UStr,Normal,60,f4,false,LocationSClass); //added 
+  end;
+  EditFieldTL(h,v+=20,80,"Філія",M4Code,Normal,20,Stext,false,ContactCUSClass);
+  ButtonFrame(h=60,vm=(v+=45),123,3,"Функція");
+  RadioButton(h,v,0,0,"Собівартість",flags[11]);
+  if (HasBase2) then begin
+  RadioButton(h,v+=16,2,0,"Собівартість В2",flags[11]);
+  end;
+  RadioButton(h,v+=16,1,0,"Вартість за чергою",flags[11]);
+  EndFrame;
+  ButtonFrame(h=210,v=vm,123,6,"Акти/накладні"); //##cc
+  CheckBox(h,v,0,"звичайні ",flags[3]);
+  CheckBox(h,v+=16,0,"готівкові платежі",flags[4]);
+  CheckBox(h,v+=16,0,"кредитові",flags[5]);
+  if (StandardHansa==false) and (IsStandardProduct==false) then begin
+  CheckBox(h,v+=16,0,"пені",flags[6]);
+  CheckBox(h,v+=16,0,"з передплатою",flags[7]);
+  CheckBox(h,v+=16,0,"на аванси",flags[8]);
+  end;
+  if (HasModSVO) then begin
+  CheckBox(h,v+=32,0,"Лише акти/накл. по замовл. на обслуг-ня",flags[10]);  
+  end;
+  CheckBox(h,v+=16,0,"Включати POS рахунки",flags[12]);
+  EndFrame;
   EndWindow;
 end;

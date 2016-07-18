@@ -116,27 +116,59 @@ LFindLastCostPriceForSRPrice:;
 end; //Edit***************************Sasha2,15:24 08.07.2016 }
 
 //Edit***************************Sasha2,15:23 08.07.2016 {
-procedure FindPriceInPlAndUpdDiffs(var row SRPriceVc SRrw,string artCode,string serial)
+procedure FindPriceInPlAndUpdDiffs(var row SRPriceVc SRrw,string artCode,string serial,record SRPriceVc SRr,boolean recalcPLPricef)
 begin
-  record PLVc PLr; 
+  record PLVc PLr;
+  val rebate,markup,rate,tval; 
+  roundmode rnd;
+    
+    rnd.decimals = 0;
+    rnd.step = kRoundingStep5;
   
-    PLr.SerialNr = serial;
-    PLr.PLCode = "RRP";
-    PLr.ArtCode = artCode;
-    ReadFirstKey("SerialNr",PLr,3,true);
-    if (PLr.ExVatPrice!=BlankVal and PLr.SerialNr==serial) then begin
-      SRrw.FIFO = PLr.ExVatPrice;
-      SRrw.DiffFIFO = SRrw.NewFIFO - SRrw.FIFO;
-      if (SRrw.Qty!=BlankVal) then begin
-        SRrw.FIFORowVal = SRrw.Qty*SRrw.FIFO;
+    if (recalcPLPricef) then begin
+      PLr.SerialNr = serial;
+      PLr.PLCode = "RRP";
+      PLr.ArtCode = artCode;
+      ReadFirstKey("SerialNr",PLr,3,true);
+      if (PLr.ExVatPrice!=BlankVal and PLr.SerialNr==serial) then begin
+        SRrw.PLPrice = PLr.ExVatPrice;
       end else begin
-        SRrw.FIFORowVal = BlankVal;
+        SRrw.PLPrice = 0;
       end;
-    end else begin
-      SRrw.FIFO = BlankVal;
-      SRrw.DiffFIFO = BlankVal; 
-      SRrw.FIFORowVal = BlankVal;
     end;
+    
+    if (SRrw.Rebate!=BlankVal and SRrw.Rebate!=0) then begin
+      rebate = SRrw.Rebate; 
+    end else begin
+      rebate = SRr.HeaderRebate;
+    end;
+    if (SRrw.MarkUp!=BlankVal and SRrw.MarkUp!=0) then begin
+      markup = SRrw.MarkUp; 
+    end else begin
+      markup = SRr.HeaderMarkUp;
+    end;
+    if (SRrw.Rate!=BlankVal and SRrw.Rate!=0) then begin
+      rate = SRrw.Rate; 
+    end else begin
+      rate = SRr.HeaderRate;
+    end;
+    if (SRr.CalcPriceFromCostf==0) then begin
+      SRrw.FIFO = SRrw.PLPrice + (SRrw.PLPrice/100*markup);
+    end else begin
+      tval = SRrw.LastCostPrice * rate;
+      SRrw.FIFO = tval + (tval/100*markup);
+    end;
+    SRrw.FIFO = Round(SRrw.FIFO,rnd);
+    SRrw.NewFIFO = SRrw.FIFO - (SRrw.FIFO/100*rebate);
+    SRrw.NewFIFO = Round(SRrw.NewFIFO,rnd);
+    SRrw.NewFIFORowVal = SRrw.Qty*SRrw.NewFIFO;
+    SRrw.DiffFIFO = SRrw.NewFIFO - SRrw.FIFO;
+    SRrw.FIFORowVal = SRrw.Qty*SRrw.FIFO;
+    SRrw.DiffFIFORowVal = SRrw.NewFIFORowVal - SRrw.FIFORowVal;
+
+    //SRrw.FIFO = BlankVal;
+    //SRrw.DiffFIFO = BlankVal; 
+    //SRrw.FIFORowVal = BlankVal;
   
   return;
 end; //Edit***************************Sasha2,15:23 08.07.2016 }
@@ -164,7 +196,6 @@ begin
   SRrw.SerialNr = serial;
   SRrw.VEInvoiceNr = FindPurchaseInvoiceNrForSerialNr(SRrw.ArtCode,SRrw.SerialNr,vinr,virownr);
   SRrw.Qty = q;
-  FindPriceInPlAndUpdDiffs(SRrw,INr.Code,serial);
   if (NonBlank(SRrw.Location)) then begin
     location = SRrw.Location;
   end else begin
@@ -173,7 +204,7 @@ begin
   FindLastCostPriceForSRPrice(INr.Code,serial,location,lastcostprice,lastcostcur);
   SRrw.LastCostPrice = lastcostprice;
   SRrw.CurncyCode = lastcostcur;
-  
+  FindPriceInPlAndUpdDiffs(SRrw,INr.Code,serial,SRp,true);
 /*
 done when creating  NL Transaction
   Locr.Code = SRrw.Location;
@@ -464,29 +495,29 @@ begin
 end;*/
 
 //Edit***************************Sasha2,15:49 07.07.2016 {
-procedure SRPriceVc_PasteLocation_HandleRow(var row SRPriceVc SRrw,Integer rownr,string location)
+procedure SRPriceVc_PasteLocation_HandleRow(var row SRPriceVc SRrw,Integer rownr,record SRPriceVc SRPricer)
 begin
   record ItemStatusVc ISr;
   val lastcostprice;
   string 20 lastcostcur;
   
+    FindLastCostPriceForSRPrice(SRrw.ArtCode,SRrw.SerialNr,SRPricer.Location,lastcostprice,lastcostcur);
+    SRrw.LastCostPrice = lastcostprice;
+    SRrw.CurncyCode = lastcostcur;
     if (blank(SRrw.SerialNr)) then begin
       ISr.Code = SRrw.ArtCode;
-      ISr.Location = location;
+      ISr.Location = SRPricer.Location;
       if (ReadFirstMain(ISr,2,true)) then begin
         SRrw.Qty = ISr.Instock;
-        FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,"");
+        FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,"",SRPricer,false);
       end;
     end else begin
-      SRrw.Qty = FindSerialNrQty(SRrw.ArtCode,SRrw.SerialNr,location);
+      SRrw.Qty = FindSerialNrQty(SRrw.ArtCode,SRrw.SerialNr,SRPricer.Location);
       if (SRrw.Qty==BlankVal) then begin
         SRrw.Qty = 0;
       end;
-      FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,SRrw.SerialNr);
+      FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,SRrw.SerialNr,SRPricer,false);
     end;
-    FindLastCostPriceForSRPrice(SRrw.ArtCode,SRrw.SerialNr,location,lastcostprice,lastcostcur);
-    SRrw.LastCostPrice = lastcostprice;
-    SRrw.CurncyCode = lastcostcur;
     
   return;
 end; //Edit***************************Sasha2,15:49 07.07.2016 }
@@ -507,12 +538,42 @@ begin
     rwcnt = MatRowCnt(SRr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(SRr,i,SRrw);
-      SRPriceVc_PasteLocation_HandleRow(SRrw,i,SRr.Location)
+      if (NonBlank(SRrw.ArtCode)) then begin
+        SRPriceVc_PasteLocation_HandleRow(SRrw,i,SRr);
+      end;
       MatRowPut(SRr,i,SRrw);
     end;
     SRPriceSumUp(SRr);
   end;  
   SRPriceVc_PasteLocation = res;
+  return;
+end;
+
+global
+function Boolean SRPriceVc_RecalcPrices(var record SRPriceVc SRr,Integer rownr)
+begin
+  row SRPriceVc SRrw;
+  Boolean res;
+  integer rwcnt,i;
+
+  if (rownr>=0) then begin
+      MatRowGet(SRr,rownr,SRrw);
+      if (NonBlank(SRrw.ArtCode)) then begin
+        FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,SRrw.SerialNr,SRr,false);
+      end;
+      MatRowPut(SRr,rownr,SRrw);
+  end else begin
+    rwcnt = MatRowCnt(SRr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(SRr,i,SRrw);
+      if (NonBlank(SRrw.ArtCode)) then begin
+        FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,SRrw.SerialNr,SRr,false);
+      end;
+      MatRowPut(SRr,i,SRrw);
+    end;
+    SRPriceSumUp(SRr);
+  end;  
+  SRPriceVc_RecalcPrices = res;
   return;
 end;
 
@@ -562,10 +623,12 @@ begin
   if (Blank(SRrw.SerialNr)) then begin //Edit***************************Sasha2,16:12 08.07.2016 {
     SRrw.LastCostPrice = BlankVal;
     SRrw.CurncyCode = "";
+    FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,SRrw.SerialNr,SRr,true);
   end else begin
     FindLastCostPriceForSRPrice(SRrw.ArtCode,SRrw.SerialNr,location,lastcostprice,lastcostcur);
     SRrw.LastCostPrice = lastcostprice;
     SRrw.CurncyCode = lastcostcur;
+    FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,SRrw.SerialNr,SRr,true);
   end; //Edit***************************Sasha2,16:12 08.07.2016 }
   
   MatRowPut(SRr,rownr,SRrw);

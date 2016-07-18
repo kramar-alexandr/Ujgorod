@@ -182,8 +182,11 @@ begin
   RecordField(Reason,M4Code,20,0);
   RecordField(TotQty,M4Qty,0,0);
   RecordField(TotDiff,M45Val,0,0);
-  
   RecordField(Math,M4Matrix,0,0);
+  RecordField(CalcPriceFromCostf,M4Int,0,0); //Edit***************************Sasha2,13:34 14.07.2016
+  RecordField(HeaderRate,M45Val,0,0); //Edit***************************Sasha2,13:43 14.07.2016
+  RecordField(HeaderMarkUp,M45Val,0,0); //Edit***************************Sasha2,13:43 14.07.2016
+  RecordField(HeaderRebate,M45Val,0,0); //Edit***************************Sasha2,13:43 14.07.2016
   ArrayBegin(Math,-,1);
   ArrayField(ArtCode,M4Code,20,INVc);
   ArrayField(Spec,M4Str,100,0);
@@ -207,6 +210,10 @@ begin
   ArrayField(VEInvoiceNr,M4Str,20,0);
   ArrayField(LastCostPrice,M45Val,0,0); //Edit***************************Sasha2,14:42 08.07.2016
   ArrayField(CurncyCode,M4Code,5,CurncyCodeVc); //Edit***************************Sasha2,14:41 08.07.2016
+  ArrayField(Rate,M45Val,0,0); //Edit***************************Sasha2,13:43 14.07.2016
+  ArrayField(MarkUp,M45Val,0,0); //Edit***************************Sasha2,13:43 14.07.2016
+  ArrayField(Rebate,M45Val,0,0); //Edit***************************Sasha2,13:43 14.07.2016
+  ArrayField(PLPrice,M45Val,0,0); //Edit***************************Sasha2,17:02 14.07.2016
   EndArray;  
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
