@@ -13,6 +13,7 @@ external procedure HTSaleMan(string, var string);
 external procedure HTDetailLevel(Integer, var string);
 external procedure HTNr(Integer,Integer,LongInt,LongInt,var string);
 external procedure FindSalesExVat(record TaxMatrixVc,string,val,Integer,Integer,var val);
+external function Boolean SetInSet2(string,string);
 
 function val IVGetFIFO(record IVVc IVp,Integer rownr,val FIFORowVal,val FIFO,val qty)
 begin
@@ -190,122 +191,123 @@ begin
       EndFormat;
     end;
     if (IVrw.stp==kInvoiceRowTypeNormal) or (IVrw.stp==kInvoiceRowTypeStructuredItemComponent) or (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) or (IVrw.stp==kInvoiceRowTypeCorrection)  or ((IVrw.stp==kInvoiceRowTypeDownPayment) and (IVp.InvType==kInvoiceTypeDownpayment)) then begin
-            skipitem = false;
-            if (nonblank(RepSpec.FirstAcc)) or (nonblank(RepSpec.LastAcc)) or (nonblank(RepSpec.f6)) then begin
-              infound = ReadFirstItem(IVrw.ArtCode,INr,false,true);
+      skipitem = false;
+      if (NonBlank(RepSpec.f7) and SetInSet2(RepSpec.f7,IVrw.SerialNr)==false) then begin skipitem = true; end; //Edit***************************Sasha2,13:53 18.07.2016
+      if (nonblank(RepSpec.FirstAcc)) or (nonblank(RepSpec.LastAcc)) or (nonblank(RepSpec.f6)) then begin
+        infound = ReadFirstItem(IVrw.ArtCode,INr,false,true);
+      end;
+      if (nonblank(RepSpec.FirstAcc)) then begin
+        if (RepSpec.FirstAcc<>INr.Code) and ((RepSpec.FirstAcc<>IVrw.ArtCode)) then begin
+          skipitem = true;
+        end;  
+      end;
+      if (nonblank(RepSpec.LastAcc)) or (nonblank(RepSpec.f6)) then begin
+        INr.Code = IVrw.ArtCode;
+        if (nonblank(RepSpec.LastAcc)) then begin
+          if (infound) then begin
+            if (RepSpec.LastAcc<>INr.Group) then begin
+              skipitem = true;
             end;
-            if (nonblank(RepSpec.FirstAcc)) then begin
-              if (RepSpec.FirstAcc<>INr.Code) and ((RepSpec.FirstAcc<>IVrw.ArtCode)) then begin
-                skipitem = true;
-              end;  
+          end else begin
+            skipitem = true;
+          end;
+        end;
+        if (nonblank(RepSpec.f6)) then begin
+          if (SetInSet(RepSpec.f6,INr.DispGroups)==false) then begin
+            skipitem = true;
+          end;
+        end;
+      end;
+      if (nonblank(RepSpec.f3)) then begin
+        if (SetInSet(RepSpec.f3,IVrw.Objects)==false) then begin
+          skipitem = true;
+        end;
+      end;    
+      if (skipitem==false) then begin
+        if (firstf) then begin
+          Gray_Divider(0,1);
+          StartFormat(15);
+          tstr =  CreateInvoiceNumber(IVp.SerNr,IVp.OfficialSerNr);
+          OutString(0,"DblIVVc",tstr,false);
+          InvoiceType(IVp.InvType,tstr);
+          OutString(50,0,tstr,false);
+          OutDate(130,0,IVp.InvDate,false);
+          OutString(200,0,IVp.Addr0,false);
+          if (IVp.OKFlag==0) then begin
+            OutString(480,0,USetStr(2366),true);
+          end;  
+          EndFormat;
+          firstf = false;
+        end;
+        UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
+        switch (RepSpec.flags[11]) begin
+          case 2: 
+            t = MULRATETOBASE2(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+            FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
+            gp = rowinbase - IVrw.BasePriceB2;
+          case 1: 
+            t = MulRateToBase1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+            FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
+            gp = rowinbase - IVGetFIFO(IVp,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);                
+          otherwise
+            t = MulRateToBase1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+            FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
+            gp = IVrw.rowGP;
+            if (blank(gp)) then begin
+              if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
+                t = MulRateToBase1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+                FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
+                t = IVrw.Quant * IVrw.BasePrice;
+                if (IVrw.PriceFactor!=0) then begin
+                  t = t/IVrw.PriceFactor;
+                end;
+                gp = rowinbase - t;
+              end;
             end;
-            if (nonblank(RepSpec.LastAcc)) or (nonblank(RepSpec.f6)) then begin
-              INr.Code = IVrw.ArtCode;
-              if (nonblank(RepSpec.LastAcc)) then begin
-                if (infound) then begin
-                  if (RepSpec.LastAcc<>INr.Group) then begin
-                    skipitem = true;
-                  end;
-                end else begin
-                  skipitem = true;
-                end;
-              end;
-              if (nonblank(RepSpec.f6)) then begin
-                if (SetInSet(RepSpec.f6,INr.DispGroups)==false) then begin
-                  skipitem = true;
-                end;
-              end;
-            end;
-            if (nonblank(RepSpec.f3)) then begin
-              if (SetInSet(RepSpec.f3,IVrw.Objects)==false) then begin
-                skipitem = true;
-              end;
-            end;    
-            if (skipitem==false) then begin
-              if (firstf) then begin
-                Gray_Divider(0,1);
-                StartFormat(15);
-                tstr =  CreateInvoiceNumber(IVp.SerNr,IVp.OfficialSerNr);
-                OutString(0,"DblIVVc",tstr,false);
-                InvoiceType(IVp.InvType,tstr);
-                OutString(50,0,tstr,false);
-                OutDate(130,0,IVp.InvDate,false);
-                OutString(200,0,IVp.Addr0,false);
-                if (IVp.OKFlag==0) then begin
-                  OutString(480,0,USetStr(2366),true);
-                end;  
-                EndFormat;
-                firstf = false;
-              end;
-              UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
-              switch (RepSpec.flags[11]) begin
-                case 2: 
-                  t = MULRATETOBASE2(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                  FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                  gp = rowinbase - IVrw.BasePriceB2;
-                case 1: 
-                  t = MulRateToBase1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                  FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                  gp = rowinbase - IVGetFIFO(IVp,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);                
-                otherwise
-                  t = MulRateToBase1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                  FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                  gp = IVrw.rowGP;
-                  if (blank(gp)) then begin
-                    if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                      t = MulRateToBase1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                      FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                      t = IVrw.Quant * IVrw.BasePrice;
-                      if (IVrw.PriceFactor!=0) then begin
-                        t = t/IVrw.PriceFactor;
-                      end;
-                      gp = rowinbase - t;
-                    end;
-                  end;
-              end;
-              diff = rowinbase - gp;
-              if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin
-                switch (IVrw.stp) begin
-                  case 11:
-                    ivsum = ivsum - rowinbase;
-                    gps = gps - gp;
-                    diff = diff;
-                    rowGP = gp;
-                    quant = IVrw.Quant;
-                  otherwise 
-                    ivsum = ivsum + rowinbase;
-                    gps = gps + gp;
-                    diff = -diff;
-                    rowGP = -gp;
-                    rowinbase = -rowinbase;
-                    quant = -IVrw.Quant;
-                end;
-              end else begin
-                ivsum = ivsum + rowinbase;
-                gps = gps + gp;
-                rowGP = gp;
-                quant = IVrw.Quant;
-              end;
-              totdiff = totdiff + diff;
-              totquanp = totquanp + quant;
-              if (rowGP!=0) or (quant!=0) or (rowinbase!=0) then begin
-                StartFormat(15);
-                OutString(20,0,IVrw.ArtCode,false);
-                OutVal(124,0,quant,M4UVal,true);
-                OutString(130,0,IVrw.Spec,false);
-                OutVal(350,0,rowinbase,M4Val,true);
-  
-                OutVal(420,0,diff,M4Val,true);
-                OutVal(480,0,rowGP,M4Val,true);//IVrw
-                EndFormat;
-              end;
+        end;
+        diff = rowinbase - gp;
+        if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin
+          switch (IVrw.stp) begin
+            case 11:
+              ivsum = ivsum - rowinbase;
+              gps = gps - gp;
+              diff = diff;
+              rowGP = gp;
+              quant = IVrw.Quant;
+            otherwise 
+              ivsum = ivsum + rowinbase;
+              gps = gps + gp;
+              diff = -diff;
+              rowGP = -gp;
+              rowinbase = -rowinbase;
+              quant = -IVrw.Quant;
+          end;
+        end else begin
+          ivsum = ivsum + rowinbase;
+          gps = gps + gp;
+          rowGP = gp;
+          quant = IVrw.Quant;
+        end;
+        totdiff = totdiff + diff;
+        totquanp = totquanp + quant;
+        if (rowGP!=0) or (quant!=0) or (rowinbase!=0) then begin
+          StartFormat(15);
+          OutString(20,0,IVrw.ArtCode,false);
+          OutVal(124,0,quant,M4UVal,true);
+          OutString(130,0,IVrw.Spec,false);
+          OutVal(350,0,rowinbase,M4Val,true);
+
+          OutVal(420,0,diff,M4Val,true);
+          OutVal(480,0,rowGP,M4Val,true);//IVrw
+          EndFormat;
+        end;
 /*
-              diff = rowinbase - gp;
-              StartFormat(15);
-              OutVal(420,0,diff,M4Val,true);
-              EndFormat;
+        diff = rowinbase - gp;
+        StartFormat(15);
+        OutVal(420,0,diff,M4Val,true);
+        EndFormat;
 */
-            end;
+      end;
     end;
   end;
   if (IVp.FrPrice<>0) then begin
@@ -609,33 +611,40 @@ begin
          for (i=0; i<rwcnt; i=i+1) begin
           MatRowGet(IVr,i,IVrw);
           if (IVrw.stp==kInvoiceRowTypeNormal) or (IVrw.stp==kInvoiceRowTypeStructuredItemComponent) or (IVrw.stp==kInvoiceRowTypeCorrection) or (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) or ((IVrw.stp==kInvoiceRowTypeDownPayment) and (IVr.InvType==kInvoiceTypeDownpayment)) then begin
-              UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
-              switch (RepSpec.flags[11]) begin
-                case 2: 
-                  t = MULRATETOBASE2(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                  FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
-                  gp = rowinbase - IVrw.BasePriceB2;
-                case 1:
-                  t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                  FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
-                  gp = rowinbase - IVGetFIFO(IVr,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
-                otherwise
-                  t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                  FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
-                  gp = IVrw.rowGP;
-                  if (blank(gp)) then begin
-                    if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                      t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                      FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
-                      t = IVrw.Quant * IVrw.BasePrice;
-                      if (IVrw.PriceFactor!=0) then begin
-                        t = t/IVrw.PriceFactor;
-                      end;
-                      gp = rowinbase - t;
-                    end;
-                  end;
+              skipitem = false; //Edit***************************Sasha2,12:14 18.07.2016 {
+              if (NonBlank(RepSpec.f7) and SetInSet2(RepSpec.f7,IVrw.SerialNr)==false) then begin
+                skipitem = true; 
+                wholeinv = false;
               end;
-              skipitem = false;
+              if (skipitem==false) then begin //Edit***************************Sasha2,12:14 18.07.2016 }
+                UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
+                switch (RepSpec.flags[11]) begin
+                  case 2: 
+                    t = MULRATETOBASE2(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+                    FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
+                    gp = rowinbase - IVrw.BasePriceB2;
+                  case 1:
+                    t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+                    FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
+                    gp = rowinbase - IVGetFIFO(IVr,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
+                  otherwise
+                    t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+                    FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
+                    gp = IVrw.rowGP;
+                    if (blank(gp)) then begin
+                      if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
+                        t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+                        FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
+                        t = IVrw.Quant * IVrw.BasePrice;
+                        if (IVrw.PriceFactor!=0) then begin
+                          t = t/IVrw.PriceFactor;
+                        end;
+                        gp = rowinbase - t;
+                      end;
+                    end;
+                end;
+              end;
+              //skipitem = false; //Edit***************************Sasha2,12:15 18.07.2016
               if (nonblank(RepSpec.FirstAcc)) or (nonblank(RepSpec.LastAcc)) or (nonblank(RepSpec.f6)) then begin
                 infound = ReadFirstItem(IVrw.ArtCode,INr,false,true);
               end;

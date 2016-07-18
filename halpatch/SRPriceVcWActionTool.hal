@@ -137,17 +137,17 @@ begin
       end;
     end;
     
-    if (SRrw.Rebate!=BlankVal and SRrw.Rebate!=0) then begin
+    if (NonBlank(SRrw.Rebate)) then begin
       rebate = SRrw.Rebate; 
     end else begin
       rebate = SRr.HeaderRebate;
     end;
-    if (SRrw.MarkUp!=BlankVal and SRrw.MarkUp!=0) then begin
+    if (NonBlank(SRrw.MarkUp)) then begin
       markup = SRrw.MarkUp; 
     end else begin
       markup = SRr.HeaderMarkUp;
     end;
-    if (SRrw.Rate!=BlankVal and SRrw.Rate!=0) then begin
+    if (NonBlank(SRrw.Rate)) then begin
       rate = SRrw.Rate; 
     end else begin
       rate = SRr.HeaderRate;
