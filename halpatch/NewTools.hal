@@ -69,48 +69,35 @@ end;
 
 global updating procedure CleaningMn() //Edit----------------------Dima  09.06.2016
 begin
-	record INVc INr;
-	record DIVc DIr;
-	record ITVc ITr;
 	record IVVc IVr;
 	record VIVc VIr;
 	record IPVc IPr;
-	record VARVc VARr;
 	record RLinkVc RLr;
 	record POVc POr;
 	record PUVc PUr;
-	record PLVc PLr;
+	//record PLVc PLr;
 	record StockMovVc SMr;
 	record SDVc SDr;
 	record ItemStatusVc ISr;
 	record ItemHistVc IHr;
-	record BarcodeVc Barr;
-	record SerBalVc SBr;	
+	record SerBalVc SBr;
+  record RetVc Retr;
+  
+	record RetPUVc RetPUr;
+  record TRVc TRr;
+  record OPVc OPr;
+  record ORVc ORr;
+  record SHVc SHr;
+  record StockTakeVc STr;
+  record FBVc FBr;
+  record SRPriceVc SRPr;
+  record SRVc SRr;
+  record BarCodeVc BCr;
+  record INVc INr;
+  
 	Boolean TrHs;
-		
-
+	
 	TrHs = true;
-	while (LoopMain(INr,1,TrHs)) begin
-	  if (TrHs) then begin
-	    RecordDelete(INr);
-	    StepBack(INr);
-	  end;
-	end;
-	TrHs = true;	
-	while (LoopMain(DIr,1,TrHs)) begin
-	  if (TrHs) then begin
-	    RecordDelete(DIr);
-	    StepBack(DIr);
-	  end;
-	end;
-	TrHs = true;	
-	while (LoopMain(ITr,1,TrHs)) begin
-	  if (TrHs) then begin
-	    RecordDelete(ITr);
-	    StepBack(ITr);
-	  end;
-	end;
-	TrHs = true;	
 	while (LoopMain(IVr,1,TrHs)) begin
 	  if (TrHs) then begin
 	    RecordDelete(IVr);
@@ -132,13 +119,6 @@ begin
 	  end;
 	end;
 	TrHs = true;	
-	while (LoopMain(VARr,1,TrHs)) begin
-	  if (TrHs) then begin
-	    RecordDelete(VARr);
-	    StepBack(VARr);
-	  end;
-	end;
-	TrHs = true;	
 	while (LoopMain(RLr,1,TrHs)) begin
 	  if (TrHs) then begin
 	    RecordDelete(RLr);
@@ -155,11 +135,10 @@ begin
 	TrHs = true;
 	while (LoopMain(PUr,1,TrHs)) begin
 	  if (TrHs) then begin
-	    RecordDelete(PUr);
-	    StepBack(PUr);
+	    PUr.OKFlag = 0;
+      RecordStore(PUr,true);
 	  end;
 	end;
-	
 	TrHs = true;	
 	while (LoopMain(SMr,1,TrHs)) begin
 	  if (TrHs) then begin
@@ -191,13 +170,6 @@ begin
 	end;
 	LogText(0,"Item histiry was removed..");					
 	TrHs = true;	
-	while (LoopMain(Barr,1,TrHs)) begin
-	  if (TrHs) then begin
-	    RecordDelete(Barr);
-	    StepBack(Barr);
-	  end;
-	end;	
-	TrHs = true;	
 	while (LoopMain(SBr,1,TrHs)) begin
 	  if (TrHs) then begin
 	    RecordDelete(SBr);
@@ -205,13 +177,91 @@ begin
 	  end;
 	end;	
 	TrHs = true;	
-	while (LoopMain(PLr,1,TrHs)) begin
+	while (LoopMain(Retr,1,TrHs)) begin
 	  if (TrHs) then begin
-	    RecordDelete(PLr);
-	    StepBack(PLr);
+	    RecordDelete(Retr);
+	    StepBack(Retr);
 	  end;
-	end;												
-
+	end;
+	TrHs = true;	
+	while (LoopMain(RetPUr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(RetPUr);
+	    StepBack(RetPUr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(TRr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(TRr);
+	    StepBack(TRr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(OPr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(OPr);
+	    StepBack(OPr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(ORr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(ORr);
+	    StepBack(ORr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(SHr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(SHr);
+	    StepBack(SHr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(STr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(STr);
+	    StepBack(STr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(FBr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(FBr);
+	    StepBack(FBr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(SRPr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(SRPr);
+	    StepBack(SRPr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(SRr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(SRr);
+	    StepBack(SRr);
+	  end;
+	end;
+	TrHs = true;	
+	while (LoopMain(INr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(INr);
+	    StepBack(INr);
+	  end;
+	end;
+	
+  TrHs = true;	
+	while (LoopMain(BCr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(BCr);
+	    StepBack(BCr);
+	  end;
+	end;
+	
 	LogText(0,"Registers were cleaned.......");
 return;
 end;
