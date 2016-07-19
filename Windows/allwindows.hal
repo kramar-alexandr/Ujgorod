@@ -2793,7 +2793,9 @@ begin
   //EditField(h2,v,82,"ђозходж. цґни",Normal,SRVarAcc,false,AccSClass);
   end;
   EditField(h,v+=vs,82,"‘клад",Normal,Location,false,LocationSClass);
-  EditField(h+42,v+=vs,40,"Љурс цґни (XX:1 ‚ал.)",Normal,HeaderRate,false,0); //Edit***************************Sasha2,13:52 14.07.2016
+  if (UserCanAction("HideLastCostPrice",false)==false) then begin
+    EditField(h+42,v+=vs,40,"Љурс цґни (XX:1 ‚ал.)",Normal,HeaderRate,false,0); //Edit***************************Sasha2,13:52 14.07.2016
+  end;
   EditField(h2,v,82,"Ќацґнка,%",Normal,HeaderMarkUp,false,0); //Edit***************************Sasha2,13:52 14.07.2016
   EditField(h3,v,82,"‡нижка,%",Normal,HeaderRebate,false,0); //Edit***************************Sasha2,13:52 14.07.2016
   if (HasObjects) then begin
