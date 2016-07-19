@@ -2,6 +2,8 @@ external function roundmode SetRoundModeD(Integer);
 external function Boolean PUVc_PasteArtCode(var record PUVc,Integer,var string,var string);
 external procedure PUSumUp(var record PUVc);
 external procedure PUVc_PasteTransDate(var record PUVc,var Boolean,var Boolean,var Boolean);
+external function Integer InString2(string,string);
+external function string 255 StrReplace(string,string,string);
 
 global
 procedure CalcEANCHS(var string str)
@@ -420,4 +422,88 @@ begin
 	end;
 	
 return;
+end;
+
+global  //Edit***************************Sasha2,9:41 19.07.2016
+updating procedure ReplaceCharFromINMn(record RcVc RepSpec)
+begin
+	record INVc oldINr,INr;
+	record BarCodeVc BarCoder;
+	string 1 frchar,tochar,c;
+	string 20 prevCode,newCode;
+	integer l,i;
+	vector string 20 codes;
+	array string 20 arrCodes;
+	boolean proceedf;
+	 
+  	if (Blank(RepSpec.f1) or Blank(RepSpec.f2)) then begin
+  	  goto LRemoveCharFromINMn;
+  	end;
+  	if (RepSpec.f1==RepSpec.f2) then begin
+  	  goto LRemoveCharFromINMn;
+  	end;
+  	frchar = left(RepSpec.f1,1);
+  	tochar = left(RepSpec.f2,1);
+	
+  	While(LoopMain(INr,1,true))  begin
+  		if (InString2(INr.Code,frchar)>=0) then begin
+  		  prevCode = INr.Code;
+  		  l = len(prevCode);
+  		  newCode = "";
+    		for (i=0;i<l;i=i+1) begin
+    		  c = Mid(prevCode,i,1);
+    		  if (c==frchar) then begin
+    		    newCode = newCode & tochar;
+    		  end else begin
+    		    newCode = newCode & c;
+    		  end;
+    		end;
+    		if (prevCode!=newCode) then begin
+    		  codes[prevCode] = newCode;
+    		end;
+  		end;
+  	end;
+  	GetVectorTags(codes,arrCodes);
+  	if (arrCodes.length>0) then begin
+  	  for (i=0;i<arrCodes.length;i=i+1) begin
+  	    proceedf = false;
+  	    prevCode = arrCodes[i];
+  	    newCode = codes[arrCodes[i]];
+  	    INr.Code = newCode;
+  	    if (ReadFirstMain(INr,1,true)) then begin
+  	      INr.Code = prevCode;
+  	      if (ReadFirstMain(INr,1,true)) then begin
+  	        RecordDelete(INr);
+  	        proceedf = true;
+  	      end;
+  	    end else begin
+    	    INr.Code = prevCode;
+    	    if (ReadFirstMain(INr,1,true)) then begin
+    	      RecordCopy(oldINr,INr);
+    	      INr.Code = newCode;
+    	      if (RecordUpdate(oldINr,INr,false)==0) then begin
+    	        proceedf = true;
+    	      end;
+    	    end;
+  	    end;
+  	    
+  	    if (proceedf) then begin
+    	    BarCoder.Itemcode = prevCode;
+          while (ReadFirstKey("Itemcode",BarCoder,1,true)) begin
+            if (BarCoder.Itemcode==prevCode) then begin
+  	          BarCoder.Itemcode = StrReplace(BarCoder.Itemcode,prevCode,newCode);
+  	          if (NonBlank(BarCoder.SerialNr)) then begin
+  	            BarCoder.SerialNr = StrReplace(BarCoder.SerialNr,prevCode,newCode);
+  	          end;
+  	          RECORDSTORE(BarCoder,true);
+  	          //LogText(0,"prevCode:" & prevCode & ",newCode:" & newCode & ",BarCoder.Itemcode:" & BarCoder.Itemcode & ",BarCoder.SerialNr:" & BarCoder.SerialNr);
+            end;
+            BarCoder.Itemcode = prevCode;
+          end;
+  	    end;
+  	  end;
+  	end;
+
+LRemoveCharFromINMn:;
+  
 end;

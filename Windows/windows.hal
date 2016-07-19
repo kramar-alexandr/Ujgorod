@@ -293,3 +293,15 @@ window PUFromSerBalVClass:1 //Edit-------------------Vitalii 12:19 19.07.2016
   EditField(h,v+=20,150,"Quantity",Normal,f1,false,0);
   EndWindow;
 end;
+
+window ReplaceCharFromINVClass:1 //Edit***************************Sasha2,14:35 19.07.2016
+ wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+ begin
+  real v,vs;
+WindowBegin("‡амґнити символ",ReplaceCharFromINVClass,CGMnt,RcType);
+  SetWRect(20,120,360,220);
+  v=6;vs = 20;
+    EditFieldTL(100,v,20,"‡ символу",M4Str,Normal,1,f1,false,0);
+    EditFieldTL(100,v+=VS,20,"Ќа символ",M4Str,Normal,1,f2,false,0);
+  EndWindow;
+end;
