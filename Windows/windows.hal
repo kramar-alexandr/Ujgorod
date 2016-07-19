@@ -281,3 +281,15 @@ begin
 
   EndWindow;
 end;
+
+window PUFromSerBalVClass:1 //Edit-------------------Vitalii 12:19 19.07.2016
+ wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+ begin
+  real h,h1,h2,t,v,vs;
+	 
+  vs = 20; h=100; h1=100; h2=220;
+  WindowBegin("Maintenance",PUFromSerBalVClass,CGMnt,RcType);
+  SetWRect(20,120,360,220);
+  EditField(h,v+=20,150,"Quantity",Normal,f1,false,0);
+  EndWindow;
+end;

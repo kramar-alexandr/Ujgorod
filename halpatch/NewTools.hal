@@ -1,4 +1,7 @@
 external function roundmode SetRoundModeD(Integer);
+external function Boolean PUVc_PasteArtCode(var record PUVc,Integer,var string,var string);
+external procedure PUSumUp(var record PUVc);
+external procedure PUVc_PasteTransDate(var record PUVc,var Boolean,var Boolean,var Boolean);
 
 global
 procedure CalcEANCHS(var string str)
@@ -292,4 +295,50 @@ begin
 		end;
 	end;
   
+end;
+
+global updating procedure PUFromSerBalMn(record RcVc RecSpec) //Edit-------------------Vitalii 11:09 19.07.2016
+begin
+  record SerBalVc SBr;
+  record PUVc PUr;
+  row PUVc PUrw;
+  integer i,quant;
+  string 255 tstr,tstr2;
+  Boolean datewarnf,warnoldrecordsf,warnfutdatef;
+  
+  quant = StringToInt(RecSpec.f1);
+  i = 0;
+  RecordNew(PUr);
+  PUr.SerNr = NextSerNr("PUVc",PUr.TransDate,-1,false,"");
+	PUr.TransDate = CurrentDate;
+	PUVc_PasteTransDate(PUr,datewarnf,warnoldrecordsf,warnfutdatef);
+  while (LoopMain(SBr,1,true)) begin
+    if (SBr.Quant > 0) then begin
+      ClearRow(PUr,PUrw,1);
+      PUrw.ArtCode = SBr.Item;
+      MatRowPut(PUr,i,PUrw);
+      PUVc_PasteArtCode(PUr,i,tstr,tstr2);
+      MatRowGet(PUr,i,PUrw);
+      PUrw.Quant = quant;
+      PUrw.Location = SBr.Location;
+      PUrw.SerialNr = SBr.Serial;
+      PUrw.UPrice = SBr.CostPrice;
+      PUrw.CostPrice = SBr.CostPrice;
+      PUrw.Sum = SBr.CostPrice * quant;
+      MatRowPut(PUr,i,PUrw);
+      i = i + 1;
+    end;
+    if i>5 then begin
+      PUSumUp(PUr);
+      RecordStore(PUr,true);
+      RecordNew(PUr);
+      PUr.SerNr = NextSerNr("PUVc",PUr.TransDate,-1,false,"");
+      PUr.TransDate = CurrentDate;
+      PUVc_PasteTransDate(PUr,datewarnf,warnoldrecordsf,warnfutdatef);
+      i = 0;
+    end;
+  end;
+  PUSumUp(PUr);
+  RecordStore(PUr,true);
+  return;
 end;
