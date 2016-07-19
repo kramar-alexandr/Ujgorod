@@ -125,6 +125,16 @@ begin
 		price = StringToVal(ImportField,M45Val);
 		bar = ImportField;
 		
+		if(blank(var1))then begin
+				var1 = "OS";
+			end;
+			if(blank(var2))then begin
+				var2 = "OS";
+			end;
+			if(blank(collection))then begin
+				collection = "OS";
+			end;
+		
 		serialNr = code & "." & var1 & "." & var2 & "." & collection;
 
 		if (nonblank(code)) then begin
