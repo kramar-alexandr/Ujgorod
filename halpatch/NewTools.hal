@@ -269,17 +269,24 @@ end;
 
 global updating procedure Cleaning2Mn() //Edit----------------------Dima  09.06.2016
 begin
-	record INTransferVc INTransferr;
+	record BarCodesVc BCr;
+  record PLVc PLr;
   Boolean TrHs;
 	
-	TrHs = true;
-	while (LoopMain(INTransferr,1,TrHs)) begin
+	TrHs = true;	
+	while (LoopMain(BCr,1,TrHs)) begin
 	  if (TrHs) then begin
-	    RecordDelete(INTransferr);
-	    StepBack(INTransferr);
+	    RecordDelete(BCr);
+	    StepBack(BCr);
 	  end;
 	end;
-	
+	TrHs = true;	
+	while (LoopMain(PLr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RecordDelete(PLr);
+	    StepBack(PLr);
+	  end;
+	end;
 	LogText(0,"Registers were cleaned.......");
 return;
 end;
