@@ -496,7 +496,7 @@ begin
   	            BarCoder.SerialNr = StrReplace(BarCoder.SerialNr,prevCode,newCode);
   	          end;
   	          RECORDSTORE(BarCoder,true);
-  	          //LogText(0,"prevCode:" & prevCode & ",newCode:" & newCode & ",BarCoder.Itemcode:" & BarCoder.Itemcode & ",BarCoder.SerialNr:" & BarCoder.SerialNr);
+  	          LogText(0,"prevCode:" & prevCode & ",newCode:" & newCode & ",BarCoder.Itemcode:" & BarCoder.Itemcode & ",BarCoder.SerialNr:" & BarCoder.SerialNr);
             end;
             BarCoder.Itemcode = prevCode;
           end;
