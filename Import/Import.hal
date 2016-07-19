@@ -244,3 +244,69 @@ begin
   
   LImportStockRemainsIn:;
 end;
+
+global updating procedure ImportStockRemains2In()//Edit-------------------Vitalii 16:44 19.07.2016
+begin
+	record PUVc PUr;
+	row PUVc PUrw;
+	string 100 location;
+	string 255 code, var1,var2,collection;
+	Boolean datewarnf,warnoldrecordsf,warnfutdatef;
+	string 255 warning,inwarn;
+	integer rownr,qty;
+	val cost;
+	
+	location = ImportField;
+	NextImportLine(true);
+	
+	if (blank(location)) then begin
+		goto LImportStockRemains2In;
+	end;
+	
+	RecordNew(PUr);
+	PUr.SerNr = NextSerNr("PUVc",PUr.TransDate,-1,false,"");
+	PUr.TransDate = CurrentDate;
+	PUr.Location = location;
+	PUVc_PasteTransDate(PUr,datewarnf,warnoldrecordsf,warnfutdatef);
+	rownr = 0;
+	
+	while (TestEOF()==false) begin
+		code = ImportField;
+		qty = StringToInt(ImportField);
+		cost = StringToVal(ImportField,M45Val);
+
+
+		if (nonblank(code)) then begin
+
+			PUrw.ArtCode = code;
+			MatRowPut(PUr,rownr,PUrw);
+			PUVc_PasteArtCode(PUr,rownr,warning,inwarn);
+			MatRowGet(PUr,rownr,PUrw);
+			PUrw.Quant = qty;
+			PUrw.UPrice = cost;
+    	PUrw.CostPrice = cost;
+    	PUrw.Sum = cost*qty;		
+			PUrw.Location = location;
+      MatRowPut(PUr,rownr,PUrw);
+			rownr = rownr + 1;
+			if(rownr>999)then begin
+				PUSumUp(PUr);
+				RecordInsert(PUr,true);
+				logtext(0,"PU Imported " & PUr.SerNr);
+				RecordNew(PUr);
+				PUr.SerNr = NextSerNr("PUVc",PUr.TransDate,-1,false,"");
+				PUr.TransDate = CurrentDate;
+				PUr.Location = location;
+				PUVc_PasteTransDate(PUr,datewarnf,warnoldrecordsf,warnfutdatef);
+				rownr = 0;
+			end;
+		end;
+
+		NextImportLine(true);
+	end;
+	PUSumUp(PUr);
+	RecordInsert(PUr,true);
+	
+  
+  LImportStockRemains2In:;
+end;
