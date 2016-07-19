@@ -349,3 +349,75 @@ begin
   RecordStore(PUr,true);
   return;
 end;
+
+global updating procedure UnOKStoreRegMn() //Edit-------------------Vitalii 13:44 19.07.2016
+begin
+	record SHVc SHr;
+	record PUVc PUr;
+  record SDVc SDr;
+  record StockMovVc SMr;
+  record RetVc Retr;
+  record RetPUVc RetPUr;
+  record StockTakeVc STr;
+  record SRVc SRr;
+	Boolean TrHs;
+	
+	TrHs = true;
+	while (LoopMain(SHr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    SHr.OKFlag = 0;
+      RecordStore(SHr,true);
+	  end;
+	end;
+	TrHs = true;
+	while (LoopMain(PUr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    PUr.OKFlag = 0;
+      RecordStore(PUr,true);
+	  end;
+	end;
+	TrHs = true;
+	while (LoopMain(SDr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    SDr.OKFlag = 0;
+      RecordStore(SDr,true);
+	  end;
+	end;
+	TrHs = true;
+	while (LoopMain(SMr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    SMr.OKFlag = 0;
+      RecordStore(SMr,true);
+	  end;
+	end;
+	TrHs = true;
+	while (LoopMain(Retr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    Retr.OKFlag = 0;
+      RecordStore(Retr,true);
+	  end;
+	end;
+	TrHs = true;
+	while (LoopMain(RetPUr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    RetPUr.OKFlag = 0;
+      RecordStore(RetPUr,true);
+	  end;
+	end;
+	TrHs = true;
+	while (LoopMain(STr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    STr.OKFlag = 0;
+      RecordStore(STr,true);
+	  end;
+	end;
+	TrHs = true;
+	while (LoopMain(SRr,1,TrHs)) begin
+	  if (TrHs) then begin
+	    SRr.OKFlag = 0;
+      RecordStore(SRr,true);
+	  end;
+	end;
+	
+return;
+end;
