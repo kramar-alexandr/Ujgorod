@@ -269,7 +269,7 @@ end;
 
 global updating procedure Cleaning2Mn() //Edit----------------------Dima  09.06.2016
 begin
-	record BarCodesVc BCr;
+	record BarCodeVc BCr;
   record PLVc PLr;
   Boolean TrHs;
 	
