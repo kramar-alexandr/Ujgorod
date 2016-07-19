@@ -328,7 +328,7 @@ begin
       MatRowPut(PUr,i,PUrw);
       i = i + 1;
     end;
-    if i>5 then begin
+    if i>999 then begin
       PUSumUp(PUr);
       RecordStore(PUr,true);
       RecordNew(PUr);
