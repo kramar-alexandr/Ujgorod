@@ -1,18 +1,23 @@
-
+external procedure ExtractObj(string,var Integer,var string); 
 external procedure GetPartsOfString(string,integer,var array string);
 
+SetLangMode(LangUkrainian,"UKR",0);
 
 
-
-global procedure Handle_Zebra_Printing(record RcVc RepSpec,var area aLabel,var boolean print)
+global procedure Handle_Zebra_Printing(record RcVc RepSpec,var area aLabel,var boolean print,record ZebraPrinterBlock ZPb)
 begin
   record PUVc PUr,newPUr;
   row PUVc PUrw,newPUrw;
   record StockMovVc SMr;
   row StockMovVc SMrw;
-  integer wn,i,mtrw,lenth,h,k,int;
+  record SRPriceVc SRPricer;
+  row SRPriceVc SRPricerw;
+  record BarCodeVc BarCoder;
+  record INVc INr;
+  record DIVc DIr;
+  integer wn,i,mtrw,lenth,k,int,pos,loops;
   boolean testf;
-  string 20 s1,s2,s3,s4,s5;
+  string 20 s1,s2,s3,s4,s5,brand;
   array string 50 parts;
 
   recordnew(newPUr);
@@ -57,37 +62,77 @@ begin
   		     matrowput(newPUr,k,newPUrw);
   		     k=k+1;
   		  end;
+  		end;
+  	case "SRPriceVc":
+			GetWindowRecord(wn,SRPricer);
+  		mtrw = MatRowCnt(SRPricer);
+  		for (i=0;i<mtrw;i=i+1) begin
+  		  MatRowGet(SRPricer,i,SRPricerw);
+  		  if (nonblank(SRPricerw.ArtCode) and (SRPricerw.Qty>0)) then begin
+  		     matrowget(newPUr,k,newPUrw);
+  		     pos = 0;
+  		     brand = "";
+  		     INr.Code = SRPricerw.ArtCode;
+  		     if (ReadFirstMain(INr,1,true)) then begin
+    		     ExtractObj(INr.DispGroups,pos,s1); 
+             while(nonblank(s1))begin
+             	DIr.Code = s1;
+             	if(readfirstmain(DIr,1,true))then begin
+             		if(DIr.CType=="BRAND")then begin
+             			brand = DIr.Name;
+             			pos = len(INr.DispGroups);
+             		end;
+             	end;
+             	ExtractObj(INr.DispGroups,pos,s1);
+             end;
+  		     end;
+  		     newPUrw.ArtCode = SRPricerw.ArtCode;
+  		     newPUrw.POReconComment = brand;
+           newPUrw.SerialNr = SRPricerw.SerialNr;
+           Barcoder.SerialNr = SRPricerw.SerialNr;
+           ReadFirstKey("SerialNr",Barcoder,1,true);
+           newPUrw.BarCode = Barcoder.Barcode;
+           newPUrw.UPrice = SRPricerw.FIFO; //old price
+           newPUrw.InPrice = SRPricerw.NewFIFO; //new price 
+           newPUrw.Quant = SRPricerw.Qty; 		        
+  		     matrowput(newPUr,k,newPUrw);
+  		     k=k+1;
+  		  end;
   		end;				
 	end;
 
-   
-
-
-  
   if(k>0)then begin
     
     SetAreaZeroSize(aLabel);
-      //addtexttoarea("q592" & chr(13) & chr(10),aLabel); //Set Label Width 74 mm
-      addtexttoarea("q304" & chr(13) & chr(10),aLabel); //Set Label Width 57      
-      //addtexttoarea("Q120,16" & chr(13) & chr(10),aLabel); //Set Label Height 10mm
-      addtexttoarea("Q200,16" & chr(13) & chr(10),aLabel); //Set Label Height 39
+      addtexttoarea("q432" & chr(13) & chr(10),aLabel); //Set Label Width 54      
+      addtexttoarea("Q320,16" & chr(13) & chr(10),aLabel); //Set Label Height 40
       //addtexttoarea("R280,0" & chr(13) & chr(10),aLabel);
-      addtexttoarea("D13" & chr(13) & chr(10),aLabel); //print density
-      addtexttoarea("I8,C" & chr(13) & chr(10),aLabel); //appropriate character set for printing and display (KDU) "C": Wi1n2d5o1ws Cyrillic
+      if(ZPb.ParamIn1>0)then begin
+      	if(ZPb.ParamIn1<16)then begin
+      		addtexttoarea("D" & ZPb.ParamIn1 & chr(13) & chr(10),aLabel); //print density
+      	end else begin
+      		addtexttoarea("D15" & chr(13) & chr(10),aLabel); //print density
+      	end;
+      end else begin
+				addtexttoarea("D15" & chr(13) & chr(10),aLabel); //print density
+      end;
+      addtexttoarea("I8,C" & chr(13) & chr(10),aLabel); //appropriate character set for printing and display (KDU) "C": Windows 1251 Cyrillic
       addtexttoarea("FK\"1\"" & chr(13) & chr(10),aLabel); //iDelete forms from memory
       addtexttoarea("FS\"1\"" & chr(13) & chr(10),aLabel); // Store Form
-      addtexttoarea("V00,15,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
-      addtexttoarea("V01,30,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
-      addtexttoarea("V02,30,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
-      addtexttoarea("V03,30,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
-      addtexttoarea("V04,30,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
-      addtexttoarea("V05,10,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
-      addtexttoarea("A10,10,0,3,1,1,N,V00" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
-      addtexttoarea("A10,40,0,2,1,1,N,V01" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
-      addtexttoarea("A10,60,0,2,1,1,N,V02" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
-      addtexttoarea("A10,80,0,2,1,1,N,V03" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
-      addtexttoarea("B10,110,0,1,2,2,50,B,V04" & chr(13) & chr(10),aLabel); // print standard bar codes
-      addtexttoarea("PAV05" & chr(13) & chr(10),aLabel); // to automatically print the form
+      addtexttoarea("V00,60,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
+      addtexttoarea("V01,60,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
+      addtexttoarea("V02,60,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
+      addtexttoarea("V03,60,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
+      addtexttoarea("V04,60,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
+      addtexttoarea("V05,60,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
+      addtexttoarea("V06,15,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
+      addtexttoarea("A10,10,0,4,1,1,N,V00" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+      addtexttoarea("A10,45,0,4,1,1,N,V01" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+      addtexttoarea("A10,80,0,3,1,1,N,V02" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+      addtexttoarea("A10,130,0,4,1,1,N,V03" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+      addtexttoarea("A10,165,0,4,1,1,N,V04" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+      addtexttoarea("B10,210,0,1,2,2,50,B,V05" & chr(13) & chr(10),aLabel); // print standard bar codes
+      addtexttoarea("PAV06" & chr(13) & chr(10),aLabel); // to automatically print the form
       addtexttoarea("FE" & chr(13) & chr(10),aLabel); // command is used to end a form store sequence.
       addtexttoarea(chr(13) & chr(10),aLabel);
     
@@ -95,17 +140,25 @@ begin
     for (i=0;i<mtrw;i=i+1) begin
       MatRowGet(newPUr,i,newPUrw);
       if (nonblank(newPUrw.ArtCode)) then begin
-        addtexttoarea("FR\"1\"" & chr(13) & chr(10),aLabel);
-        addtexttoarea("?" & chr(13) & chr(10),aLabel);
-        addtexttoarea(newPUrw.ArtCode & chr(13) & chr(10),aLabel);
-        addtexttoarea(newPUrw.Spec & chr(13) & chr(10),aLabel);
-        addtexttoarea(newPUrw.POReconComment & chr(13) & chr(10),aLabel);
-        addtexttoarea(newPUrw.VIReconComment & chr(13) & chr(10),aLabel);
-				addtexttoarea(newPUrw.BarCode & chr(13) & chr(10),aLabel);        
-        int = newPUrw.Quant;		//val to integer
-        addtexttoarea(int & chr(13) & chr(10),aLabel);
-        addtexttoarea("1" & chr(13) & chr(10),aLabel);
-        addtexttoarea(chr(13) & chr(10),aLabel);
+        if (newPUrw.Quant>1) then begin
+          loops = newPUrw.Quant;
+        end else begin
+          loops = 1;
+        end;
+        while (loops>0) begin
+          addtexttoarea("FR\"1\"" & chr(13) & chr(10),aLabel);
+          addtexttoarea("?" & chr(13) & chr(10),aLabel);
+          addtexttoarea("Товар: " & newPUrw.ArtCode & chr(13) & chr(10),aLabel);
+          addtexttoarea("Фірма: " & newPUrw.POReconComment & chr(13) & chr(10),aLabel);
+          addtexttoarea("Мод.: " & newPUrw.SerialNr & chr(13) & chr(10),aLabel);
+  				//int = newPUrw.Quant;//val to integer   
+  				addtexttoarea("Ціна: " & newPUrw.UPrice & chr(13) & chr(10),aLabel);
+          addtexttoarea("Стара ціна: " & newPUrw.InPrice & chr(13) & chr(10),aLabel);
+          addtexttoarea(newPUrw.BarCode & chr(13) & chr(10),aLabel); 
+          addtexttoarea("1" & chr(13) & chr(10),aLabel);
+          addtexttoarea(chr(13) & chr(10),aLabel);
+          loops = loops - 1;
+        end;
       end;
     end;
   
@@ -114,11 +167,6 @@ begin
   
 return;
 end;
-
-
-
-
-
 
 global procedure Zebra_Printing(record RcVc RepSpec)
 begin
@@ -131,7 +179,7 @@ begin
     blockload(ZPb);
 
    	SetExportCodePage("CP1251");
-    Handle_Zebra_Printing(RepSpec,aLabel,print);
+    Handle_Zebra_Printing(RepSpec,aLabel,print,ZPb);
     if (print) then begin
       filename = "ZebraPrint.epl";
       CreateFile(filename);

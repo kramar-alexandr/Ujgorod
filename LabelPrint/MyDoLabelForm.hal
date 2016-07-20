@@ -207,8 +207,10 @@ BEGIN
   
 
   if (FIELDINFORM("F_BARCODE")) then begin
-  	Barcoder.Itemcode = artcode;
-    if (ReadFirstKey("Itemcode",Barcoder,1,true)) then begin
+  	//Barcoder.Itemcode = artcode;
+    //if (ReadFirstKey("Itemcode",Barcoder,1,true)) then begin
+    Barcoder.SerialNr = PUrw.SerialNr;
+    if (ReadFirstKey("SerialNr",Barcoder,1,true)) then begin
       INr.BarCode = Barcoder.Barcode;
     end;
     

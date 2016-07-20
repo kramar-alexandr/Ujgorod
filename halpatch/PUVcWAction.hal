@@ -18,7 +18,7 @@ begin
 	GetWindowRecord(wn,SRPricer);
 	HandlePrintEAN13SRPrice(SRPricer,PU2r,rownr);
 	previewf = false;
-	logtext(0,rownr[0]);
+	//logtext(0,rownr[0]);
 	if (rownr[0]>0) then begin
 		PrintDocument(PU2r[0],"ItemLabForm9",previewf);
 	end;
@@ -40,7 +40,7 @@ begin
 	GetWindowRecord(wn,PUr);
 	HandlePrintEAN13PU(PUr,PU2r,rownr);
 	previewf = false;
-	logtext(0,rownr[0]);
+	//logtext(0,rownr[0]);
 	if (rownr[0]>0) then begin
 		PrintDocument(PU2r[0],"ItemLabForm9",previewf);
 	end;
@@ -116,7 +116,7 @@ begin
 			if (RepSpec.flags[1]==1) then begin
 				RepSpec.flags[2] = mwn;
 				RepSpec.f1 = "StockMovVc";
-				Zebra_Printing(RepSpec);
+				//Zebra_Printing(RepSpec);
 			end;
 		case "PUDClass":
 			CloseWindow(wn);
@@ -127,7 +127,7 @@ begin
 			if (RepSpec.flags[1]==1) then begin
 				RepSpec.flags[2] = mwn;
 				RepSpec.f1 = "PUVc";
-				Zebra_Printing(RepSpec);
+				//Zebra_Printing(RepSpec);
 			end;			
 		case "SRPriceDClass":
 			CloseWindow(wn);
@@ -138,7 +138,7 @@ begin
 			if (RepSpec.flags[1]==1) then begin
 				RepSpec.flags[2] = mwn;
 				RepSpec.f1 = "SRPriceVc";
-				//Zebra_Printing(RepSpec);
+				Zebra_Printing(RepSpec);
 			end;			
 	end;	
 

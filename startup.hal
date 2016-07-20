@@ -7,11 +7,13 @@ begin
   Register("ARVc","ARVc",ARVc,modDBMain);
   Register("ARPayVc","ARPayVc",ARPayVc,modDBMain);
   Register("APVc","APVc",APVc,modDBMain);
+  Register("Џереоцґнка RRP","SRPriceVc",SRPriceVc,modIN);
   
   Report("‡вґт по касґ",POSPaymentsRClass,POSPaymentsRn,0,modSL); //Edit***************************Sasha2,16:40 17.11.2014
   Report("‡вґт по складу (модифґкований)",NewINRClass,NewInvValRn,0,modIN); //Edit***************************Sasha2,15:24 11.07.2016
 	
-	Register("Џереоцґнка RRP","SRPriceVc",SRPriceVc,modIN);
+	
+	Setting("ЌалаштуваннЯ Zebra",ZebraPrinterTClass,modIN); //Edit***************************Sasha2,14:17 20.07.2016
   
   
 	Import("€мпорт товаров и классификаций",ImportIClass,INImportIn,modDBMain);
