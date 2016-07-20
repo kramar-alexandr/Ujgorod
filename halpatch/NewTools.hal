@@ -388,7 +388,9 @@ begin
 	TrHs = true;
 	while (LoopMain(SMr,1,TrHs)) begin
 	  if (TrHs) then begin
-	    SMr.OKFlag = 0;
+	    SMr.OrdFlag = 0;
+      SMr.OKFlag = 0;
+      SMr.SentOKFlag = 0;
       RecordStore(SMr,true);
 	  end;
 	end;
