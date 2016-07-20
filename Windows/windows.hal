@@ -323,3 +323,19 @@ begin
     EditField(h+30,v+=24,f-30,"§нтенсивнiсть друку 1-15",Normal,ParamIn1,false,0);
   EndWindow;
 end; //Edit***************************Sasha2,16:12 25.09.2014 }
+
+window SerBalDClass:1
+  wtag("language","RUS"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v;
+  WindowBegin("Item Status",SerBalDClass,CGview,-);
+  SetWRect(64,80,450,420);
+  UseView(SerBalVc);
+  h = 120;
+  EditField(h,v=6,50,"Item",Normal,Item,false,0);
+  EditField(h,v+=20,50,"Location",Normal,Location,false,0);
+  EditField(h,v+=20,50,"Serial",Normal,Serial,false,0);
+  EditField(h,v+=20,50,"Quant",Normal,Quant,false,0);
+  EditField(h,v+=20,50,"CostPrice",Normal,CostPrice,false,0);
+  EndWindow;
+end;
