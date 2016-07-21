@@ -277,7 +277,7 @@ begin
       end;
     end;*/
 
-    found = true;
+    /*found = true; //searches all articles with serials
     ISr.Code = INr.Code;
     if (nonblank(location)) then begin     
       ISr.Location = location;
@@ -356,7 +356,7 @@ begin
           end;
         end;
       end;
-    end;
+    end;*/
   end;
 LSRPriceVc_PasteArtCode:;  
   if (SNrb.BulkSerialNos!=0) then begin
