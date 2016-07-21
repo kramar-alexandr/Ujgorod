@@ -2808,7 +2808,7 @@ begin
   EnterSkip(Math);
   v = v + 42;
   vm = v + 1;
-  MatrixBegin(4,v,-50,-40,-,500);
+  MatrixBegin(4,v,-50,-40,-,999);
   Flip(0);
   MatCol(1,32,"Товар",0,ArtCode,false,INSClass);
   MatCol(1,94,"К-ть",0,Qty,true,0);
