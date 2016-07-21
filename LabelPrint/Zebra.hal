@@ -128,7 +128,7 @@ begin
       addtexttoarea("V06,15,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
       addtexttoarea("A10,10,0,4,1,1,N,V00" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
       addtexttoarea("A10,45,0,4,1,1,N,V01" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
-      addtexttoarea("A10,80,0,3,1,1,N,V02" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+      addtexttoarea("A10,80,0,2,1,1,N,V02" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
       addtexttoarea("A10,130,0,4,1,1,N,V03" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
       addtexttoarea("A10,165,0,4,1,1,N,V04" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
       addtexttoarea("B10,210,0,1,2,2,50,B,V05" & chr(13) & chr(10),aLabel); // print standard bar codes
