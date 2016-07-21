@@ -428,7 +428,7 @@ begin
     end;
   end;
   switch (fieldname) begin
-    case "Qty": res = false;
+    //case "Qty": res = false;
     case "FIFO": res = false;
     case "NewFIFO": res = false;
     case "FIFORowVal": res = false;

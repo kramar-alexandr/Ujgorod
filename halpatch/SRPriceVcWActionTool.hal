@@ -612,13 +612,14 @@ begin
       MessageBox(0,tstr);
     end;
     //SRrw.Qty = CalculateSerialNrQuantity(SRrw.ArtCode,SRrw.SerialNr,location,true,SRrw.UnitXval,SRrw.UnitYval,SRrw.UnitZval,SRrw.Qty); //Edit***************************Sasha2,15:05 07.07.2016
-    SRrw.Qty = FindSerialNrQty(SRrw.ArtCode,SRrw.SerialNr,location); //Edit***************************Sasha2,15:05 07.07.2016 
+    /*SRrw.Qty = FindSerialNrQty(SRrw.ArtCode,SRrw.SerialNr,location); //Edit***************************Sasha2,15:05 07.07.2016 
     if (SRrw.Qty==BlankVal) then begin
       SRrw.Qty = 0;
     end;
     if (SRrw.Qty!=oldquant) then begin
       chsum = true;
-    end;
+    end;*/
+    chsum = true; //Edit***************************Sasha2,11:42 21.07.2016
   end;
   if (Blank(SRrw.SerialNr)) then begin //Edit***************************Sasha2,16:12 08.07.2016 {
     SRrw.LastCostPrice = BlankVal;
