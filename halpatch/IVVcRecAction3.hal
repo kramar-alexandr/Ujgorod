@@ -1747,10 +1747,6 @@ not needed any more
     end;
   end;
   
-  if(IVrw.FIFO==0 and IVrw.Quant<0)then begin
-  	messagebox(31000,IVrw.ArtCode);
-  end;
-  
 L99:;  
   IVVcRecordCheckRows = res;
   return;
