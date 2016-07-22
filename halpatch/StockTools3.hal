@@ -1422,6 +1422,11 @@ begin
   			IVrw.FIFORowVal = IVrw.FIFO*IVrw.Quant;
   		end;
   	end;
+  end else begin
+  	if(IVrw.Quant<0 and IVrw.FIFO==0)then begin
+  		IVrw.FIFO = INr.InPrice;
+  		IVrw.FIFORowVal = IVrw.FIFO*IVrw.Quant;
+  	end;
   end;
   
 	// Edit End ---------------------------------------------- Edit End
@@ -1548,6 +1553,11 @@ L80SKIPROWIVUpdateFIFO:;
   			IVrw.FIFO = retIVrw.FIFO;
   			IVrw.FIFORowVal = IVrw.FIFO*IVrw.Quant;
   		end;
+  	end;
+  end else begin
+  	if(IVrw.Quant<0 and IVrw.FIFO==0)then begin
+  		IVrw.FIFO = INr.InPrice;
+  		IVrw.FIFORowVal = IVrw.FIFO*IVrw.Quant;
   	end;
   end;
   
