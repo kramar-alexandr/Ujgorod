@@ -2940,7 +2940,7 @@ begin
   if (HasItemGroups) then begin
   EditFieldTL(h,v+=vs ,80,"Група товарів",M4UStr,Normal,5,LastAcc,false,ITSClass);
   end;
-  EditFieldTL(h,v+=vs ,80,"Партія (сезон)",M4UStr,Normal,20,f7,false,0); //Edit***************************Sasha2,17:15 15.07.2016
+  EditFieldTL(h,v+=vs ,80,"Колекція (сезон)",M4UStr,Normal,20,f7,false,0); //Edit***************************Sasha2,17:15 15.07.2016
   if (HasObjects) then begin
   EditFieldTL(h,v+=vs ,150,"Об'єкт",M4UStr,Normal,60,ObjStr,false,ObjSClass);
   EditFieldTL(h,v+=vs ,150,"Об'єкт з рядка (детально)",M4UStr,Normal,60,f3,false,ObjSClass);
