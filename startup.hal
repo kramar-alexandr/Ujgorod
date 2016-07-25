@@ -229,6 +229,7 @@ begin
   StrSetText(HRMCOOK,"Затвердження трудових угод");
   StrSetText(ExpenseOK,"Затвердження авансового звіту");
   StrSetText(PUOK,"Затвердження надходжень");
+  StrSetText(SRPriceOK,"Затвердження переоцінки RRP"); //Edit***************************Sasha2,13:23 25.07.2016
   StrSetText(InvOK,"Затвердження актів/накл. клієнту");
   StrSetText(HRMJPOK,"OKing Job Positions");
   StrSetText(LeaveApplicationOK,"OKing Leave Applications");
