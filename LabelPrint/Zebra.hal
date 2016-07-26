@@ -15,8 +15,8 @@ begin
   record BarCodeVc BarCoder;
   record INVc INr;
   record DIVc DIr;
-  integer wn,i,mtrw,lenth,k,int,pos,loops;
-  boolean testf;
+  integer wn,i,mtrw,lenth,k,j,int,pos,loops;
+  boolean foundf;
   string 20 s1,s2,s3,s4,s5,brand;
   array string 50 parts;
 
@@ -86,9 +86,27 @@ begin
              	ExtractObj(INr.DispGroups,pos,s1);
              end;
   		     end;
-  		     newPUrw.ArtCode = SRPricerw.ArtCode;
+  		     //newPUrw.ArtCode = SRPricerw.ArtCode;
+  		     newPUrw.Spec = INr.Name;
   		     newPUrw.POReconComment = brand;
-           newPUrw.SerialNr = SRPricerw.SerialNr;
+  		     s2 = "";
+  		     if (NonBlank(SRPricerw.SerialNr)) then begin
+  		       lenth = len(SRPricerw.SerialNr);
+  		       foundf = false;
+  		       for (j = lenth; j>=1; j = j - 1) begin
+               if (mid(SRPricerw.SerialNr,j - 1,1)==".") then begin
+                 pos = j - 1;
+                 j = 0;
+                 foundf = true;
+               end;
+             end;
+             if (foundf) then begin
+               s2 = left(SRPricerw.SerialNr,pos);
+             end else begin
+               s2 = SRPricerw.SerialNr;
+             end;
+  		     end;
+           newPUrw.SerialNr = s2;
            Barcoder.SerialNr = SRPricerw.SerialNr;
            ReadFirstKey("SerialNr",Barcoder,1,true);
            newPUrw.BarCode = Barcoder.Barcode;
@@ -129,11 +147,13 @@ begin
     addtexttoarea("V07,15,N,\"\"" & chr(13) & chr(10),aLabel); // Define Variable
     addtexttoarea("A10,25,0,4,1,1,N,V00" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     addtexttoarea("A10,60,0,4,1,1,N,V01" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
-    addtexttoarea("A10,95,0,2,1,1,N,V02" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+    addtexttoarea("A10,95,0,3,1,1,N,V02" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     addtexttoarea("LO10,145,170,2" & chr(13) & chr(10),aLabel); //Line draw black
     addtexttoarea("B190,120,0,1,2,2,50,B,V03" & chr(13) & chr(10),aLabel); // print standard bar codes
-    addtexttoarea("A10,210,0,4,1,1,N,V04" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+    addtexttoarea("A10,200,0,4,1,1,N,V04" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     //addtexttoarea("LS80,204,8,200,195" & chr(13) & chr(10),aLabel); //Line draw diagonal
+    //addtexttoarea("LS80,230,4,200,190" & chr(13) & chr(10),aLabel); //Line draw diagonal
+    addtexttoarea("LE80,212,240,4" & chr(13) & chr(10),aLabel);
     addtexttoarea("A10,235,0,4,1,1,N,V05" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     addtexttoarea("A100,275,0,3,2,2,N,V06" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     addtexttoarea("PAV07" & chr(13) & chr(10),aLabel); // to automatically print the form
@@ -143,7 +163,7 @@ begin
     mtrw = MatRowCnt(newPUr);
     for (i=0;i<mtrw;i=i+1) begin
       MatRowGet(newPUr,i,newPUrw);
-      if (nonblank(newPUrw.ArtCode)) then begin
+      if (nonblank(newPUrw.Spec)) then begin
         if (newPUrw.Quant>1) then begin
           loops = newPUrw.Quant;
         end else begin
@@ -152,7 +172,7 @@ begin
         while (loops>0) begin
           addtexttoarea("FR\"1\"" & chr(13) & chr(10),aLabel);
           addtexttoarea("?" & chr(13) & chr(10),aLabel);
-          addtexttoarea("Товар:" & newPUrw.ArtCode & chr(13) & chr(10),aLabel);
+          addtexttoarea("Тoвaр:" & newPUrw.Spec & chr(13) & chr(10),aLabel);
           addtexttoarea("Фірма:" & newPUrw.POReconComment & chr(13) & chr(10),aLabel);
           addtexttoarea("Мод.:" & newPUrw.SerialNr & chr(13) & chr(10),aLabel);
           addtexttoarea(newPUrw.BarCode & chr(13) & chr(10),aLabel); 
