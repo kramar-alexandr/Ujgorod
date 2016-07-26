@@ -148,8 +148,8 @@ begin
     addtexttoarea("A10,25,0,4,1,1,N,V00" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     addtexttoarea("A10,60,0,4,1,1,N,V01" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     addtexttoarea("A10,95,0,3,1,1,N,V02" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
-    addtexttoarea("LO10,145,170,2" & chr(13) & chr(10),aLabel); //Line draw black
-    addtexttoarea("B190,120,0,1,2,2,50,B,V03" & chr(13) & chr(10),aLabel); // print standard bar codes
+    addtexttoarea("LO10,145,150,2" & chr(13) & chr(10),aLabel); //Line draw black
+    addtexttoarea("B170,120,0,1,2,2,50,B,V03" & chr(13) & chr(10),aLabel); // print standard bar codes
     addtexttoarea("A10,200,0,4,1,1,N,V04" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     //addtexttoarea("LS80,230,4,200,190" & chr(13) & chr(10),aLabel); //Line draw diagonal
     addtexttoarea("A10,235,0,4,1,1,N,V05" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
