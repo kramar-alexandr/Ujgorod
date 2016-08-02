@@ -230,20 +230,22 @@ begin
   Boolean found;
   Integer keys;
   string 60 sz,msk,mskrep,serialnr,prevserialnr,firstserialnr,location;
-  string 200 varsubset;
+  string 200 varsubset,barCodeSerial;
   row SRPriceVc SRrw;
   Integer rownr;
   Boolean itemfound,testf,foundsb,varf;
   record SerBalVc SBr;
   val q,serqty;
   record SerNrTrackBlock SNrb;
+  record BarcodeVc Barcoder; //Edit***************************Sasha2,16:34 02.08.2016
 
   if (changedf) then begin
     BlockLoad(SNrb);
     rownr = arownr;
     
     res = true;
-    MatRowGet(SRp,rownr,SRrw); 
+    MatRowGet(SRp,rownr,SRrw);
+    Barcoder.Barcode = SRrw.ArtCode; //Edit***************************Sasha2,16:35 02.08.2016
     if (NonBlank(SRrw.Location)) then begin //Edit***************************Sasha2,15:13 06.07.2016 {
       location = SRrw.Location;
     end else begin
@@ -261,6 +263,10 @@ begin
         varf = true;
       end;
     end;
+    Barcoder.Itemcode = INr.Code; //Edit***************************Sasha2,16:39 02.08.2016 {
+    if (ReadFirstKey("Itemcode",Barcoder,2,true)) then begin
+      barCodeSerial = Barcoder.SerialNr;
+    end; //Edit***************************Sasha2,16:39 02.08.2016 }
     if (nonblank(INr.WarnText1)) then begin
       inwarn = INr.WarnText1;
     end;
@@ -368,10 +374,10 @@ LSRPriceVc_PasteArtCode:;
     ISr.Code = INr.Code;
     ISr.Location = location;
     if (ReadFirstMain(ISr,2,true)) then begin
-      PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,"",ISr.Instock);
+      PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,barCodeSerial,ISr.Instock);
     end else begin
       ISr.Code = INr.Code;
-      PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,"",0);
+      PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,barCodeSerial,0);
     end;
   end; //Edit***************************Sasha2,14:23 07.07.2016 }
   SRPriceSumUp(SRp);
