@@ -371,13 +371,13 @@ LSRPriceVc_PasteArtCode:;
     end;
   end;
   if (rownr==arownr) then begin //Edit***************************Sasha2,14:23 07.07.2016 {
-    SBr.Item = ISr.Code; //Edit***************************Sasha2,17:13 02.08.2016 {
-    SBr.Location = ISr.Location;
+    SBr.Item = SRrw.ArtCode; //Edit***************************Sasha2,17:13 02.08.2016 {
+    SBr.Location = SRp.Location;
     SBr.Serial = barCodeSerial;
     if (ReadFirstMain(SBr,3,true)) then begin
       ISr.Code = SBr.Item;
       ISr.Location = SBr.Location;
-      ReadFirstMain(ISr,2,true)
+      ReadFirstMain(ISr,2,true);
       PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,SBr.Serial,SBr.Quant);
     end else begin //Edit***************************Sasha2,17:13 02.08.2016 }
       ISr.Code = INr.Code;
