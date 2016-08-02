@@ -371,13 +371,23 @@ LSRPriceVc_PasteArtCode:;
     end;
   end;
   if (rownr==arownr) then begin //Edit***************************Sasha2,14:23 07.07.2016 {
-    ISr.Code = INr.Code;
-    ISr.Location = location;
-    if (ReadFirstMain(ISr,2,true)) then begin
-      PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,barCodeSerial,ISr.Instock);
-    end else begin
+    SBr.Item = ISr.Code; //Edit***************************Sasha2,17:13 02.08.2016 {
+    SBr.Location = ISr.Location;
+    SBr.Serial = barCodeSerial;
+    if (ReadFirstMain(SBr,3,true)) then begin
+      ISr.Code = SBr.Item;
+      ISr.Location = SBr.Location;
+      ReadFirstMain(ISr,2,true)
+      PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,SBr.Serial,SBr.Quant);
+    end else begin //Edit***************************Sasha2,17:13 02.08.2016 }
       ISr.Code = INr.Code;
-      PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,barCodeSerial,0);
+      ISr.Location = location;
+      if (ReadFirstMain(ISr,2,true)) then begin
+        PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,barCodeSerial,ISr.Instock);
+      end else begin
+        ISr.Code = INr.Code;
+        PasteArtCodeToSRPrice(SRp,rownr,arownr,ISr,barCodeSerial,0);
+      end;  
     end;
   end; //Edit***************************Sasha2,14:23 07.07.2016 }
   SRPriceSumUp(SRp);
