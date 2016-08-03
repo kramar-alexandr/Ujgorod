@@ -27,6 +27,7 @@ begin
 
 
 	Maintenance("Очистити регістри",MyVClass,CleaningMn,modDBMain);						//Edit----------------------Dima  09.06.2016
+	Maintenance("Clean Bad IN",MyVClass,CleanBadINMn,modDBMain);						//Edit----------------------Dima  09.06.2016
   Maintenance("Очистити BarCodesVc, PLVc",MyVClass,Cleaning2Mn,modDBMain);
 	Maintenance("Встановити тип серійного обліку для товарів",SetSerialTypesForINVClass,SetSerialNumberTypeForItemsMn,modDBMain);	//Edit----------------------Dima  10.06.2016
   Maintenance("Creating PU from SerBal",PUFromSerBalVClass,PUFromSerBalMn,modIN);//Edit-------------------Vitalii 11:09 19.07.2016

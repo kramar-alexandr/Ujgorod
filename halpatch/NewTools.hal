@@ -509,3 +509,37 @@ begin
 LRemoveCharFromINMn:;
   
 end;
+
+
+
+
+global updating procedure CleanBadINMn()
+begin
+	record INVc INr;
+	
+	INr.Code = "CHOCOLATE_GREEDY_PROBE";
+	if(readfirstmain(INr,1,true))then begin
+		logtext(0,INr.Code);
+		recorddelete(INr);
+	end;
+	
+	INr.Code = "CHOCOLATE_GREEDY_TEST";
+	if(readfirstmain(INr,1,true))then begin
+		logtext(0,INr.Code);
+		recorddelete(INr);
+	end;
+	
+	INr.Code = "AOUD_EMBER_ROSE_PROBE";
+	if(readfirstmain(INr,1,true))then begin
+		logtext(0,INr.Code);
+		recorddelete(INr);
+	end;
+	
+	INr.Code = "FRUITS_OF_THE_MUSK_TEST";
+	if(readfirstmain(INr,1,true))then begin
+		logtext(0,INr.Code);
+		recorddelete(INr);
+	end;
+	
+return;
+end;
