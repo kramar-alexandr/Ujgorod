@@ -123,8 +123,12 @@ begin
   roundmode rnd;
     
     rnd.decimals = 0;
-    rnd.step = kRoundingStep5;
-  
+    if (SRr.PriceRoundingf==0) then begin
+      rnd.step = kRoundingStep5;
+    end else begin
+      rnd.step = kRoundingStepNone;
+    end;
+    
     if (recalcPLPricef) then begin
       PLr.SerialNr = serial;
       PLr.PLCode = "RRP";

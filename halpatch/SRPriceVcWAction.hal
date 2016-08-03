@@ -46,6 +46,38 @@ begin
 end;*/
 
 global
+function Boolean SRPriceDClassPriceRoundingfButtonAfter(Integer wn,Boolean changedf)
+begin        
+  record SRPriceVc SRPricer;  
+  record SRPriceVc SRPrice2r;
+  Boolean res;
+  Integer normalmode,updatemode,insertmode;
+  Date bd;
+
+  DeselectWindow(wn,false);
+  normalmode = 0;//Rs_normal
+  insertmode = 1;//Rs_insert
+  updatemode = 2;//Rs_update
+
+  GetWindowRecord(wn,SRPricer);
+  if (WindowState(wn)==normalmode) then begin
+    SRPriceVc_RecalcPrices(SRPricer,-1);
+  end;
+  if (WindowState(wn)==insertmode) then begin
+
+  end;
+  if (WindowState(wn)==updatemode) then begin
+    GetPrevWindowRecord(wn,SRPrice2r);
+    //if (SRPricer.PriceRoundingf==1) and (SRPrice2r.PriceRoundingf!=1) then begin
+      SRPriceVc_RecalcPrices(SRPricer,-1);
+    //end;
+  end;
+  PutWindowRecord(wn,SRPricer);
+  SRPriceDClassPriceRoundingfButtonAfter = res;  
+  return;
+end;
+
+global
 function Boolean SRPriceDClassUnitXvalEFAfter(Integer wn,Integer rownr,Boolean changedf)
 begin
   row SRPriceVc SRrw;
