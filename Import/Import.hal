@@ -1,7 +1,8 @@
 external procedure PUVc_PasteTransDate(var record PUVc,var Boolean,var Boolean,var Boolean);
 external procedure PUSumUp(var record PUVc);
 external function Boolean PUVc_PasteArtCode(var record PUVc,Integer,var string,var string);
-
+external function string 255 StrReplace(string,string,string);
+external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);
 
 global updating procedure INImportIn()		//Edit----------------------Dima  05.02.2016
 begin
@@ -309,4 +310,120 @@ begin
 	
   
   LImportStockRemains2In:;
+end;
+
+global updating procedure ImportCUVcIn()
+begin
+  record CUVc NonameCUr,CUr,tmpCUr;
+  string 10 notness;
+  string 20 code;
+  string 255 name,addres;
+  string 60 addres1,addres2;
+  string 100 phone;
+  string 20 phone1,phone2;
+  string 5 rebate;
+  Date bd;
+  val sum;
+  integer pos;
+  area tmparea;
+  longint i;
+  
+  NextImportLine(true);
+  NonameCUr.Code = "NONAME";
+	readfirstmain(NonameCUr,1,true);
+  
+  while (!TestEOF()) begin
+    i = i + 1;
+    notness = ImportField;
+    code = ImportField;
+    if nonblank(code) then begin
+      code = StrReplace(code,"?", "");
+      code = StrReplace(code,"%", "");
+      code = StrReplace(code,".", "");
+      code = StrReplace(code," ", "_");
+      name = ImportField;
+      addres = ImportField;
+      AddTextToArea(addres,tmparea);
+      addres1 = "";
+      addres2 = "";
+      if GetAreaLength(tmparea)>60 then begin
+        pos = 0;
+        ExtractObjWithSeparator(",",addres,true,pos,addres1);
+        addres1 = Trim(addres1);
+        ExtractObjWithSeparator(",",addres,true,pos,addres2);
+        addres2 = Trim(addres2);
+      end else begin
+        addres1 = addres;
+      end;
+      phone = ImportField;
+      phone1 = "";
+      phone2 = "";
+      pos = 0;
+      ExtractObjWithSeparator(";",phone,true,pos,phone1);
+      if nonblank(phone1) then begin
+        phone1 = StrReplace(phone1,";","");
+        phone1 = StrReplace(phone1,"-","");
+        phone1 = StrReplace(phone1," ","");
+        phone1 = StrReplace(phone1,"(","");
+        phone1 = StrReplace(phone1,")","");
+        phone1 = StrReplace(phone1,"*","");
+        switch (left(phone1,1)) begin
+          case "+":
+            phone1 = phone1;
+          case "3":
+            phone1 = "+" & phone1;
+          case "8":
+            phone1 = "+3" & phone1;
+          case "0":
+            phone1 = "+38" & phone1;
+          otherwise
+            phone1 = "+380" & phone1;
+        end;
+      end;
+      ExtractObjWithSeparator(";",phone,true,pos,phone2);
+      if nonblank(phone2) then begin
+        phone2 = StrReplace(phone2,";","");
+        phone2 = StrReplace(phone2,"-","");
+        phone2 = StrReplace(phone2," ","");
+        phone2 = StrReplace(phone2,"(","");
+        phone2 = StrReplace(phone2,")","");
+        phone2 = StrReplace(phone2,"*","");
+        switch (left(phone2,1)) begin
+          case "+":
+            phone2 = phone2;
+          case "3":
+            phone2 = "+" & phone2;
+          case "8":
+            phone2 = "+3" & phone2;
+          case "0":
+            phone2 = "+38" & phone2;
+          otherwise
+            phone2 = "+380" & phone2;
+        end;
+      end;
+      bd = StringToDate(ImportField);
+      sum = StringToVal(ImportField,M4Val);
+      rebate = ImportField & "%";
+      
+      CUr.Code = code;
+      if readfirstmain(CUr,1,true) then begin
+      end else begin
+        RecordNew(CUr);
+        RecordNew(tmpCUr);
+        RecordCopy(CUr,NonameCUr);
+        CUr.UUID = tmpCUr.UUID;
+      end;
+      CUr.Code = code;
+      CUr.Name = name;
+      CUr.InvAddr0 = addres1;
+      CUr.InvAddr1 = addres2;
+      CUr.Phone = phone1;
+      CUr.AltPhone = phone2;
+      CUr.BirthDate = bd;
+      CUr.UserVal1 = sum;
+      CUr.RebCode = rebate;
+      RecordInsert(CUr,true);
+    end;
+    NextImportLine(true);
+  end;
 end;

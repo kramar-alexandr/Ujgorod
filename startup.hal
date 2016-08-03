@@ -21,7 +21,8 @@ begin
 	Import("€мпорт цен и штрих-кодов",ImportIClass,ItemPricesImportIn,modDBMain);
 	Import("€мпорт поступлений",ImportIClass,ImportStockRemainsIn,modDBMain);		//Edit----------------------Dima  14.06.2016
   Import("§мпорт залишкґв",ImportIClass,ImportStockRemains2In,modDBMain);		//Edit----------------------Dima  14.06.2016
-
+  Import("§мпорт контактґв",ImportIClass,ImportCUVcIn,modDBMain);  //Edit-------------------Vitalii 17:04 02.08.2016
+  
 	Document("…тикетки штрихкодґв" ,LabelItem9RClass,ItemLabForm9,MyLabelItemFClass,modIN); //Edit***************************Sasha2,12:08 23.10.2014
 
 
