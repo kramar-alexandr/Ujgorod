@@ -120,13 +120,16 @@ procedure FindPriceInPlAndUpdDiffs(var row SRPriceVc SRrw,string artCode,string 
 begin
   record PLVc PLr;
   val rebate,markup,rate,tval; 
-  roundmode rnd;
+  roundmode rnd1,rnd2;
     
-    rnd.decimals = 0;
+    rnd1.decimals = 0;
+    rnd1.step = kRoundingStep5;
+    
+    rnd2.decimals = 0;
     if (SRr.PriceRoundingf==0) then begin
-      rnd.step = kRoundingStep5;
+      rnd2.step = kRoundingStep5;
     end else begin
-      rnd.step = kRoundingStepNone;
+      rnd2.step = kRoundingStepNone;
     end;
     
     if (recalcPLPricef) then begin
@@ -162,9 +165,9 @@ begin
       tval = SRrw.LastCostPrice * rate;
       SRrw.FIFO = tval + (tval/100*markup);
     end;
-    SRrw.FIFO = Round(SRrw.FIFO,rnd);
+    SRrw.FIFO = Round(SRrw.FIFO,rnd1);
     SRrw.NewFIFO = SRrw.FIFO - (SRrw.FIFO/100*rebate);
-    SRrw.NewFIFO = Round(SRrw.NewFIFO,rnd);
+    SRrw.NewFIFO = Round(SRrw.NewFIFO,rnd2);
     SRrw.NewFIFORowVal = SRrw.Qty*SRrw.NewFIFO;
     SRrw.DiffFIFO = SRrw.NewFIFO - SRrw.FIFO;
     SRrw.FIFORowVal = SRrw.Qty*SRrw.FIFO;
