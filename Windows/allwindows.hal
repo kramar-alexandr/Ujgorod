@@ -2947,6 +2947,10 @@ begin
   EditFieldTL(h,v+=vs ,150,"Об'єкт з рядка (детально)",M4UStr,Normal,60,f3,false,ObjSClass);
   end;
   EditFieldTL(h,v+=vs ,50,"Умови сплати",M4UStr,Normal,5,TransStr,false,PDSClass);
+  EditFieldTL(h,v+=20,50,"В валюті",M4Code,Normal,5,f8,false,CurncyCodeSClass); //Edit***************************Sasha2,11:56 04.08.2016
+  EditFieldTL(h,v+=20,50,"Курс",M4Val,Normal,0,vals0,true,0); //Edit***************************Sasha2,11:56 04.08.2016
+  StaticText(h+55,v+12,":1 базової валюти",false); //Edit***************************Sasha2,12:08 04.08.2016
+  CheckBox(h,v+=32,0,"Лише акти/накл. на поверенення",flags[13]); //Edit***************************Sasha2,15:58 05.08.2016
   ButtonFrame(h=60,vm=(v+=45),123,2,"Функція");
   RadioButton(h,v,0,0,"зведений",ArtMode);
   RadioButton(h,v+=16,1,0,"докладний",ArtMode);
@@ -2959,13 +2963,14 @@ begin
     EditFieldTL(h,v,100,"Locations",M4UStr,Normal,60,f4,false,LocationSClass); //added 
   end;
   EditFieldTL(h,v+=20,80,"Філія",M4Code,Normal,20,Stext,false,ContactCUSClass);
-  ButtonFrame(h=60,vm=(v+=45),123,3,"Функція");
+  /*ButtonFrame(h=60,vm=(v+=45),123,3,"Функція");
   RadioButton(h,v,0,0,"Собівартість",flags[11]);
   if (HasBase2) then begin
   RadioButton(h,v+=16,2,0,"Собівартість В2",flags[11]);
   end;
   RadioButton(h,v+=16,1,0,"Вартість за чергою",flags[11]);
-  EndFrame;
+  EndFrame;*/
+  vm = v+45;
   ButtonFrame(h=210,v=vm,123,6,"Акти/накладні"); //##cc
   CheckBox(h,v,0,"звичайні ",flags[3]);
   CheckBox(h,v+=16,0,"готівкові платежі",flags[4]);
