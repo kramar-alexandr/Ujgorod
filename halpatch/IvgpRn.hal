@@ -165,85 +165,48 @@ begin
             end;
         end;  
       end else begin //Edit***************************Sasha2,14:33 05.08.2016 {
-        switch (RepSpec.flags[11]) begin        
-          otherwise
-            if (reportCur==IVp.CurncyCode) then begin
-              //t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-              //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-              if (reportRate<>0) then begin
-                tval = IVrw.rowGP * reportRate;
-              end else begin
-                Base1ToOther(reportCur,IVrw.rowGP,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);  
-              end;
-              rowGP = tval;
-              if (blank(rowGP)) then begin
-                if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                  //t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                  //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                  rowinbase =IVrw.Sum;
-                  t = IVrw.Quant * IVrw.BasePrice;
-                  if (IVrw.PriceFactor!=0) then begin
-                    t = t/IVrw.PriceFactor;
-                  end;
-                  if (reportRate<>0) then begin
-                    tval = t * reportRate;
-                  end else begin
-                    Base1ToOther(reportCur,t,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);  
-                  end;
-                  rowGP = rowinbase - tval;
-                end;
-              end;
+        if (reportCur==IVp.CurncyCode) then begin
+          //t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+          //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
+          t = IVrw.Sum;
+          tval = IVGetFIFO(IVp,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
+          if (reportRate<>0) then begin
+            tval = tval * reportRate;
+          end else begin
+            Base1ToOther(reportCur,tval,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);  
+          end;
+          rowGP = t - tval;
+        end else begin
+          if (reportCur==BCb.BaseCur1) then begin
+            if (IVp.CurncyCode==reportCur) then begin
+              t = IVrw.Sum;
             end else begin
-              if (reportCur==BCb.BaseCur1) then begin
-                //t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                rowGP = IVrw.rowGP;
-                if (blank(rowGP)) then begin
-                  if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                    t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                    FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                    t = IVrw.Quant * IVrw.BasePrice;
-                    if (IVrw.PriceFactor!=0) then begin
-                      t = t/IVrw.PriceFactor;
-                    end;
-                    rowGP = rowinbase - t;
-                  end;
-                end;
-              end else begin
-                //t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                if (reportRate<>0) then begin
-                  tval = IVrw.rowGP * reportRate;
-                end else begin
-                  Base1ToOther(reportCur,IVrw.rowGP,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff); 
-                end;
-                rowGP = tval;
-                if (blank(rowGP)) then begin
-                  if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                    t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                    FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                    t = IVrw.Quant * IVrw.BasePrice;
-                    if (IVrw.PriceFactor!=0) then begin
-                      t = t/IVrw.PriceFactor;
-                    end;
-                    if (reportRate<>0) then begin
-                      tval = rowinbase * reportRate;
-                    end else begin
-                      Base1ToOther(reportCur,rowinbase,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);
-                    end;
-                    rowinbase = tval;
-                    if (reportRate<>0) then begin
-                      tval = t * reportRate;
-                    end else begin
-                      Base1ToOther(reportCur,t,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);
-                    end;
-                    t = tval;
-                    rowGP = rowinbase - t;
-                  end;
-                end;
-              end;
+              t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
             end;
-        end;    
+            //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
+            rowGP = t - IVGetFIFO(IVp,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);  
+          end else begin
+            t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+            if (reportRate<>0) then begin
+              t = t * reportRate;
+            end else begin
+              Base1ToOther(reportCur,t,fr,tb1,tb2,br1,br2,t,DefaultCurRoundOff);  
+            end;
+            //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
+            if (reportRate<>0) then begin
+              tval = IVrw.rowGP * reportRate;
+            end else begin
+              Base1ToOther(reportCur,IVrw.rowGP,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff); 
+            end;
+            tval = IVGetFIFO(IVp,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
+            if (reportRate<>0) then begin
+              tval = tval * reportRate;
+            end else begin
+              Base1ToOther(reportCur,tval,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);  
+            end;
+            rowGP = t - tval;
+          end;
+        end;   
       end; //Edit***************************Sasha2,14:33 05.08.2016 }
       
       diff = rowinbase - rowGP;      
@@ -355,93 +318,44 @@ begin
               end;
           end;
         end else begin //Edit***************************Sasha2,14:52 05.08.2016 {
-          switch (RepSpec.flags[11]) begin        
-          otherwise
-            if (reportCur==IVp.CurncyCode) then begin
+          if (reportCur==IVp.CurncyCode) then begin
+            //t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+            //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
+            rowinbase = IVrw.Sum;
+            tval = IVGetFIFO(IVp,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
+            if (reportRate<>0) then begin
+              tval = tval * reportRate;
+            end else begin
+              Base1ToOther(reportCur,tval,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);  
+            end;
+            gp = rowinbase - tval;
+          end else begin
+            if (reportCur==BCb.BaseCur1) then begin
+              if (IVp.CurncyCode==reportCur) then begin
+                rowinbase = IVrw.Sum;
+              end else begin
+                rowinbase = MulRateToBase1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+              end;
+              //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
+              gp = rowinbase - IVGetFIFO(IVp,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant); 
+            end else begin
               //t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
               //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-              rowinbase = IVrw.Sum;
+              tval = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+              t = IVGetFIFO(IVp,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
               if (reportRate<>0) then begin
-                tval = IVrw.rowGP * reportRate;
+                rowinbase = tval * reportRate;
               end else begin
-                Base1ToOther(reportCur,IVrw.rowGP,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);  
+                Base1ToOther(reportCur,tval,fr,tb1,tb2,br1,br2,rowinbase,DefaultCurRoundOff); 
               end;
-              gp = tval;
-              if (blank(gp)) then begin
-                if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                  //t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                  //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                  rowinbase = IVrw.Sum;
-                  t = IVrw.Quant * IVrw.BasePrice;
-                  if (IVrw.PriceFactor!=0) then begin
-                    t = t/IVrw.PriceFactor;
-                  end;
-                  if (reportRate<>0) then begin
-                    tval = t * reportRate;
-                  end else begin
-                    Base1ToOther(reportCur,t,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);  
-                  end;
-                  gp = rowinbase - tval;
-                end;
-              end;
-            end else begin
-              if (reportCur==BCb.BaseCur1) then begin
-                //t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                rowinbase = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                gp = IVrw.rowGP;
-                if (blank(gp)) then begin
-                  if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                    t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                    FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                    t = IVrw.Quant * IVrw.BasePrice;
-                    if (IVrw.PriceFactor!=0) then begin
-                      t = t/IVrw.PriceFactor;
-                    end;
-                    gp = rowinbase - t;
-                  end;
-                end;
+              if (reportRate<>0) then begin
+                tval = t * reportRate;
               end else begin
-                //t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                //FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                tval = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                if (reportRate<>0) then begin
-                  rowinbase = tval * reportRate;
-                end else begin
-                  Base1ToOther(reportCur,tval,fr,tb1,tb2,br1,br2,rowinbase,DefaultCurRoundOff); 
-                end;
-                if (reportRate<>0) then begin
-                  tval = IVrw.rowGP * reportRate;
-                end else begin
-                  Base1ToOther(reportCur,IVrw.rowGP,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff); 
-                end;
-                gp = tval;
-                if (blank(gp)) then begin
-                  if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                    t = MULRATETOBASE1(IVp.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                    FindSalesExVat(TMr,IVrw.VATCode,t,IVp.InclVAT,IVp.NoTAXonVAT,rowinbase);
-                    t = IVrw.Quant * IVrw.BasePrice;
-                    if (IVrw.PriceFactor!=0) then begin
-                      t = t/IVrw.PriceFactor;
-                    end;
-                    if (reportRate<>0) then begin
-                      tval = rowinbase * reportRate;
-                    end else begin
-                      Base1ToOther(reportCur,rowinbase,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);
-                    end;
-                    rowinbase = tval;
-                    if (reportRate<>0) then begin
-                      tval = t * reportRate;
-                    end else begin
-                      Base1ToOther(reportCur,t,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);
-                    end;
-                    t = tval;
-                    gp = rowinbase - t;
-                  end;
-                end;
+                Base1ToOther(reportCur,t,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff); 
               end;
+              gp = rowinbase - tval;
             end;
-          end; 
+          end;
         end; //Edit***************************Sasha2,14:52 05.08.2016 }
         
         diff = rowinbase - gp;
@@ -617,6 +531,7 @@ begin
   
   reportCur = RepSpec.f8;
   reportRate = RepSpec.vals0;
+  RepSpec.flags[11] = 1; //Edit***************************Sasha2,17:11 05.08.2016
   BlockLoad(BCb);
   
   SetRepCol(2,60);
@@ -853,84 +768,41 @@ begin
                       end;
                   end;  
                 end else begin //Edit***************************Sasha2,13:55 04.08.2016 {
-                  switch (RepSpec.flags[11]) begin
-                    otherwise
-                      if (reportCur==IVr.CurncyCode) then begin
-                        //t = IVrw.Sum;
-                        //FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
-                        if (reportRate<>0) then begin
-                          tval = IVrw.rowGP * reportRate;
-                        end else begin
-                          Base1ToOther(reportCur,IVrw.rowGP,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);  
-                        end;
-                        gp = tval;
-                        if (blank(gp)) then begin
-                          if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                            //t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                            //FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
-                            rowinbase =IVrw.Sum;
-                            t = IVrw.Quant * IVrw.BasePrice;
-                            if (IVrw.PriceFactor!=0) then begin
-                              t = t/IVrw.PriceFactor;
-                            end;
-                            if (reportRate<>0) then begin
-                              tval = t * reportRate;
-                            end else begin
-                              Base1ToOther(reportCur,t,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);  
-                            end;
-                            gp = rowinbase - tval;
-                          end;
-                        end;
+                  if (reportCur==IVr.CurncyCode) then begin
+                    t = IVrw.Sum;
+                    //FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
+                    tval = IVGetFIFO(IVr,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
+                    if (reportRate<>0) then begin
+                      tval = tval * reportRate;
+                    end else begin
+                      Base1ToOther(reportCur,tval,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);  
+                    end;
+                    gp = t - tval;
+                  end else begin
+                    if (reportCur==BCb.BaseCur1) then begin
+                      if (IVr.CurncyCode==BCb.BaseCur1) then begin
+                        t = IVrw.Sum;
                       end else begin
-                        if (reportCur==BCb.BaseCur1) then begin
-                          //t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                          //SFindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
-                          gp = IVrw.rowGP;
-                          if (blank(gp)) then begin
-                            if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                              t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                              FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
-                              t = IVrw.Quant * IVrw.BasePrice;
-                              if (IVrw.PriceFactor!=0) then begin
-                                t = t/IVrw.PriceFactor;
-                              end;
-                              gp = rowinbase - t;
-                            end;
-                          end;
-                        end else begin
-                          //t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                          //SFindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
-                          if (reportRate<>0) then begin
-                            tval = IVrw.rowGP * reportRate;
-                          end else begin
-                            Base1ToOther(reportCur,IVrw.rowGP,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff); 
-                          end;
-                          gp = tval;
-                          if (blank(gp)) then begin
-                            if (IVrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                              t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-                              FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
-                              t = IVrw.Quant * IVrw.BasePrice;
-                              if (IVrw.PriceFactor!=0) then begin
-                                t = t/IVrw.PriceFactor;
-                              end;
-                              if (reportRate<>0) then begin
-                                tval = rowinbase * reportRate;
-                              end else begin
-                                Base1ToOther(reportCur,rowinbase,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);
-                              end;
-                              rowinbase = tval;
-                              if (reportRate<>0) then begin
-                                tval = t * reportRate;
-                              end else begin
-                                Base1ToOther(reportCur,t,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff);
-                              end;
-                              t = tval;
-                              gp = rowinbase - t;
-                            end;
-                          end;
-                        end;
+                        t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
                       end;
+                      //FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
+                      gp = t - IVGetFIFO(IVr,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
+                    end else begin
+                      t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+                      //SFindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
+                      tval = IVGetFIFO(IVr,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
+                      if (reportRate<>0) then begin
+                        t = t * reportRate;
+                      end else begin
+                        Base1ToOther(reportCur,t,fr,tb1,tb2,br1,br2,t,DefaultCurRoundOff); 
+                      end;
+                      if (reportRate<>0) then begin
+                        tval = tval * reportRate;
+                      end else begin
+                        Base1ToOther(reportCur,tval,fr,tb1,tb2,br1,br2,tval,DefaultCurRoundOff); 
+                      end;
+                      gp = t - tval;
+                    end;
                   end; 
                 end; //Edit***************************Sasha2,13:55 04.08.2016 }
               end;
