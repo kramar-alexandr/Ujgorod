@@ -3101,7 +3101,7 @@ begin
   label = UserDefined("CUVc","InvAddr4");
   EditField(h,v+=vs,-20,label,Normal,InvAddr4,false,0);
   EditField(h,v+=vs,50,"Šðà»íà",Normal,CountryCode,false,CountrySClass);//tsp-101118
-  if (HasLocalization("BRA")) then begin 
+  if (HasLocalization("BRA")) then begin 
     EditField(h2-159,v,214,"",ViewOnly,InvCountryName,false,0); 
     v = v + vs;
   end;  
