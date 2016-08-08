@@ -410,6 +410,7 @@ BEGIN
   string 200 varsubset;
   record AccVc Accr;
   string 100 serial;
+  record BarcodeVc Barcoder;
 
   pritemf = true;
   MatRowGet(IVr,rownr,IVrw);  
@@ -463,6 +464,11 @@ BEGIN
     ReadFirstMain(Accr,1,true);
     IVrw.PeriodCode = Accr.PeriodCode;
     IVrw.ArtCode = INr.Code;
+    
+    Barcoder.Itemcode = IVrw.ArtCode;
+    if (ReadFirstKey("Itemcode",Barcoder,1,true)) then begin
+      IVrw.Barcode = Barcoder.Barcode;
+    end;
     IVrw.Recepy = "";  
     IVrw.CustArtCode = CustArtCode(IVr.CustCode,IVrw.ArtCode);
     GetTaxesDiscounts(IVr.CustCode,IVr.TransDate,IVrw.VATCode,tax2code,t,tax2reb);

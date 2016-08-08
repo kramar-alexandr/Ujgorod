@@ -275,7 +275,7 @@ begin
   UseView(IVVc);
 if (HasTouchScreenLook==false) then begin
   ActiveFieldOnNew("CustCode");  
-  SetWRect(20,80,750,460);
+  SetWRect(20,80,950,460);
   CommunicateButton;
   Tile(0,74,false,"",CustCode);
   EditField(75,vm=(v=6),95,"№",Normal,SerNr,false,TSerSClass);
@@ -304,7 +304,7 @@ if (HasTouchScreenLook==false) then begin
     TileButton(8,"Адреса доставки");
   end;
   Tile(1,110,false,"1",InvDate);
-  vs = 20; h1 = 110; h2 = 290; h3 = 530; h4 = -100;
+  vs = 20; h1 = 110; h2 = 390; h3 = 700; h4 = -100;
   EditField(h1,vm=(v=6),82,"Дата",Normal,InvDate,false,PasteCurDate);
   EditField(h1,v+=vs,25,"Ум. спл.",Normal,PayDeal,false,PDSClass);//PDMSClass);
   EditField(h1,v+=vs,82,"Дата спл.",Normal,PayDate,false,PasteCurDate);
@@ -554,6 +554,7 @@ if (HasTouchScreenLook==false) then begin
   t=kInvoiceRowTypeNormal;
   MatCol(t,144,"Сер. №",0,SerialNr,false,SerialNrSClass); //Edit***************************Sasha2,12:01 21.06.2016
   MatCol(t,300,"Опис",0,Spec,false,0);
+  MatCol(t,-300,"Штрих-код",0,Barcode,false,0);
   MatCol(t,-165,"Ціна",0,Price,true,0);
   //  MatColTL(t,-235,"",0,M45Val,Normal,0,Price,true,0);
   MatCol(t,-100,"%",0,vRebate,true,0);
