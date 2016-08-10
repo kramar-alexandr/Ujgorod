@@ -1,3 +1,4 @@
+external function Boolean UserHasLimitedAccess(var string,var string);
 
 global
 procedure POSPaymentsRClassReportDefaults(Integer wn)
@@ -29,3 +30,23 @@ BEGIN
   SelectWindow(wn);
   RETURN;
 END;
+
+global
+procedure CURClassReportDefaults(Integer wn)
+begin
+  record RcVc RepSpec;
+  
+  DeselectWindow(wn,false);
+  GetWindowRecord(wn,RepSpec);
+  ReportDefaults(RepSpec,"CURClass");  
+  if (UserHasLimitedAccess(RepSpec.f2,RepSpec.Language)) then begin
+  end;
+  RepSpec.sStartDate = "01-01-1980";
+  RepSpec.sEndDate = CurrentDate;
+  RepSpec.Period2Str = RepSpec.sStartDate & ":" & RepSpec.sEndDate;
+  RepSpec.flags[11] = 1;
+  RepSpec.flags[0] = 1;
+  PutWindowRecord(wn,RepSpec);
+  SelectWindow(wn);
+  return;
+end;

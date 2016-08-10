@@ -3515,3 +3515,275 @@ begin
   end;
   EndWindow;
 end;
+
+window CURClass:5
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,hs,v,vs,vm;
+  Boolean testf;
+  WindowBegin("Визначте перелік клієнтів",CURClass,CGRcW,RcType);
+
+  SetWRect(20,80,555,450);
+  v = 6; vs = 20;
+  if (HasModPL or HasModPP or IsEnterprise) then begin
+  EditFieldTL(h=150,v=10, 150,"Контактна особа",   M4UStr,Normal,30,f1,false,CUSClass);
+  end else begin
+    EditFieldTL(h=150,v=10, 150,"Клієнт",   M4UStr,Normal,30,f1,false,CUSClass); 
+  end;
+  if (HasCategories) then begin
+  EditFieldTL(h,v+=vs,50,"Категорія",   M4UStr,Normal,5,f3,false,CCatSClass);
+  end;
+  if (HasSalesman) then begin
+  EditFieldTL(h,v+=vs,50,"Продавець",   M4UStr,Normal,10,f2,false,UserSClass);
+  end;
+  if (IsEnterprise) then begin
+  EditFieldTL(h,v+=vs,50,"Група продажу",   M4UStr,Normal,5,Language,false,SalesGroupSClass);
+  end;
+  if (HasLanguages) then begin
+  EditFieldTL(h,v+=vs,50,"Мова",   M4UStr,Normal,5,FirstAcc,false,LangSClass);
+  end;
+  if (HasModSL or HasModPL) then begin
+  EditFieldTL(h,v+=vs,30,"Умови сплати",   M4UStr,Normal,2,LastAcc,false,PDSClass);
+  end;
+  if (HasContactClassification) then begin
+  EditFieldTL(h,v+=vs,150,"Класифікація",M4UStr,Normal,30,Stext,false,CClassSClass);
+    EditFieldTL(h,v+=20 ,80,"Типи класифікації",M4UStr,Normal,60,f5,false,CTypeSClass);
+  end;
+  if (HasDepartments) then begin
+    EditFieldTL(h,v+=vs,70,"Відділ",M4UStr,Normal,10,f7,false,DepSClass);
+  end;
+  if (HasObjects) then begin
+  EditFieldTL(h,v+=20, 150,"Об'єкт",M4UStr,Normal,20,AccStr,false,ObjSClass);
+  end;
+  if (IsEnterprise) then begin
+  EditFieldTL(h,v+=20, 100,"Країна",M4UStr,Normal,5,TransStr,false,CountrySClass);
+  end;
+  if (Left(BuildProductCode,5)!="Books") then begin 
+  EditFieldTL(h,vm=(v+=vs),80,"Новий або змінений",M4Date,Normal,0,d1,false,PasteCurDate);
+  end;
+  if (IsEnterprise) then begin
+  EditFieldTL(h,vm=(v+=vs),80,"Маршрут",M4Str,Normal,20,ObjStr,false,DelRouteSClass);
+  end;
+  if (IsEnterprise or HasLocalization("POL")) then begin 
+  EditFieldTL(h,vm=(v+=vs),80,"Скороч.",M4Str,Normal,10,f4,false,0);
+  end;
+  if (HasModNL and Left(BuildProductCode,5)!="Books") then begin
+    EditFieldTL(h,vm=(v+=vs),80,"Рахунок",M4Str,Normal,10,f6,false,AccSClass);
+  end;
+  EditFieldTL(h,vm=(v+=vs),150,"Коментар",M4Str,Normal,200,f8,false,0); 
+  v = v + vs; vm = v;
+  if (Left(BuildProductCode,5)!="Books") then begin 
+    //PeriodField(h,v,"Створений за період"); //Edit-------------------Vitalii 11:44 09.08.2016
+  end;
+  h=30; v=vm+24;
+  if (Left(BuildProductCode,5)!="Books") then begin 
+    CheckBox(h,v,0,"Включити усіх контактних осіб",flags[2]); 
+    CheckBox(h,v+=16,0,"Перевірити усі котактні особи",flags[4]);
+    CheckBox(h,v+=16,0,"Пропустити контакти з електронною поштою",flags[5]); 
+    CheckBox(h,v+=16,0,"Тільки контакти з доступною електронною поштою",flags[8]); 
+    CheckBox(h,v+=16,0,"Пропустити контакти з номером факсу",flags[6]); 
+    CheckBox(h,v+=16,0,"Пропустити контакти з номером мобільного телефону",flags[10]);
+    v = v + 16;
+  end;
+  if (HasContactClassification) then begin
+    CheckBox(h,v,0,"Порахувати контакти за класифікацією",flags[7]); 
+  end;
+  vm = v;
+  if (vm<200) then begin
+    SetWRect(20,80,400,450);
+    h = 30;
+    v = vm + 50;
+  end else begin
+    h = 340;
+    v = 20;
+  end;
+  ButtonFrame(h,v,155,6,"Сортувати за");
+  RadioButton(h,v,0,0,"№",flags[1]);
+  RadioButton(h,v+=16,1,0,"Найменування",flags[1]);
+  if (HasCategories) then begin
+  RadioButton(h,v+=16,2,0,"Категорія",flags[1]);
+  end;
+  if (IsEnterprise) then begin
+    RadioButton(h,v+=16,3,0,"Ключ сортув.",flags[1]); 
+  RadioButton(h,v+=16,4,0,"Відділ",flags[1]);
+  end;
+  RadioButton(h,v+=16,5,0,"Телефон",flags[1]);
+  EndFrame;
+  ButtonFrame(h,v+=45,155,4,"Функція");
+  RadioButton(h,v,1,0,"Телефон і продажі",flags[0]);
+  RadioButton(h,v+=16,0,0,"Детально",flags[0]);
+  RadioButton(h,v+=16,2,0,"Факс",flags[0]);
+  RadioButton(h,v+=16,3,0,"E-mail",flags[0]);
+  if (vm<200) then begin
+    h = 210;
+    v = vm + 50;
+  end else begin
+    v = v + 45;
+  end;
+  ButtonFrame(h,v,155,3,"Включати");
+  RadioButton(h,v,0,0,"Тільки незакриті",flags[3]);
+  RadioButton(h,v+=16,1,0,"Незакриті і закриті",flags[3]);
+  RadioButton(h,v+=16,2,0,"Тільки закриті",flags[3]);
+  
+  ButtonFrame(h,v+=45,155,3,"Включити:"); 
+  RadioButton(h,v,0,0,"Лише не заморожені",flags[11]);
+  RadioButton(h,v+=16,1,0,"Заморожені і не заморожені",flags[11]);
+  RadioButton(h,v+=16,2,0,"Лише заморожені",flags[11]); 
+  testf = true;
+  if (IsEnterprise) then begin testf = true; v = v-16; end;
+  if (HasModSL and HasModPL) then begin testf = true; end;
+  if (HasModSL and HasModPP) then begin testf = true; end;
+  if (testf) then begin
+    ButtonFrame(h,v+=61,155,6,"Вибирати");
+  RadioButton(h,v,0,0,"Клієнтів",flags[9]);
+  if (HasModPL) then begin
+  RadioButton(h,v+=16,1,0,"Постачальників",flags[9]);
+  end;
+  if (HasModPP) then begin
+  RadioButton(h,v+=16,2,0,"Гостей",flags[9]);
+  end;
+  if (IsEnterprise) then begin
+  RadioButton(h,v+=16,3,0,"Дилерів",flags[9]);
+  RadioButton(h,v+=16,5,0,"Співробітників",flags[9]);
+    end;
+    RadioButton(h,v+=16,4,0,"Всі",flags[9]); 
+  EndFrame;
+  end;
+  EndWindow;
+end;
+
+window CURClass:5
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,hs,v,vs,vm;
+  Boolean testf;
+  WindowBegin("Визначте перелік клієнтів",CURClass,CGRcW,RcType);
+
+  SetWRect(20,80,555,450);
+  v = 6; vs = 20;
+  if (HasModPL or HasModPP or IsEnterprise) then begin
+  EditFieldTL(h=150,v=10, 150,"Контактна особа",   M4UStr,Normal,30,f1,false,CUSClass);
+  end else begin
+    EditFieldTL(h=150,v=10, 150,"Клієнт",   M4UStr,Normal,30,f1,false,CUSClass); 
+  end;
+  if (HasCategories) then begin
+  EditFieldTL(h,v+=vs,50,"Категорія",   M4UStr,Normal,5,f3,false,CCatSClass);
+  end;
+  if (HasSalesman) then begin
+  EditFieldTL(h,v+=vs,50,"Продавець",   M4UStr,Normal,10,f2,false,UserSClass);
+  end;
+  if (IsEnterprise) then begin
+  EditFieldTL(h,v+=vs,50,"Група продажу",   M4UStr,Normal,5,Language,false,SalesGroupSClass);
+  end;
+  if (HasLanguages) then begin
+  EditFieldTL(h,v+=vs,50,"Мова",   M4UStr,Normal,5,FirstAcc,false,LangSClass);
+  end;
+  if (HasModSL or HasModPL) then begin
+  EditFieldTL(h,v+=vs,30,"Умови сплати",   M4UStr,Normal,2,LastAcc,false,PDSClass);
+  end;
+  if (HasContactClassification) then begin
+  EditFieldTL(h,v+=vs,150,"Класифікація",M4UStr,Normal,30,Stext,false,CClassSClass);
+    EditFieldTL(h,v+=20 ,80,"Типи класифікації",M4UStr,Normal,60,f5,false,CTypeSClass);
+  end;
+  if (HasDepartments) then begin
+    EditFieldTL(h,v+=vs,70,"Відділ",M4UStr,Normal,10,f7,false,DepSClass);
+  end;
+  if (HasObjects) then begin
+  EditFieldTL(h,v+=20, 150,"Об'єкт",M4UStr,Normal,20,AccStr,false,ObjSClass);
+  end;
+  if (IsEnterprise) then begin
+  EditFieldTL(h,v+=20, 100,"Країна",M4UStr,Normal,5,TransStr,false,CountrySClass);
+  end;
+  if (Left(BuildProductCode,5)!="Books") then begin 
+  EditFieldTL(h,vm=(v+=vs),80,"Новий або змінений",M4Date,Normal,0,d1,false,PasteCurDate);
+  end;
+  if (IsEnterprise) then begin
+  EditFieldTL(h,vm=(v+=vs),80,"Маршрут",M4Str,Normal,20,ObjStr,false,DelRouteSClass);
+  end;
+  if (IsEnterprise or HasLocalization("POL")) then begin 
+  EditFieldTL(h,vm=(v+=vs),80,"Скороч.",M4Str,Normal,10,f4,false,0);
+  end;
+  if (HasModNL and Left(BuildProductCode,5)!="Books") then begin
+    EditFieldTL(h,vm=(v+=vs),80,"Рахунок",M4Str,Normal,10,f6,false,AccSClass);
+  end;
+  EditFieldTL(h,vm=(v+=vs),150,"Коментар",M4Str,Normal,200,f8,false,0); 
+  v = v + vs; vm = v;
+  if (Left(BuildProductCode,5)!="Books") then begin 
+    //PeriodField(h,v,"Створений за період"); //Edit-------------------Vitalii 11:44 09.08.2016
+  end;
+  h=30; v=vm+24;
+  if (Left(BuildProductCode,5)!="Books") then begin 
+    CheckBox(h,v,0,"Включити усіх контактних осіб",flags[2]); 
+    CheckBox(h,v+=16,0,"Перевірити усі котактні особи",flags[4]);
+    CheckBox(h,v+=16,0,"Пропустити контакти з електронною поштою",flags[5]); 
+    CheckBox(h,v+=16,0,"Тільки контакти з доступною електронною поштою",flags[8]); 
+    CheckBox(h,v+=16,0,"Пропустити контакти з номером факсу",flags[6]); 
+    CheckBox(h,v+=16,0,"Пропустити контакти з номером мобільного телефону",flags[10]);
+    v = v + 16;
+  end;
+  if (HasContactClassification) then begin
+    CheckBox(h,v,0,"Порахувати контакти за класифікацією",flags[7]); 
+  end;
+  vm = v;
+  if (vm<200) then begin
+    SetWRect(20,80,400,450);
+    h = 30;
+    v = vm + 50;
+  end else begin
+    h = 340;
+    v = 20;
+  end;
+  ButtonFrame(h,v,155,6,"Сортувати за");
+  RadioButton(h,v,0,0,"№",flags[1]);
+  RadioButton(h,v+=16,1,0,"Найменування",flags[1]);
+  if (HasCategories) then begin
+  RadioButton(h,v+=16,2,0,"Категорія",flags[1]);
+  end;
+  if (IsEnterprise) then begin
+    RadioButton(h,v+=16,3,0,"Ключ сортув.",flags[1]); 
+  RadioButton(h,v+=16,4,0,"Відділ",flags[1]);
+  end;
+  RadioButton(h,v+=16,5,0,"Телефон",flags[1]);
+  EndFrame;
+  ButtonFrame(h,v+=45,155,4,"Функція");
+  RadioButton(h,v,1,0,"Телефон і продажі",flags[0]);
+  RadioButton(h,v+=16,0,0,"Детально",flags[0]);
+  RadioButton(h,v+=16,2,0,"Факс",flags[0]);
+  RadioButton(h,v+=16,3,0,"E-mail",flags[0]);
+  if (vm<200) then begin
+    h = 210;
+    v = vm + 50;
+  end else begin
+    v = v + 45;
+  end;
+  ButtonFrame(h,v,155,3,"Включати");
+  RadioButton(h,v,0,0,"Тільки незакриті",flags[3]);
+  RadioButton(h,v+=16,1,0,"Незакриті і закриті",flags[3]);
+  RadioButton(h,v+=16,2,0,"Тільки закриті",flags[3]);
+  
+  ButtonFrame(h,v+=45,155,3,"Включити:"); 
+  RadioButton(h,v,0,0,"Лише не заморожені",flags[11]);
+  RadioButton(h,v+=16,1,0,"Заморожені і не заморожені",flags[11]);
+  RadioButton(h,v+=16,2,0,"Лише заморожені",flags[11]); 
+  testf = true;
+  if (IsEnterprise) then begin testf = true; v = v-16; end;
+  if (HasModSL and HasModPL) then begin testf = true; end;
+  if (HasModSL and HasModPP) then begin testf = true; end;
+  if (testf) then begin
+    ButtonFrame(h,v+=61,155,6,"Вибирати");
+  RadioButton(h,v,0,0,"Клієнтів",flags[9]);
+  if (HasModPL) then begin
+  RadioButton(h,v+=16,1,0,"Постачальників",flags[9]);
+  end;
+  if (HasModPP) then begin
+  RadioButton(h,v+=16,2,0,"Гостей",flags[9]);
+  end;
+  if (IsEnterprise) then begin
+  RadioButton(h,v+=16,3,0,"Дилерів",flags[9]);
+  RadioButton(h,v+=16,5,0,"Співробітників",flags[9]);
+    end;
+    RadioButton(h,v+=16,4,0,"Всі",flags[9]); 
+  EndFrame;
+  end;
+  EndWindow;
+end;
