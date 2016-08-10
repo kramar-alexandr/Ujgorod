@@ -3094,7 +3094,11 @@ begin
   HalPushButton(h+120,v,h+120+100,v+20,"UpdCustomerAddressCUDsm","Поновити адр.");
   v=v+10;
   StaticText(h,v+13,"Юридична адреса",false);
-  EditField(-120,v,100,"Початкова сума продажу",ViewOnly,UserVal1,false,0);
+  if (CurrentUser=="SA") then begin
+    EditField(-120,v,100,"Початкова сума продажу",Normal,UserVal1,false,0);
+  end else begin
+    EditField(-120,v,100,"Початкова сума продажу",ViewOnly,UserVal1,false,0);
+  end;
   
   label = UserDefined("CUVc","InvAddr0");
   EditField(h,v+=vs,-20,label,Normal,InvAddr0,false,0);
