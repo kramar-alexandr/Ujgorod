@@ -253,7 +253,7 @@ begin
   if (HasDepartments) then begin
   EditFieldTL(h,v+=vs,150,"Відділ",M4UStr,Normal,10,AccStr,false,DepSClass);
   end;*/
-  EditFieldTL(h,v+=vs ,80,"Колекція (сезон)",M4UStr,Normal,20,f7,false,0); //Edit***************************Sasha2,17:15 15.07.2016
+  EditFieldTL(h,v+=vs ,80,"Колекція (сезон)",M4Str,Normal,20,f7,false,0); //Edit***************************Sasha2,17:15 15.07.2016
   if (HasModPO) then begin
   EditFieldTL(h,v+=vs,150,"Постачальник",M4UStr,Normal,20,LastAcc,false,VESClass);
   end;
