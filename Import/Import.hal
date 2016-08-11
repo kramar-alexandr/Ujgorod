@@ -427,3 +427,40 @@ begin
     NextImportLine(true);
   end;
 end;
+
+global //Edit***************************Sasha2,15:21 11.08.2016 {
+updating procedure ModifySerialNrIn()
+begin
+	record BarcodeVc Barcoder;
+	string 60 barcode,partToChange,part,newSerial;
+	Integer pos;
+
+	//SetImportCodepage("CP1251");
+
+	while (TestEOF()==false) begin
+		barcode = ImportField;
+		partToChange = ImportField;
+		if (NonBlank(barcode)) then begin
+		  Barcoder.Barcode = barcode;
+		  if (ReadFirstMain(Barcoder,1,true)) then begin
+		    pos = 0;
+		    ExtractObjWithSeparator(".",Barcoder.SerialNr,true,pos,part);
+		    newSerial = part;
+		    ExtractObjWithSeparator(".",Barcoder.SerialNr,true,pos,part);
+		    newSerial = newSerial & "." & part;
+		    ExtractObjWithSeparator(".",Barcoder.SerialNr,true,pos,part);
+		    newSerial = newSerial & "." & part;
+		    ExtractObjWithSeparator(".",Barcoder.SerialNr,true,pos,part);
+		    if (part!=partToChange) then begin
+  		    newSerial = newSerial & "." & partToChange;
+  		    //LogText(0,Barcoder.SerialNr & Chr(9) & newSerial);
+  		    Barcoder.SerialNr = newSerial;
+  		    RECORDSTORE(Barcoder,true);
+		    end;
+		  end;
+		end;
+
+		NextImportLine(true);
+		
+	end;  
+end; //Edit***************************Sasha2,15:22 11.08.2016 }
