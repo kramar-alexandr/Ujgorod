@@ -1081,7 +1081,6 @@ BEGIN
     if (FindItemVAR(INr.Code,sz,msk,mskrep,varsubset)) then begin INr.Code = PUrw.ArtCode; end;
   end;
 */
-	serial = "";// Edit ************************** Monday, 18 July 2016 17:19:14
     //itemfound = GetFirstItem(SDrw.ArtCode,INr);// Edit ************************** Monday, 18 July 2016 17:19:18
 	GetFirstItemSer(PUrw.ArtCode,INr,serial);
 	if(nonblank(serial))then begin// Edit ************************** Friday, 17 June 2016 10:09:14

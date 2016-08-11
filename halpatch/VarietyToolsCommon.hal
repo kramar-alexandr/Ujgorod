@@ -633,6 +633,7 @@ begin
   record BarcodeVc Barcoder;
 		
   BlockLoad(ISb);
+  serial = ""; //Edit***************************Sasha2,14:17 11.08.2016
 //  res = ReadFirstItem(ItemCode,INr,true,false);////makes Variety not working
   if (res==false) then begin
     INr.Code = ItemCode;
@@ -688,6 +689,13 @@ begin
   if (Importing==false) then begin//close item with some qty in stock, export-import and stock list is wrong  
     if (INr.Terminated!=0) then begin res = false; end;
   end;
+  if (res and blank(serial)) then begin //Edit***************************Sasha2,14:18 11.08.2016 {
+    Barcoder.Itemcode = ItemCode;
+    Barcoder.Barcode = ItemCode;
+    if (ReadFirstKey("Itemcode",Barcoder,2,true)) then begin
+      serial =  Barcoder.SerialNr;
+    end;
+  end; //Edit***************************Sasha2,14:18 11.08.2016 }
   GetFirstItemSer = res;
   return;
 end;  
