@@ -419,7 +419,7 @@ begin
   return;
 end;
 
-procedure OutSale(record CUVc CUr)
+procedure OutSale(record CUVc CUr, var val tot1, var val tot2)
 begin
   val totsum;
   record IVVc IVr;
@@ -427,7 +427,7 @@ begin
   
   OutString(4,0,CUr.RebCode,false);
   OutVal(5,0,CUr.UserVal1,M4Val,false);
-  //OutString(5,0,CUr.UserVal1,false);
+  tot1 = tot1 + CUr.UserVal1;
   IVr.CustCode = CUr.Code;
   TrHs = true;
   while (LoopKey("CustCode",IVr,1,TrHs)) begin
@@ -438,9 +438,8 @@ begin
       end;
     end;
   end;
-  //OutString(6,0,totsum + CUr.UserVal1,false);
   OutVal(6,0,totsum + CUr.UserVal1,M4Val,false);
-  
+  tot2 = tot2 + totsum + CUr.UserVal1;
   return;
 end;
 
@@ -466,6 +465,7 @@ begin
   Array string 20 anoclasscucode;
   Array string 255 anoclasscuname;
   LongInt anoclasscne;
+  val tot1,tot2;
 
   cucnt = 0;
   anoclasscne = 0;
@@ -853,7 +853,7 @@ begin
               if (RepSpec.flags[0]==1) then begin
                 //Edit-------------------Vitalii 14:00 10.08.2016
                 OutString(3,0,CUr.Phone,false);
-                OutSale(CUr);
+                OutSale(CUr,tot1,tot2);
               end;
               if (RepSpec.flags[0]==2) then begin
                 OutString(1,0,CUr.Fax,true);
@@ -887,7 +887,13 @@ begin
   if (RepSpec.flags[8]==0) then begin
     StartFormat(15);
     OutString(0,0,USetStr(7305),false);
-    OutLongInt(100,0,cucnt,false);
+    OutLongInt(2,0,cucnt,false);
+    if (tot1!=blankval) or (tot2!=blankval) then begin
+      OutString(3,0,"",false);
+      OutString(4,0,"",false);
+      OutVal(5,0,tot1,M4Val,false);
+      OutVal(6,0,tot2,M4Val,false);
+    end;
     EndFormat;
   end;
   if (RepSpec.flags[7]!=0) then begin
