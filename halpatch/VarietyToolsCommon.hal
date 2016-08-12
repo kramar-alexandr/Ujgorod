@@ -633,7 +633,6 @@ begin
   record BarcodeVc Barcoder;
 		
   BlockLoad(ISb);
-  serial = ""; //Edit***************************Sasha2,14:17 11.08.2016
 //  res = ReadFirstItem(ItemCode,INr,true,false);////makes Variety not working
   if (res==false) then begin
     INr.Code = ItemCode;
