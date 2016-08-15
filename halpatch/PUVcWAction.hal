@@ -143,3 +143,26 @@ begin
 	end;	
 
 end;
+
+global
+updating function Boolean PUDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+BEGIN
+  Boolean res;
+
+  res = true;
+  
+  PUDClassAfterEditField = res;
+  RETURN;
+END;
+
+global
+function Boolean PUDClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+BEGIN
+  Boolean res;
+  Integer nwn;
+  
+  res = true;
+  
+  PUDClassActiveEditField = res;
+  RETURN;
+END;
