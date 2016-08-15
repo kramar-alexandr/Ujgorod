@@ -835,9 +835,9 @@ begin
   Boolean initotcheckf,testf;    
 
   res = 0;
-  if (CurrentUser=="SA_") then begin
+  /*if (CurrentUser=="SA_") then begin
     goto L99PUVcRecordCheck;
-  end;
+  end;*/
   oldnr = PUr.SerNr;
   transf = false;
   if (PUr.OKFlag==1) then begin

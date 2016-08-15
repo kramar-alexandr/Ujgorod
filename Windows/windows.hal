@@ -257,7 +257,7 @@ begin
   if (HasModPO) then begin
   EditFieldTL(h,v+=vs,150,"Постачальник",M4UStr,Normal,20,LastAcc,false,VESClass);
   end;
-  //EditFieldTL(h,v+=vs,80,"Дата",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,80,"Дата",M4Date,Normal,0,d1,false,PasteCurDate);
   CheckBox(h,v+=vs,0,"Показ. сер. номер",flags[10]); v = v + 16;
   if (IsEnterprise) then begin
     CheckBox(h,v,0,"Вкл. закритий товар",flags[18]); v = v + 16;
