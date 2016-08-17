@@ -228,10 +228,11 @@ BEGIN
   record INVc INr;
   record DIVc DIr;
   record LocationVc Locr;
-  vector val STVect;
-  array string 255 GroupArray,TMArray,SerialNumArray,BarCodeArray;
-  vector boolean GroupInArr,TMInArr,SerialNumInArr,BarCodeInArr;
-  integer GAi,TAi,SAi,BAi;
+  vector val STVectPrice,STVectQty,STVectInstock;
+  vector string 100 BarcodeOfSerial;
+  array string 100 GroupArray,TMArray,SerialNumArray;
+  vector boolean GroupInArr,TMInArr,SerialNumInArr;
+  integer GAi,TAi,SAi;
   
   //setexportcodepage("UTF8");
   rowcnt = MatRowCnt(STr);
@@ -270,14 +271,10 @@ BEGIN
       SAi = SAi + 1;
     end;
     barcode = STrw.BarCode;
-    if !BarCodeInArr[barcode] then begin
-      BarCodeInArr[barcode] = true;
-      BarCodeArray[BAi] = barcode;
-      BAi = BAi + 1;
-    end;
-    STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";price"] = STrw.Price;
-    STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";qty"] = STrw.Qty;
-    STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";instock"] = STrw.MyInStock;
+    BarcodeOfSerial[serialnum] = barcode;
+    STVectPrice[group & ";" & tm & ";" & serialnum] = STrw.Price;
+    STVectQty[group & ";" & tm & ";" & serialnum] = STrw.Qty;
+    STVectInstock[group & ";" & tm & ";" & serialnum] = STrw.MyInStock;
   end;
   for (j=0;j<GroupArray.length-1;j=j+1) begin
     for (i=0;i<GroupArray.length-1;i=i+1) begin
@@ -303,15 +300,6 @@ BEGIN
         tstr = SerialNumArray[i+1];
         SerialNumArray[i+1] = SerialNumArray[i];
         SerialNumArray[i] = tstr;
-      end;
-    end;
-  end;
-  for (j=0;j<BarCodeArray.length-1;j=j+1) begin
-    for (i=0;i<BarCodeArray.length-1;i=i+1) begin
-      if (BarCodeArray[i] > BarCodeArray[i+1]) then begin
-        tstr = BarCodeArray[i+1];
-        BarCodeArray[i+1] = BarCodeArray[i];
-        BarCodeArray[i] = tstr;
       end;
     end;
   end;
@@ -1071,75 +1059,73 @@ BEGIN
       for (GAi=0;GAi<GroupArray.length;GAi=GAi+1) begin
         for (TAi=0;TAi<TMArray.length;TAi=TAi+1) begin
           for (SAi=0;SAi<SerialNumArray.length;SAi=SAi+1) begin
-            for (BAi=0;BAi<BarCodeArray.length;BAi=BAi+1) begin
-              group = GroupArray[GAi];
-              tm = TMArray[TAi];
-              serialnum = SerialNumArray[SAi];
-              barcode = BarCodeArray[BAi];
-              qty1 = STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";qty"];
-              qty2 = STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";instock"];
-              if (qty1!=0 and qty1!=blankval) or (qty2!=0 and qty2!=blankval) then begin
-                cnt = cnt + 1;
-                price = STVect[group & ";" & tm & ";" & serialnum & ";" & barcode & ";price"];
-                sum1 = qty1*price;
-                sum2 = qty2*price;
-                if (qty1 - qty2)>0 then begin
-                  nedostacha = 0;
-                  nadlushok = qty1 - qty2;
-                end else begin
-                  nedostacha = qty2 - qty1;
-                  nadlushok = 0;
-                end;
-                colnum = 1;
-                h = 11.25;
-                if (len(group) > 9) or (len(tm) > 10) or (len(serialnum) > 22) or (len(barcode) > 14) then begin
-                  h = 22.5;
-                end;
-                if (len(group) > 18) or (len(tm) > 20) or (len(serialnum) > 44) or (len(barcode) > 28) then begin
-                  h = 33.75;
-                end;
-                BeginRow(sheetnum,fileToSave,rownum,0,h);
-                  style = 5;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,cnt);
-                  style = 4;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,28);
-                  style = 6;
-                  StringCell(sheetnum,fileToSave,colnum,rownum,style,group,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                  StringCell(sheetnum,fileToSave,colnum,rownum,style,tm,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                  StringCell(sheetnum,fileToSave,colnum,rownum,style,serialnum,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                  StringCell(sheetnum,fileToSave,colnum,rownum,style,barcode,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                  StringCell(sheetnum,fileToSave,colnum,rownum,style,"шт",SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                  style = 7;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,price);
-                  style = 9;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty1);
-                  style = 7;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum1);
-                  style = 9;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty2);
-                  style = 7;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum2);
-                  style = 9;
-                  if nedostacha==0 then begin
-                    qtyOfEmpStr = 1;
-                    EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
-                  end else begin
-                    NumericCell(sheetnum,fileToSave,colnum,rownum,style,nedostacha);
-                  end;
-                  if nadlushok==0 then begin
-                    qtyOfEmpStr = 1;
-                    EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
-                  end else begin
-                    NumericCell(sheetnum,fileToSave,colnum,rownum,style,nadlushok);
-                  end;
-                EndRow(sheetnum,fileToSave,rownum);
-                totqty1 = totqty1 + qty1;
-                totqty2 = totqty2 + qty2;
-                totsum1 = totsum1 + sum1;
-                totsum2 = totsum2 + sum2;
-                totnadlushok = totnadlushok + nadlushok;
-                totnedostacha = totnedostacha + nedostacha;
+            group = GroupArray[GAi];
+            tm = TMArray[TAi];
+            serialnum = SerialNumArray[SAi];
+            barcode = BarcodeOfSerial[serialnum];
+            qty1 = STVectQty[group & ";" & tm & ";" & serialnum];
+            qty2 = STVectInstock[group & ";" & tm & ";" & serialnum];
+            if (qty1!=0 and qty1!=blankval) or (qty2!=0 and qty2!=blankval) then begin
+              cnt = cnt + 1;
+              price = STVectPrice[group & ";" & tm & ";" & serialnum];
+              sum1 = qty1*price;
+              sum2 = qty2*price;
+              if (qty1 - qty2)>0 then begin
+                nedostacha = 0;
+                nadlushok = qty1 - qty2;
+              end else begin
+                nedostacha = qty2 - qty1;
+                nadlushok = 0;
               end;
+              colnum = 1;
+              h = 11.25;
+              if (len(group) > 11) or (len(tm) > 13) or (len(serialnum) > 18) or (len(barcode) > 14) then begin
+                h = 22.5;
+              end;
+              if (len(group) > 20) or (len(tm) > 29) or (len(serialnum) > 38) or (len(barcode) > 28) then begin
+                h = 33.75;
+              end;
+              BeginRow(sheetnum,fileToSave,rownum,0,h);
+                style = 5;
+                NumericCell(sheetnum,fileToSave,colnum,rownum,style,cnt);
+                style = 4;
+                NumericCell(sheetnum,fileToSave,colnum,rownum,style,28);
+                style = 6;
+                StringCell(sheetnum,fileToSave,colnum,rownum,style,group,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+                StringCell(sheetnum,fileToSave,colnum,rownum,style,tm,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+                StringCell(sheetnum,fileToSave,colnum,rownum,style,serialnum,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+                StringCell(sheetnum,fileToSave,colnum,rownum,style,barcode,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+                StringCell(sheetnum,fileToSave,colnum,rownum,style,"шт",SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+                style = 7;
+                NumericCell(sheetnum,fileToSave,colnum,rownum,style,price);
+                style = 9;
+                NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty1);
+                style = 7;
+                NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum1);
+                style = 9;
+                NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty2);
+                style = 7;
+                NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum2);
+                style = 9;
+                if nedostacha==0 then begin
+                  qtyOfEmpStr = 1;
+                  EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
+                end else begin
+                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,nedostacha);
+                end;
+                if nadlushok==0 then begin
+                  qtyOfEmpStr = 1;
+                  EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
+                end else begin
+                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,nadlushok);
+                end;
+              EndRow(sheetnum,fileToSave,rownum);
+              totqty1 = totqty1 + qty1;
+              totqty2 = totqty2 + qty2;
+              totsum1 = totsum1 + sum1;
+              totsum2 = totsum2 + sum2;
+              totnadlushok = totnadlushok + nadlushok;
+              totnedostacha = totnedostacha + nedostacha;
             end;
           end;
         end;
@@ -1467,7 +1453,11 @@ BEGIN
       BeginRow(sheetnum,fileToSave,rownum,0,10.5);
         mergeCell[qtyMergeCell] = GetStringCellNum(colnum,rownum);
         style = 18;
-        StringCell(sheetnum,fileToSave,colnum,rownum,style,"в опис, в зв’язку з чим претензій до інвентаризаційної комісії не маю " & chr(40) & "не маємо" & chr(41) & ". Цінності, які перелічені в описі, знаходяться на моєму " & chr(40) & "нашому" & chr(41) & " відповідальному",SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+        mas[maslen] = "в опис, в зв’язку з чим претензій до інвентаризаційної комісії не маю " & chr(40) & "не маємо" & chr(41);
+        maslen = maslen + 1;
+        mas[maslen] = ". Цінності, які перелічені в описі, знаходяться на моєму " & chr(40) & "нашому" & chr(41) & " відповідальному";
+        maslen = maslen + 1;
+        StringCell(sheetnum,fileToSave,colnum,rownum,style,",,," & maslen,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
         qtyOfEmpStr = 13;
         EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
         mergeCell[qtyMergeCell] = mergeCell[qtyMergeCell] & ":" & GetStringCellNum(colnum - 1,rownum);
