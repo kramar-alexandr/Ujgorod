@@ -84,7 +84,6 @@ begin
         IHr.SerialNr = serial;
         IHr.FileName = "PUVc";
         if(readlastkey("ArtCodeSerialNr",IHr,3,true))then begin
-        	logtext(0,IHr.ArtCode & " " & IHr.TransNr);
         	newpr = IHr.TotCostPrice / IHr.Qty;
         end;
         
@@ -161,8 +160,10 @@ begin
     end;
     newpr = newpr * PFr.Perc;
     newpr = newpr / 100;
-
-    newpr = Round(newpr + PFr.Add1Val,rnd);// Edit ************************** Friday, 24 June 2016 14:23:09
+		
+		if(roundof==0)then begin
+    	newpr = Round(newpr + PFr.Add1Val,rnd);// Edit ************************** Friday, 24 June 2016 14:23:09
+    end;
     newpr = Round(newpr + PFr.Add2Val,SetRoundModeD(roundof));
     
 
@@ -217,7 +218,6 @@ begin
 			
 			
 			if(serfch)then begin
-				logtext(0,SBr.Item & " " & SBr.Serial);
 				if(SBr.Serial!=oldser)then begin
 					sergo = true;
 					oldser = SBr.Serial;
@@ -428,6 +428,7 @@ begin
 								PLr.PLCode = pricelist;
 								PLr.ArtCode = INr.Code;
 								PLr.SerialNr = serial;// Edit ************************** Friday, 24 June 2016 15:28:15
+								
 								plfound = ReadFirstMain(PLr,4,true);
 								if (plfound) then begin
 									if (PLr.DonotRecalculate==0) then begin
