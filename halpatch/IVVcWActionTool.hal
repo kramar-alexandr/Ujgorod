@@ -465,8 +465,8 @@ BEGIN
     IVrw.PeriodCode = Accr.PeriodCode;
     IVrw.ArtCode = INr.Code;
     
-    Barcoder.Itemcode = IVrw.ArtCode;
-    if (ReadFirstKey("Itemcode",Barcoder,1,true)) then begin
+    Barcoder.SerialNr = IVrw.SerialNr;//Edit-------------------Vitalii 15:32 17.08.2016
+    if (ReadFirstKey("SerialNr",Barcoder,1,true)) then begin
       IVrw.Barcode = Barcoder.Barcode;
     end;
     IVrw.Recepy = "";  
