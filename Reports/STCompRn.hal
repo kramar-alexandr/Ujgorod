@@ -19,6 +19,7 @@ external procedure HTCustClassType(string,var string);
 external function Boolean SetInSet2(string,string);
 external procedure ItemClassTypef(string,string,var Boolean);
 external procedure ExtractObj(string,var Integer,var string);// Edit ************************** Tuesday, 23 August 2016 15:51:05
+external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);// Edit ************************** Tuesday, 23 August 2016 16:35:59
 
 
 SetLangMode(LangUkrainian,"UKR",0);
@@ -582,16 +583,20 @@ BEGIN
 	//Tuesday, 23 August 2016 15:50:47
 	
       	brand = "";
-      	if (NonBlank(INr.DispGroups)) then begin 
+      	if (NonBlank(INr.DispGroups)) then begin 					
+					tstr = "";
 					pos = 0;
-					ExtractObj(INr.DispGroups,pos,tstr);
-					while (NonBlank(tstr)) begin
-						DIr.Code = tstr;
-						if (ReadFirstMain(DIr,1,true) and DIr.CType=="BRAND") then begin
-							brand = DIr.Name;
-							pos = len(INr.DispGroups);
+					ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
+					while(nonblank(tstr))begin
+						if(nonblank(tstr))then begin
+							messagebox(0,tstr);
+							DIr.Code = tstr;
+							if (ReadFirstMain(DIr,1,true) and DIr.CType=="BRAND") then begin
+								brand = DIr.Name;
+								pos = len(INr.DispGroups);
+							end;
 						end;
-						ExtractObj(INr.DispGroups,pos,tstr);
+						ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
 					end;
 				end; 
 				
@@ -611,15 +616,18 @@ BEGIN
 
 				brand = "";
 				if (NonBlank(INr.DispGroups)) then begin 
+					tstr = "";
 					pos = 0;
-					ExtractObj(INr.DispGroups,pos,tstr);
-					while (NonBlank(tstr)) begin
-						DIr.Code = tstr;
-						if (ReadFirstMain(DIr,1,true) and DIr.CType=="BRAND") then begin
-							brand = DIr.Name;
-							pos = len(INr.DispGroups);
+					ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
+					while(nonblank(tstr))begin
+						if(nonblank(tstr))then begin
+							DIr.Code = tstr;
+							if (ReadFirstMain(DIr,1,true) and DIr.CType=="BRAND") then begin
+								brand = DIr.Name;
+								pos = len(INr.DispGroups);
+							end;
 						end;
-						ExtractObj(INr.DispGroups,pos,tstr);
+						ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
 					end;
 				end; 
 			
