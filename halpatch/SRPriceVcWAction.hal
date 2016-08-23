@@ -181,7 +181,7 @@ begin
   record SRPriceVc SRr;
   Boolean res;
   string 255 inwarn;
-  
+    
   res = true;
   if (changedf) then begin
     GetWindowRecord(wn,SRr);
@@ -199,15 +199,45 @@ begin
   return;
 end;
 
-function Boolean SRPriceDClassNewFIFOEFAfter(Integer wn,Integer rownr,Boolean changedf)
+function Boolean SRPriceDClassFIFOEFAfter(Integer wn,Integer rownr,Boolean changedf)// Edit ************************** Tuesday, 23 August 2016 14:04:36
 begin
   Boolean res;
   record SRPriceVc SRr;
-    
+  row SRPriceVc SRrw;
+
   res = true;
   if (changedf) then begin    
     GetWindowRecord(wn,SRr);
-    SRPriceVc_PasteNewFIFO(SRr,rownr);
+    if(rownr>-1)then begin
+    	matrowget(SRr,rownr,SRrw);
+    		SRrw.MarkUp = (SRrw.FIFO-SRrw.PLPrice)*100/SRrw.PLPrice;
+    		SRrw.Rebate = (1-(SRrw.NewFIFO/SRrw.FIFO))*100;
+    		SRrw.DiffFIFO = SRrw.FIFO - SRrw.NewFIFO;
+    	matrowput(SRr,rownr,SRrw);
+    end;
+//    SRPriceVc_PasteNewFIFO(SRr,rownr);
+    PutWindowRecord(wn,SRr);    
+  end;
+  SRPriceDClassFIFOEFAfter = res;
+  return;
+end;
+
+function Boolean SRPriceDClassNewFIFOEFAfter(Integer wn,Integer rownr,Boolean changedf)// Edit ************************** Tuesday, 23 August 2016 14:04:36
+begin
+  Boolean res;
+  record SRPriceVc SRr;
+  row SRPriceVc SRrw;
+
+  res = true;
+  if (changedf) then begin    
+    GetWindowRecord(wn,SRr);
+    if(rownr>-1)then begin
+    	matrowget(SRr,rownr,SRrw);
+    		SRrw.Rebate = (1-(SRrw.NewFIFO/SRrw.FIFO))*100;
+    		SRrw.DiffFIFO = SRrw.FIFO - SRrw.NewFIFO;
+    	matrowput(SRr,rownr,SRrw);
+    end;
+//    SRPriceVc_PasteNewFIFO(SRr,rownr);
     PutWindowRecord(wn,SRr);    
   end;
   SRPriceDClassNewFIFOEFAfter = res;
@@ -309,10 +339,11 @@ global
 function Boolean SRPriceDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
   Boolean res;
-
+		
   switch (fieldname) begin
     case "ArtCode": res = SRPriceDClassArtCodeEFAfter(wn,rownr,changed!=0);
-    //case "NewFIFO": res = SRPriceDClassNewFIFOEFAfter(wn,rownr,changed!=0); //SRPriceDClassNewFIFOEFAfter does not take into consideration markup and rebate
+    case "FIFO": res = SRPriceDClassFIFOEFAfter(wn,rownr,changed!=0); //SRPriceDClassNewFIFOEFAfter does not take into consideration markup and rebate
+    case "NewFIFO": res = SRPriceDClassNewFIFOEFAfter(wn,rownr,changed!=0); //SRPriceDClassNewFIFOEFAfter does not take into consideration markup and rebate
     case "SerialNr": res = SRPriceDClassSerialNrEFAfter(wn,rownr,changed!=0);
     case "Location": res = SRPriceDClassLocationEFAfter(wn,rownr,changed!=0);
     case "HeaderRate": res = SRPriceDClassHeaderRateEFAfter(wn,-1,changed!=0);
@@ -461,8 +492,8 @@ begin
   end;
   switch (fieldname) begin
     //case "Qty": res = false;
-    case "FIFO": res = false;
-    case "NewFIFO": res = false;
+    //case "FIFO": res = false;// Edit ************************** Tuesday, 23 August 2016 13:32:59   попросили дать возможность менять эти цены руками
+    //case "NewFIFO": res = false;// Edit ************************** Tuesday, 23 August 2016 13:32:58
     case "FIFORowVal": res = false;
     case "LastCostPrice": res = false;
     case "CurncyCode": res = false;
