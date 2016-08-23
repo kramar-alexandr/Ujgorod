@@ -1002,3 +1002,24 @@ begin
   VARColorSClassOnOKWindow = false;
   return;
 end;
+
+global
+function Boolean MyBIWClassOnOpenWindow(Integer wn)
+begin
+  string 255 subset;
+  integer compnr;
+  record ProgramStatusBlock PSb;
+	record CompaniesBlock Cb;
+	row CompaniesBlock Cbrw;
+
+	blockload(PSb);
+	blockload(Cb);
+
+	compnr = currentcompany;
+	matrowget(Cb,compnr-1,Cbrw);
+	subset = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/web/examples/filtering-removing.html";
+  logtext(0,subset);
+  SetWindowSubset(wn,subset);
+  MyBIWClassOnOpenWindow = false;
+  return;
+end;

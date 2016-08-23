@@ -369,3 +369,17 @@ Integer i;
 
   EndWindow;
 end;
+
+window MyBIWClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer") 
+begin
+  real h,v,vs;
+  
+  WindowBegin("BI",MyBIWClass,CGother,-);  
+  SetWRect(20,80,912,673);
+  UseView(RcVc);
+  //WebPage(0,0,320,480,"http://localhost:1080/web/examples/filtering-removing.html","");
+  WebPage(0,0,-1,-1,"$subset","");
+  
+  EndWindow;
+end;

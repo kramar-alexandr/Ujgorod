@@ -18,23 +18,10 @@ begin
 	string 40 scode,sdate;
 	integer counter;
 	
-	//WebOutString("Type,Brand,Code,Qty,Date" & chr(13) & chr(10));
-	//WebOutString("<BR>");
-	
-	//WebOutString("A,B,Code,Qty,Date" & chr(13) & chr(10));
 	
 	WebOutString("Code,Qty,Year" & chr(13) & chr(10));
-	/*WebOutString("Mr A,40,2011" & chr(13) & chr(10));
-	WebOutString("Mr B,40,2011" & chr(13) & chr(10));
-	WebOutString("Mr C,40,2011" & chr(13) & chr(10));
-	WebOutString("Mr A,10,2011" & chr(13) & chr(10));
-	WebOutString("Mr B,30,2011" & chr(13) & chr(10));
-	WebOutString("Mr C,20,2011" & chr(13) & chr(10));
-	WebOutString("Mr A,70,2011" & chr(13) & chr(10));
-	WebOutString("Mr B,50,2011" & chr(13) & chr(10));
-	WebOutString("Mr C,190.00,2011" & chr(13) & chr(10));*/
 	
-	resetloop(DIr);
+  resetloop(DIr);
 	logtext(0,"LOOP DIR");
 	while(loopmain(DIr,1,true))begin
 		vClass[DIr.Code] = DIr.CType;
@@ -70,8 +57,6 @@ begin
 			if(TrHs)then begin
 			
 				vCodeDateQty[INr.Code & ":" & IHr.TransDate] = vCodeDateQty[INr.Code & ":" & IHr.TransDate] - IHr.Qty;
-				//WebOutString(type & "," & brand & "," & INr.Code & "," & -IHr.Qty & "," & IHr.TransDate & chr(13) & chr(10));
-				//WebOutString(INr.Code & "," & -IHr.Qty & "," & IHr.TransDate & chr(13) & chr(10));
 			end;
 		end;
 		resetloop(IHr);
@@ -96,5 +81,110 @@ begin
 		end;
 	end;
 
+return;
+end;
+
+webpublic 
+global procedure WebSalesBI1()
+begin
+	record DIVc DIr;
+  record IVVc IVr;
+  row IVVc IVrw;
+	record INVc INr;
+	boolean TrHs;
+	vector string 100 vClass,vName;
+	string 100 type,brand,tstr;
+	integer pos;
+	vector val vSum,vBrandSum;
+	array string 50 aTags;
+  vector boolean vTagExist,vBarndInArr;
+	integer i,mtrw,b;
+  string 5 nl,tab;
+  array string 50 aBrand,aBrandTmp;
+  
+	
+  //nl = "<br>";
+  //tab = " | ";
+  nl = chr(13) & chr(10);
+  tab = ",";
+  WebOutString("Brand" & tab & "Type" & tab & "Sum" & nl);
+	resetloop(DIr);
+	//logtext(0,"LOOP DIR");
+	while(loopmain(DIr,1,true))begin
+		vClass[DIr.Code] = DIr.CType;
+		vName[DIr.Code] = DIr.Name;
+	end;
+	
+  resetloop(IVr);
+  TrHs = true;
+  IVr.TransDate = StringToDate("01/" & GetMonth(CurrentDate) & "/" & GetYear(CurrentDate));
+  while(loopkey("TransDate",IVr,1,TrHs))begin
+    if (IVr.TransDate>StringToDate(DaysInMonth(GetYear(CurrentDate), GetMonth(CurrentDate)) & GetMonth(CurrentDate) & "/" & GetYear(CurrentDate))) then begin TrHs = false; end;
+    if (TrHs) then begin
+      mtrw = matrowcnt(IVr);
+      for (i=0;i<mtrw;i=i+1) begin
+        matrowget(IVr,i,IVrw);
+        if (IVrw.stp==kInvoiceRowTypeNormal) then begin
+          INr.Code = IVrw.ArtCode;
+          readfirstmain(INr,1,true);
+          type = "UNKNOWN";
+          brand = "UNKNOWN";
+          tstr = "";
+          pos = 0;
+          ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
+          while(nonblank(tstr))begin
+            if(nonblank(tstr))then begin
+              if(vClass[tstr]=="TYPE")then begin
+                type = vName[tstr];
+              end;
+              if(vClass[tstr]=="BRAND")then begin
+                brand = vName[tstr];
+                if !vBarndInArr[brand] then begin
+                  aBrand[b] = brand;
+                  vBarndInArr[brand] = true;
+                  b = b + 1;
+                end;
+              end;
+            end;
+            ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
+          end;
+          vSum[brand & ";" & type] = vSum[brand & ";" & type] + IVrw.Sum;
+          vBrandSum[brand] = vBrandSum[brand] + IVrw.Sum;
+        end;
+      end;
+    end;
+	end;
+  GetVectorTags(vSum,aTags);
+	for (i=0;i<aTags.length;i=i+1) begin
+    vTagExist[aTags[i]] = true;
+  end;
+  
+  for (b=0;b<aBrand.length-1;b=b+1) begin
+    for (i=0;i<aBrand.length-1;i=i+1) begin
+      if (vBrandSum[aBrand[i]] < vBrandSum[aBrand[i+1]]) then begin
+        tstr = aBrand[i+1];
+        aBrand[i+1] = aBrand[i];
+        aBrand[i] = tstr;
+      end;
+    end;
+  end;
+  for (i=0;i<aBrand.length;i=i+1) begin
+    aBrandTmp[i] = aBrand[i];
+    vBarndInArr[aBrand[i]] = false;
+  end;
+  ClearArray(aBrand);
+  for (i=0;i<10;i=i+1) begin
+    aBrand[i] = aBrandTmp[i];
+    vBarndInArr[aBrand[i]] = true;
+  end;
+  for (i=0;i<aTags.length;i=i+1) begin
+    pos = 0;
+    ExtractObjWithSeparator(";",aTags[i],true,pos,brand);
+    if vBarndInArr[brand] then begin
+      ExtractObjWithSeparator(";",aTags[i],true,pos,type);
+      WebOutString(brand & tab & type & tab & vSum[aTags[i]] & nl);
+    end;
+  end;
+  //WebOutString(aBrand[i] & tab & vBrandSum[aBrand[i]] & nl);
 return;
 end;
