@@ -492,8 +492,12 @@ begin
   end;
   switch (fieldname) begin
     //case "Qty": res = false;
-    //case "FIFO": res = false;// Edit ************************** Tuesday, 23 August 2016 13:32:59   попросили дать возможность менять эти цены руками
-    //case "NewFIFO": res = false;// Edit ************************** Tuesday, 23 August 2016 13:32:58
+		case "FIFO":if(usercanaction("AllowSRPriceChangePrice",true)==false)then begin
+									res = false;// Edit ************************** Tuesday, 23 August 2016 13:32:59   попросили дать возможность менять эти цены руками
+								end;
+		case "NewFIFO": if(usercanaction("AllowSRPriceChangePrice",true)==false)then begin
+											res = false;// Edit ************************** Tuesday, 23 August 2016 13:32:59   попросили дать возможность менять эти цены руками
+										end;
     case "FIFORowVal": res = false;
     case "LastCostPrice": res = false;
     case "CurncyCode": res = false;

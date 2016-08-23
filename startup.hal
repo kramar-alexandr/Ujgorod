@@ -75,6 +75,7 @@ begin
   StrSetText(IssueChk,"Зміна статусу чека");
   StrSetText(ChangeOwnCheckClearingDate,"Зміна двти перев. в готівку чека");
   StrSetText(AllowCUSerNrChange,"Зміна номеру контакту");
+  StrSetText(AllowSRPriceChangePrice,"Зміна ціни в переоцінці");// Edit ************************** Tuesday, 23 August 2016 16:58:27
   StrSetText(ChangingCostOnInvoiceRow,"Зміна собівартості в рядках акта/накладної");
   StrSetText(ChangingCostOnORRow,"Changeing Cost on Sales Order Rows");  
   StrSetText(ChangingCostOnPU,"Змінювати вартість при прийомі товару");  
