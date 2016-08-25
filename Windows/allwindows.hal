@@ -2887,6 +2887,7 @@ begin
     end;
   end;
   EditField(h=290,-40,-52,"Коментар",Normal,Comment,false,0);
+  EditField(h,-20,80,"Підпис",ViewOnly,Sign,false,0);// Edit ************************** Thursday, 25 August 2016 10:54:51
   EditField(h=106,-20,50,"Сум. к-ть",ViewOnly,TotQty,true,0);
   //EditField(-128,-20,76,"Сумарна різн.",ViewOnly,TotDiff,true,0);
   if (HasModNL) then begin
