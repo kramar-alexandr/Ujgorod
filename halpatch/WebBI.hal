@@ -103,13 +103,13 @@ begin
   array string 50 aBrand,aBrandTmp;
   
 	
+	logtext(0,"WebSalesBI1");
   //nl = "<br>";
   //tab = " | ";
   nl = chr(13) & chr(10);
   tab = ",";
   WebOutString("Brand" & tab & "Type" & tab & "Sum" & nl);
 	resetloop(DIr);
-	//logtext(0,"LOOP DIR");
 	while(loopmain(DIr,1,true))begin
 		vClass[DIr.Code] = DIr.CType;
 		vName[DIr.Code] = DIr.Name;
