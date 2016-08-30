@@ -2729,7 +2729,8 @@ end;
     if (IsEnterprise==false) then begin
       CheckBox(20,-30,0,"OK",OKFlag); //!!PRODTRANSLATE
     end;
-    EditField(h=150,-30,-35,"Коментар",Normal,Comment,false,0); //!!PRODTRANSLATE
+    EditField(h=150,-50,-35,"Коментар",Normal,Comment,false,0); //!!PRODTRANSLATE
+    EditField(h,-30,80,"Підпис",ViewOnly,Sign,false,0); //Edit***************************Sasha2,12:11 30.08.2016
     if (IsEnterprise) then begin
       SpecialMenu("Заповнити поточну вартість",' ',1,"StockTakeFillFIFODsm"); //!!PRODTRANSLATE
       SpecialMenu("Пошук товару",'f',1,"ItemSearchDsm");

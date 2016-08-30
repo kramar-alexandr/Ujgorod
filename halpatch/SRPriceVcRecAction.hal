@@ -278,15 +278,6 @@ begin
     goto LSRPriceVcRecordCheck;
   end; */ 
   
-  if(blank(SRr.Sign))then begin
-  	SRr.Sign = currentuser;
-  end;
-  if (stat==updatemode) then begin
-		if(SR2r.OKFlag==0 and SRr.OKFlag!=0)then begin
-			SRr.Sign = currentuser;
-		end;
-  end;
-  
   if (stat==updatemode) then begin
     if (SR2r.OKFlag!=0) then begin
       goto LSRPriceVcRecordCheck;
@@ -303,10 +294,6 @@ begin
       goto LSRPriceVcRecordCheck;
     end;
   end;
-  
-  
-  
-  
   
  /*if (SerNrTestSRPriceVc(SRr.SerNr,SRr.TransDate,gentrans)==false) then begin
     if (check>0) then begin
@@ -678,6 +665,16 @@ LSRPriceVcRecordCheck_GenTrans:;
     end;        
   end;*/
   
+  if(blank(SRr.Sign))then begin //Edit***************************Sasha2,11:15 30.08.2016 {
+  	SRr.Sign = currentuser;
+  end;
+  if (stat==updatemode) then begin
+		if(SR2r.OKFlag==1 and SRr.OKFlag==1)then begin
+	   end else begin
+		  SRr.Sign = currentuser;
+		end;
+  end; //Edit***************************Sasha2,11:15 30.08.2016 }
+
 LSRPriceVcRecordCheck:;
   if (res!=0) then begin
     SRr.SerNr = oldnr;

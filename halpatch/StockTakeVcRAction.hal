@@ -332,6 +332,17 @@ BEGIN
       UpdateStockTakeFIFO(StockTakep,false);
     end;
   end;
+  
+  if(blank(StockTakep.Sign))then begin //Edit***************************Sasha2,11:15 30.08.2016 {
+  	StockTakep.Sign = currentuser;
+  end;
+  if (stat==updatemode) then begin
+		if(StockTake2p.OKFlag==1 and StockTakep.OKFlag==1)then begin
+	   end else begin
+		  StockTakep.Sign = currentuser;
+		end;
+  end; //Edit***************************Sasha2,13:12 30.08.2016 }
+  
 LStockTakeVcRecordCheck:;
   if (res!=0) then begin StockTakep.SerNr = oldnr; end;
   StockTakeVcRecordCheck = res;
