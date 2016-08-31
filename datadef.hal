@@ -162,6 +162,7 @@ begin
 		ArrayField(BarCode,M4Code,60,0);
 		ArrayField(Price,M4Val,0,0);
     ArrayField(MyInStock,M4UVal,0,0);
+    ArrayField(Classification,M4UStr,200,DIVc); //Edit***************************Sasha2,17:20 30.08.2016
   EndRecordAdd;	
 	
 	

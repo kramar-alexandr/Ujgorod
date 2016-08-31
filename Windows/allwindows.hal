@@ -2601,7 +2601,7 @@ begin
 
   icn = StringToInt(USetStr(912));
   WindowBegin("#Stocktaking#",StockTakeDClass,CGview,-); //!!PRODTRANSLATE
-  SetWRect(20,80,560,350);
+  SetWRect(20,80,900,350);
   Sizeable(-1,-1,0,0);
   UseView(StockTakeVc);
   if (false) then begin
@@ -2694,6 +2694,7 @@ begin
     end;
     if (IsEnterprise) then begin
       Flip(flipnr); flipnr = flipnr + 1;
+      MatCol(1,-380,"Ѓренд",0,Classification,false,DISClass); //Edit***************************Sasha2,13:41 31.08.2016
       if (HasJewelleryInterface==false) then begin
         MatCol(1,-320,"‘ер. Ь",0,SerialNr,false,SerialNrSClass); //!!PRODTRANSLATE
       end;
@@ -2707,8 +2708,8 @@ begin
       end;
       MatCol(1,-40,"Љоеф..",0,Coefficient,false,0); //!!PRODTRANSLATE*/
       Flip(flipnr); flipnr = flipnr + 1;
-  MatCol(1,-125,"‚ґдп. цґна",0,BasePrice,true,0);
-  MatCol(1,-40,"Љоеф.",0,Coefficient,false,0);
+      MatCol(1,-125,"‚ґдп. цґна",0,BasePrice,true,0);
+      MatCol(1,-40,"Љоеф.",0,Coefficient,false,0);
       Flip(flipnr); flipnr = flipnr + 1;
       MatCol(1,-140,"ирина",0,UnitXval,true,0); //!!PRODTRANSLATE
       MatCol(1,-95,"‚исота",0,UnitYval,true,0); //!!PRODTRANSLATE

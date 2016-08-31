@@ -67,9 +67,11 @@ BEGIN
   row StockTakeVc StockTakerw;
   string 60 sz,msk,mskrep;
   string 200 varsubset;
-  string 100 serial,firstitem;// Edit ************************** Thursday, 23 June 2016 14:12:42
+  string 100 serial,firstitem,curClass;// Edit ************************** Thursday, 23 June 2016 14:12:42
 	Record BarcodeVc BCr;
   record PLVc PLr;
+  record DIVc DIr;
+  integer pos;
   
   MatRowGet(StockTakep,rownr,StockTakerw);  
   if ((changed!=0) or ((blank(StockTakerw.Spec)) and (nonblank(StockTakerw.ArtCode)))) then begin
@@ -83,7 +85,7 @@ BEGIN
       end;
     end;
     if (itemfound) then begin
-      if(GetFirstItemSer(firstitem,INr,serial))then begin// Edit ************************** Thursday, 23 June 2016 14:01:54
+      if(GetFirstItemSer(firstitem,INr,serial))then begin // Edit ************************** Thursday, 23 June 2016 14:01:54
       end;
       if (nonblank(INr.WarnText1)) then begin
         inwarn = INr.WarnText1;
@@ -119,6 +121,18 @@ BEGIN
       StockTakerw.UnitXval = INr.Width;
       StockTakerw.UnitYval = INr.Height;
       StockTakerw.UnitZval = INr.Depth;
+      if (NonBlank(INr.DispGroups)) then begin //Edit***************************Sasha2,17:31 30.08.2016 {
+        pos = 0;
+        ExtractObj(INr.DispGroups,pos,curClass);
+        while (NonBlank(curClass)) begin
+          DIr.Code = curClass;
+          if (ReadFirstMain(DIr,1,true) and DIr.CType=="BRAND") then begin
+            StockTakerw.Classification = DIr.Code;
+            pos = len(INr.DispGroups);
+          end;
+          ExtractObj(INr.DispGroups,pos,curClass);
+        end;
+      end; //Edit***************************Sasha2,17:31 30.08.2016 }
       MatRowPut(StockTakep,rownr,StockTakerw);
     end;
   end;
