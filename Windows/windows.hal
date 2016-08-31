@@ -389,7 +389,7 @@ window RenameCertainDIVClass:1
   wtag("language","RUS"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs;
-  WindowBegin("Замінити класифікацию в товарі",RenameCertainDIVClass,CGMnt,RcType);
+  WindowBegin("Замінити класифікацію в товарі",RenameCertainDIVClass,CGMnt,RcType);
   SetWRect(20,80,400,400);
   v = 10; vs = 20;
   EditField(150,v,140,"З класифікації",Normal,f1,false,DISClass);
