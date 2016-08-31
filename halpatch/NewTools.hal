@@ -4,6 +4,7 @@ external procedure PUSumUp(var record PUVc);
 external procedure PUVc_PasteTransDate(var record PUVc,var Boolean,var Boolean,var Boolean);
 external function Integer InString2(string,string);
 external function string 255 StrReplace(string,string,string);
+external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);
 
 global
 procedure CalcEANCHS(var string str)
@@ -543,3 +544,51 @@ begin
 	
 return;
 end;
+
+global //Edit***************************Sasha2,11:56 31.08.2016 {
+updating procedure RenameCertainDIMn(record RcVc RepSpec)
+begin
+	record INVc INr;
+	record DIVc DIr;
+	Boolean savef;
+	string 10 curdisp;
+	string 255 dispbuildstr;
+	Integer pos;
+		
+   if (blank(RepSpec.f1) or blank(RepSpec.f2)) then begin
+     goto LRenameCertainDIMn;
+   end;
+   
+   INr.Code = "";
+   While(LoopMain(INr,1,true)) begin
+  	 dispbuildstr = "";
+  	 savef = false;
+  	 pos = 0;
+  	 ExtractObjWithSeparator(",",INr.DispGroups,true,pos,curdisp);
+  	 while (NonBlank(curdisp)) begin
+  	   if (curdisp==RepSpec.f1) then begin
+  	     if (blank(dispbuildstr)) then begin
+  	       dispbuildstr = RepSpec.f2;
+  	     end else begin
+  	       dispbuildstr = dispbuildstr & "," & RepSpec.f2;
+  	     end;
+  	     savef = true;
+  	   end else begin
+  	     if (blank(dispbuildstr)) then begin
+  	       dispbuildstr = curdisp;
+  	     end else begin
+  	       dispbuildstr = dispbuildstr & "," & curdisp;
+  	     end;
+  	   end;
+  	   ExtractObjWithSeparator(",",INr.DispGroups,true,pos,curdisp);
+  	 end;
+  	 if (savef) then begin
+	     INr.DispGroups = dispbuildstr;
+	     RECORDSTORE(INr,true);
+	   end;
+   end;
+   
+LRenameCertainDIMn:;   
+
+return;
+end; //Edit***************************Sasha2,11:56 31.08.2016 }
