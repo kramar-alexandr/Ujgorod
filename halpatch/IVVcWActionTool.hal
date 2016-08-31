@@ -67,6 +67,7 @@ external function Boolean GetItemPriceDiscount3ser(var string,string,val,var rec
                                                 var val,var string,var val,var string,var val,var string,Integer,var Boolean,Date,Time,
                                                 string,Boolean,var Boolean,string,var string,var val,string,string,var string);// Edit ************************** Wednesday, 15 June 2016 14:22:37
 external function Boolean INVc_AllowSales(record INVc,var LongInt);
+external procedure ExtractObj(string,var Integer,var string);
 
 global
 function Integer VATCalcRule(string VATCode)
@@ -409,8 +410,10 @@ BEGIN
   string 60 sz,msk,mskrep;
   string 200 varsubset;
   record AccVc Accr;
-  string 100 serial;
+  string 100 serial,curClass;
   record BarcodeVc Barcoder;
+  record DIVc DIr;
+  integer pos;
 
   pritemf = true;
   MatRowGet(IVr,rownr,IVrw);  
@@ -545,6 +548,18 @@ done below
 //      if (GetItemNameStr(1,curitemname,IVr.LangCode,INr.Name,INr.Code)) then begin end;
     IVrw.Spec = curitemname;
     PackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
+    if (NonBlank(INr.DispGroups)) then begin //Edit***************************Sasha2,17:31 30.08.2016 {
+      pos = 0;
+      ExtractObj(INr.DispGroups,pos,curClass);
+      while (NonBlank(curClass)) begin
+        DIr.Code = curClass;
+        if (ReadFirstMain(DIr,1,true) and DIr.CType=="BRAND") then begin
+          IVrw.Classification = DIr.Code;
+          pos = len(INr.DispGroups);
+        end;
+        ExtractObj(INr.DispGroups,pos,curClass);
+      end;
+    end; //Edit***************************Sasha2,17:31 30.08.2016 }
     MatRowPut(IVr,rownr,IVrw);
     if (INr.ExplodeRec!=0 and IVrw.Quant!=blankval) then begin
       if (nonblank(IVrw.Recepy)) then begin
@@ -558,7 +573,7 @@ done below
         IVVc_ChangeQuantityRecepy(IVrw.ArtCode,IVrw.Quant,rownr,IVr);
       end;
     end;
-    if (INInvRecepyExists(INr.InvRecepy)) then begin//moved to qty
+    if (INInvRecepyExists(INr.InvRecepy)) then begin //moved to qty
       Do_InvoiceRecepy(IVr,INr,rownr+1);
       IVDUpdatePrices(IVr,false);
     end;    
@@ -569,7 +584,7 @@ done below
       if (INr.Terminated==1) then begin
         warning = USetStr(1266) & IVrw.ArtCode;
       end else begin
-      	if (FindItemVAR(IVrw.ArtCode,sz,msk,mskrep,varsubset)==false) then begin//Edit----------------------Dima  25.04.2016. 
+      	if (FindItemVAR(IVrw.ArtCode,sz,msk,mskrep,varsubset)==false) then begin //Edit----------------------Dima  25.04.2016. 
       			//Don't show this message for items with variants. Code could be not ended.
         	warning = USetStr(1120) & IVrw.ArtCode;
         end;	

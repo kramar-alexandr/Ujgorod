@@ -242,6 +242,7 @@ begin
 		ArrayField(RetIVNum,M4Long,0,0);
 		ArrayField(RetIVRow,M4Int,0,0); 
     ArrayField(Barcode,M4UStr,60,0);
+    ArrayField(Classification,M4UStr,200,DIVc); //Edit***************************Sasha2,17:20 30.08.2016
 	EndRecordAdd;
 			
 return;
