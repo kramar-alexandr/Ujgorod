@@ -202,6 +202,7 @@ begin
 	PeriodField(h,v=6,"Період");
   //EditFieldTL(h,v+=vs,100,"Дата",M4Date,Normal,41,RegDate,false,PasteCurDate);
   EditFieldTL(h,v+=vs,100,"Лок.машина",M4UStr,Normal,41,f1,false,LocalMachineSClass);
+  EditFieldTL(h,v+=vs,50,"Ум. сплати",M4UStr,Normal,41,f2,false,PDSClass);
   /*RadioButton(h,v+=40,0,0,"Все",flags[8]);
 	RadioButton(h,v+=16,1,0,"Искл. фискальные",flags[8]);
 	RadioButton(h,v+=16,2,0,"Только фискальные",flags[8]);*/
