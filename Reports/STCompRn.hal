@@ -589,7 +589,6 @@ BEGIN
 					ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
 					while(nonblank(tstr))begin
 						if(nonblank(tstr))then begin
-							messagebox(0,tstr);
 							DIr.Code = tstr;
 							if (ReadFirstMain(DIr,1,true) and DIr.CType=="BRAND") then begin
 								brand = DIr.Name;
