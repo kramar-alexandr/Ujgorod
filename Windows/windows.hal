@@ -397,3 +397,17 @@ begin
   StaticText(70,v+=vs*2,"Примітка: для роздільника класифікацій \",\"",false);
   EndWindow;
 end;
+
+window AggregateSameItemsInStockTakeVClass:1 //Edit***************************Sasha2,13:54 02.09.2016
+ wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+ begin
+  real h,h1,h2,t,v,vs;
+	 
+  vs = 20; h=150; h1=100; h2=220;
+  WindowBegin("Схлопнути товари в обраних інвентаризаціях",AggregateSameItemsInStockTakeVClass,CGMnt,RcType);
+  SetWRect(20,120,460,220);
+  EditField(h,v+=20,250,"Номери інвентаризацій",Normal,f1,false,0);
+  StaticText(h,v+=30,"Примітка: перерахувати через \",\"",false);
+  EditField(h,v+=20,50,"Склад",Normal,f2,false,LocationSClass);
+  EndWindow;
+end;

@@ -2653,7 +2653,7 @@ begin
       TileButton(2,"Коментар");  
       Tile(1,230,false,"",Math);  
     end;
-  MatrixBegin(4,v,-50,-35,-,2500);
+  MatrixBegin(4,v,-50,-35,-,999);
     Flip(0); flipnr = flipnr + 1;
     if (HasJewelleryInterface) then begin
       MatCol(1,32,"Серійний номер",0,SerialNr,false,SerialNrSClass);

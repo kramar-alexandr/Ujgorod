@@ -592,3 +592,88 @@ LRenameCertainDIMn:;
 
 return;
 end; //Edit***************************Sasha2,11:56 31.08.2016 }
+
+global //Edit***************************Sasha2,13:51 02.09.2016 {
+updating procedure AggregateSameItemsInStockTakeMn(record RcVc RepSpec)
+begin
+  record StockTakeVc STr,prevSTr;
+  row StockTakeVc STrw,prevSTrw;
+	string 20 curStTake,location,serNrStTake,rowNrStTake,positionInStTake;
+	Integer pos,pos1,rwcnt,i;
+	vector record StockTakeVc modifiedStTakes;
+	vector Boolean ifStTakeWasModified;
+	vector string 20 serialPosInStTakeVect;
+	array string 20 serNrs;
+	boolean testf,isModifiedCurSTr;
+		
+    if (blank(RepSpec.f1) or blank(RepSpec.f2)) then begin
+      goto LAggregateSameItemsInStockTakeMn;
+    end;
+    
+    location = RepSpec.f2;
+    pos = 0;
+    ExtractObjWithSeparator(",",RepSpec.f1,true,pos,curStTake);
+    while (NonBlank(curStTake)) begin
+      STr.SerNr = StringToLongInt(curStTake);
+      if (ReadFirstMain(STr,1,true)) then begin
+        testf = true;
+        if (STr.Location!=location) then begin testf = false; end;
+        //if (STr.OKFlag==0) then begin testf = false; end;
+        if (testf) then begin
+          isModifiedCurSTr = false;
+          rwcnt = MatRowCnt(STr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(STr,i,STrw);
+            if (NonBlank(STrw.SerialNr)) then begin
+              positionInStTake = serialPosInStTakeVect[STrw.SerialNr];
+              if (blank(positionInStTake)) then begin
+                serialPosInStTakeVect[STrw.SerialNr] = STr.SerNr & "," & i;
+              end else begin
+                pos1 = 0;
+                ExtractObjWithSeparator(",",positionInStTake,true,pos1,serNrStTake);
+                ExtractObjWithSeparator(",",positionInStTake,true,pos1,rowNrStTake);
+                testf = false;
+                if (ifStTakeWasModified[serNrStTake]==true) then begin
+                  prevSTr = modifiedStTakes[serNrStTake];
+                  testf = true;
+                end else begin
+                  prevSTr.SerNr = StringToLongInt(serNrStTake);
+                  if (ReadFirstMain(prevSTr,1,true)) then begin
+                    testf = true;
+                  end;
+                end;
+                if (testf) then begin
+                  MatRowGet(prevSTr,StringToInt(rowNrStTake),prevSTrw);
+                  if (STrw.ArtCode==prevSTrw.ArtCode) then begin
+                    prevSTrw.Qty = prevSTrw.Qty + STrw.Qty;
+                    MatRowPut(prevSTr,StringToInt(rowNrStTake),prevSTrw);
+                    LogText(0,"In StockTakeVc #" & STr.SerNr & " deleted row #" & i & ". Serial: " & STrw.SerialNr & ", qty: " & STrw.Qty & ", barcode: " & STrw.BarCode);
+                    matrowdelete(STr,i); 
+        	  				i=i-1;
+        	  				rwcnt = rwcnt - 1;
+        	  				isModifiedCurSTr = true;
+                    modifiedStTakes[serNrStTake] = prevSTr;
+                    ifStTakeWasModified[serNrStTake] = true;  
+                  end;
+                end;
+              end;
+            end;
+          end;
+          if (isModifiedCurSTr) then begin
+            RECORDSTORE(STr,true);
+          end;
+        end;
+      end;
+      ExtractObjWithSeparator(",",RepSpec.f1,true,pos,curStTake);
+    end;
+		
+    GetVectorTags(modifiedStTakes,serNrs);
+    for (i=0;i<serNrs.length;i=i+1) begin
+      prevSTr = modifiedStTakes[serNrs[i]];
+      RECORDSTORE(prevSTr,true);
+    end;
+   
+LAggregateSameItemsInStockTakeMn:;   
+
+return;
+end; //Edit***************************Sasha2,13:51 02.09.2016 }
