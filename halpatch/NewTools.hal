@@ -625,7 +625,7 @@ begin
       if (testf) then begin
         testf = true;
         if (STr.Location!=location) then begin testf = false; end;
-        //if (STr.OKFlag==0) then begin testf = false; end;
+        if (STr.OKFlag==0) then begin testf = false; end;
         if (testf) then begin
           isModifiedCurSTr = false;
           rwcnt = MatRowCnt(STr);
