@@ -614,8 +614,15 @@ begin
     pos = 0;
     ExtractObjWithSeparator(",",RepSpec.f1,true,pos,curStTake);
     while (NonBlank(curStTake)) begin
-      STr.SerNr = StringToLongInt(curStTake);
-      if (ReadFirstMain(STr,1,true)) then begin
+      testf = false;
+      if (ifStTakeWasModified[StringToLongInt(curStTake)]==true) then begin
+        STr = modifiedStTakes[StringToLongInt(curStTake)];
+        testf = true;
+      end else begin
+        STr.SerNr = StringToLongInt(curStTake);
+        testf = ReadFirstMain(STr,1,true);
+      end;
+      if (testf) then begin
         testf = true;
         if (STr.Location!=location) then begin testf = false; end;
         //if (STr.OKFlag==0) then begin testf = false; end;
@@ -633,34 +640,48 @@ begin
                 ExtractObjWithSeparator(",",positionInStTake,true,pos1,serNrStTake);
                 ExtractObjWithSeparator(",",positionInStTake,true,pos1,rowNrStTake);
                 testf = false;
-                if (ifStTakeWasModified[serNrStTake]==true) then begin
-                  prevSTr = modifiedStTakes[serNrStTake];
-                  testf = true;
-                end else begin
-                  prevSTr.SerNr = StringToLongInt(serNrStTake);
-                  if (ReadFirstMain(prevSTr,1,true)) then begin
-                    testf = true;
-                  end;
-                end;
-                if (testf) then begin
-                  MatRowGet(prevSTr,StringToInt(rowNrStTake),prevSTrw);
+                if (StringToLongInt(serNrStTake)==STr.SerNr) then begin
+                  MatRowGet(STr,StringToInt(rowNrStTake),prevSTrw);
                   if (STrw.ArtCode==prevSTrw.ArtCode) then begin
                     prevSTrw.Qty = prevSTrw.Qty + STrw.Qty;
-                    MatRowPut(prevSTr,StringToInt(rowNrStTake),prevSTrw);
+                    MatRowPut(STr,StringToInt(rowNrStTake),prevSTrw);
                     LogText(0,"In StockTakeVc #" & STr.SerNr & " deleted row #" & i & ". Serial: " & STrw.SerialNr & ", qty: " & STrw.Qty & ", barcode: " & STrw.BarCode);
                     matrowdelete(STr,i); 
         	  				i=i-1;
         	  				rwcnt = rwcnt - 1;
-        	  				isModifiedCurSTr = true;
-                    modifiedStTakes[serNrStTake] = prevSTr;
-                    ifStTakeWasModified[serNrStTake] = true;  
+        	  				isModifiedCurSTr = true;  
                   end;
+                end else begin
+                  if (ifStTakeWasModified[serNrStTake]==true) then begin
+                    prevSTr = modifiedStTakes[serNrStTake];
+                    testf = true;
+                  end else begin
+                    prevSTr.SerNr = StringToLongInt(serNrStTake);
+                    if (ReadFirstMain(prevSTr,1,true)) then begin
+                      testf = true;
+                    end;
+                  end;
+                  if (testf) then begin
+                    MatRowGet(prevSTr,StringToInt(rowNrStTake),prevSTrw);
+                    if (STrw.ArtCode==prevSTrw.ArtCode) then begin
+                      prevSTrw.Qty = prevSTrw.Qty + STrw.Qty;
+                      MatRowPut(prevSTr,StringToInt(rowNrStTake),prevSTrw);
+                      LogText(0,"In StockTakeVc #" & STr.SerNr & " deleted row #" & i & ". Serial: " & STrw.SerialNr & ", qty: " & STrw.Qty & ", barcode: " & STrw.BarCode);
+                      matrowdelete(STr,i); 
+          	  				i=i-1;
+          	  				rwcnt = rwcnt - 1;
+          	  				isModifiedCurSTr = true;
+                      modifiedStTakes[serNrStTake] = prevSTr;
+                      ifStTakeWasModified[serNrStTake] = true;  
+                    end;
+                  end;  
                 end;
               end;
             end;
           end;
           if (isModifiedCurSTr) then begin
-            RECORDSTORE(STr,true);
+            modifiedStTakes[STr.SerNr] = STr;
+            ifStTakeWasModified[serNrStTake] = true;
           end;
         end;
       end;
