@@ -1462,13 +1462,13 @@ begin
                   end;
               end;
             end;
-            if (FIFOPerSerialNr(INr,CAb)!=0) then begin//otherwise cost price on deliveries is completely wrong
+            /*if (FIFOPerSerialNr(INr,CAb)!=0) then begin//otherwise cost price on deliveries is completely wrong
               if (SerialNrAvail2(PUrw.ArtCode,PUrw.SerialNr,1)==true) then begin
                 RecordCheckError(1241,"",i,"SerialNr");      
                 res = -1;
                 goto L99PUVcRecordCheck;
               end;              
-            end;
+            end;*/
             FindBatchBestBeforeDate(PUrw.ArtCode,PUrw.SerialNr,bbd);
             if (nonblankdate(bbd)) then begin
               if (PUrw.BestBefore!=bbd)then begin
