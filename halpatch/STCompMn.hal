@@ -848,7 +848,7 @@ LCASE0:;
             AddtoPU(RepSpec,PUr,IN2r,serialnr,diff,flushcnt,ARAccb,loctype,dbupdatedf);
           end;
         end;
-      end else begin LogText(0,"diff:" & diff);
+      end else begin
         if (diff<0) then begin
           AddtoSD(RepSpec,SDr,IN2r,"",diff,flushcnt,ARAccb,loctype,dbupdatedf);
         end;     
