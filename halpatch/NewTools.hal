@@ -708,9 +708,13 @@ begin
     for (i=0;i<serNrs.length;i=i+1) begin
       STr = modifiedStTakes[serNrs[i]];
       if (STr.OKFlag == 0) then begin
-        RecordCopy(oldSTr,STr);
-        STr.OKFlag = 1;
-        RecordUpdate(oldSTr,STr,true);
+        if (MatRowCnt(STr)==0) then begin
+          RecordDelete(STr);
+        end else begin
+          RecordCopy(oldSTr,STr);
+          STr.OKFlag = 1;
+          RecordUpdate(oldSTr,STr,true);
+        end;
       end else begin
         RECORDSTORE(STr,true);
       end;
