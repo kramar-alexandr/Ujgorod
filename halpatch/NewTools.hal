@@ -596,7 +596,7 @@ end; //Edit***************************Sasha2,11:56 31.08.2016 }
 global //Edit***************************Sasha2,13:51 02.09.2016 {
 updating procedure AggregateSameItemsInStockTakeMn(record RcVc RepSpec)
 begin
-  record StockTakeVc STr,prevSTr;
+  record StockTakeVc STr,oldSTr,prevSTr;
   row StockTakeVc STrw,prevSTrw;
 	string 20 curStTake,location,serNrStTake,rowNrStTake,positionInStTake;
 	Integer pos,pos1,rwcnt,i;
@@ -641,6 +641,11 @@ begin
                 ExtractObjWithSeparator(",",positionInStTake,true,pos1,rowNrStTake);
                 testf = false;
                 if (StringToLongInt(serNrStTake)==STr.SerNr) then begin
+                  if (STr.OKFlag == 1) then begin
+                    RecordCopy(oldSTr,STr);
+                    STr.OKFlag = 0;
+                    RecordUpdate(oldSTr,STr,false);
+                  end;
                   MatRowGet(STr,StringToInt(rowNrStTake),prevSTrw);
                   if (STrw.ArtCode==prevSTrw.ArtCode) then begin
                     prevSTrw.Qty = prevSTrw.Qty + STrw.Qty;
@@ -662,6 +667,11 @@ begin
                     end;
                   end;
                   if (testf) then begin
+                    if (STr.OKFlag == 1) then begin
+                      RecordCopy(oldSTr,STr);
+                      STr.OKFlag = 0;
+                      RecordUpdate(oldSTr,STr,false);
+                    end;
                     MatRowGet(prevSTr,StringToInt(rowNrStTake),prevSTrw);
                     if (STrw.ArtCode==prevSTrw.ArtCode) then begin
                       prevSTrw.Qty = prevSTrw.Qty + STrw.Qty;
@@ -690,8 +700,14 @@ begin
 		
     GetVectorTags(modifiedStTakes,serNrs);
     for (i=0;i<serNrs.length;i=i+1) begin
-      prevSTr = modifiedStTakes[serNrs[i]];
-      RECORDSTORE(prevSTr,true);
+      STr = modifiedStTakes[serNrs[i]];
+      if (STr.OKFlag == 0) then begin
+        RecordCopy(oldSTr,STr);
+        STr.OKFlag = 1;
+        RecordUpdate(oldSTr,STr,false);
+      end else begin
+        RECORDSTORE(STr,true);
+      end;
     end;
    
 LAggregateSameItemsInStockTakeMn:;   
