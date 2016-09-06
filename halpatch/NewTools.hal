@@ -610,6 +610,8 @@ begin
       goto LAggregateSameItemsInStockTakeMn;
     end;
     
+    LogText(0,"StockTakeVcs sequence: " & RepSpec.f1);
+    
     location = RepSpec.f2;
     pos = 0;
     ExtractObjWithSeparator(",",RepSpec.f1,true,pos,curStTake);
