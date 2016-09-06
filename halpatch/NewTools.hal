@@ -644,7 +644,10 @@ begin
                   if (STr.OKFlag == 1) then begin
                     RecordCopy(oldSTr,STr);
                     STr.OKFlag = 0;
-                    RecordUpdate(oldSTr,STr,false);
+                    if (RecordUpdate(oldSTr,STr,true)!=0) then begin
+                      LogText(0,"Not able to unok StockTakeVc #:" & STr.SerNr);
+                      goto LAggregateSameItemsInStockTakeMn;
+                    end;
                   end;
                   MatRowGet(STr,StringToInt(rowNrStTake),prevSTrw);
                   if (STrw.ArtCode==prevSTrw.ArtCode) then begin
@@ -670,7 +673,10 @@ begin
                     if (STr.OKFlag == 1) then begin
                       RecordCopy(oldSTr,STr);
                       STr.OKFlag = 0;
-                      RecordUpdate(oldSTr,STr,false);
+                      if (RecordUpdate(oldSTr,STr,true)!=0) then begin
+                        LogText(0,"Not able to unok StockTakeVc #:" & STr.SerNr);
+                        goto LAggregateSameItemsInStockTakeMn;
+                      end;
                     end;
                     MatRowGet(prevSTr,StringToInt(rowNrStTake),prevSTrw);
                     if (STrw.ArtCode==prevSTrw.ArtCode) then begin
@@ -704,7 +710,7 @@ begin
       if (STr.OKFlag == 0) then begin
         RecordCopy(oldSTr,STr);
         STr.OKFlag = 1;
-        RecordUpdate(oldSTr,STr,false);
+        RecordUpdate(oldSTr,STr,true);
       end else begin
         RECORDSTORE(STr,true);
       end;
