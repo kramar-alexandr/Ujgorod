@@ -652,10 +652,10 @@ begin
                     end;
                   end;
                   MatRowGet(STr,StringToInt(rowNrStTake),prevSTrw);
-                  if (STrw.ArtCode==prevSTrw.ArtCode) then begin
+                  if (STrw.SerialNr==prevSTrw.SerialNr) then begin
                     prevSTrw.Qty = prevSTrw.Qty + STrw.Qty;
                     MatRowPut(STr,StringToInt(rowNrStTake),prevSTrw);
-                    LogText(0,"In StockTakeVc #" & STr.SerNr & " deleted row #" & i & ". Serial: " & STrw.SerialNr & ", qty: " & STrw.Qty & ", barcode: " & STrw.BarCode);
+                    LogText(0,"In StockTakeVc #" & STr.SerNr & " deleted row #" & (i+1) & ". Serial: " & STrw.SerialNr & ", qty: " & STrw.Qty & ", barcode: " & STrw.BarCode & ". Added to StockTakeVc #" & STr.SerNr & ", row#" & (StringToInt(rowNrStTake) + 1));
                     matrowdelete(STr,i); 
         	  				i=i-1;
         	  				rwcnt = rwcnt - 1;
@@ -681,10 +681,10 @@ begin
                       end;
                     end;
                     MatRowGet(prevSTr,StringToInt(rowNrStTake),prevSTrw);
-                    if (STrw.ArtCode==prevSTrw.ArtCode) then begin
+                    if (STrw.SerialNr==prevSTrw.SerialNr) then begin
                       prevSTrw.Qty = prevSTrw.Qty + STrw.Qty;
                       MatRowPut(prevSTr,StringToInt(rowNrStTake),prevSTrw);
-                      LogText(0,"In StockTakeVc #" & STr.SerNr & " deleted row #" & i & ". Serial: " & STrw.SerialNr & ", qty: " & STrw.Qty & ", barcode: " & STrw.BarCode);
+                      LogText(0,"In StockTakeVc #" & STr.SerNr & " deleted row #" & (i+1) & ". Serial: " & STrw.SerialNr & ", qty: " & STrw.Qty & ", barcode: " & STrw.BarCode & ". Added to StockTakeVc #" & prevSTr.SerNr & ", row#" & (StringToInt(rowNrStTake) + 1));
                       matrowdelete(STr,i); 
           	  				i=i-1;
           	  				rwcnt = rwcnt - 1;
@@ -708,7 +708,7 @@ begin
 		
     GetVectorTags(modifiedStTakes,serNrs);
     for (i=0;i<serNrs.length;i=i+1) begin
-      STr = modifiedStTakes[serNrs[i]];
+      STr = modifiedStTakes[serNrs[i]]; LogText(0,"Current StockTake #" & STr.SerNr & " OKFlag:" & STr.OKFlag);
       if (STr.OKFlag == 0) then begin
         if (MatRowCnt(STr)==0) then begin
           RecordDelete(STr);
