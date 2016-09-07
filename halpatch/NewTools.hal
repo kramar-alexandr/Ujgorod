@@ -699,7 +699,7 @@ begin
           end;
           if (isModifiedCurSTr) then begin
             modifiedStTakes[STr.SerNr] = STr;
-            ifStTakeWasModified[serNrStTake] = true;
+            ifStTakeWasModified[STr.SerNr] = true;
           end;
         end;
       end;
