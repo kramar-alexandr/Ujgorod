@@ -599,7 +599,7 @@ begin
   record StockTakeVc STr,oldSTr,prevSTr;
   row StockTakeVc STrw,prevSTrw;
 	string 20 curStTake,location,serNrStTake,rowNrStTake,positionInStTake;
-	Integer pos,pos1,rwcnt,i;
+	Integer pos,pos1,rwcnt,i,realRowCoef;
 	vector record StockTakeVc modifiedStTakes;
 	vector Boolean ifStTakeWasModified;
 	vector string 20 serialPosInStTakeVect;
@@ -631,6 +631,7 @@ begin
         if (testf) then begin
           isModifiedCurSTr = false;
           rwcnt = MatRowCnt(STr);
+          realRowCoef = 0;
           for (i=0;i<rwcnt;i=i+1) begin
             MatRowGet(STr,i,STrw);
             if (NonBlank(STrw.SerialNr)) then begin
@@ -655,10 +656,11 @@ begin
                   if (STrw.SerialNr==prevSTrw.SerialNr) then begin
                     prevSTrw.Qty = prevSTrw.Qty + STrw.Qty;
                     MatRowPut(STr,StringToInt(rowNrStTake),prevSTrw);
-                    LogText(0,"In StockTakeVc #" & STr.SerNr & " deleted row #" & (i+1) & ". Serial: " & STrw.SerialNr & ", qty: " & STrw.Qty & ", barcode: " & STrw.BarCode & ". Added to StockTakeVc #" & STr.SerNr & ", row#" & (StringToInt(rowNrStTake) + 1));
+                    LogText(0,"In StockTakeVc #" & STr.SerNr & " deleted row #" & (i+1+realRowCoef) & ". Serial: " & STrw.SerialNr & ", qty: " & STrw.Qty & ", barcode: " & STrw.BarCode & ". Added to StockTakeVc #" & STr.SerNr & ", row#" & (StringToInt(rowNrStTake) + 1));
                     matrowdelete(STr,i); 
         	  				i=i-1;
         	  				rwcnt = rwcnt - 1;
+        	  				realRowCoef = realRowCoef + 1;
         	  				isModifiedCurSTr = true;  
                   end;
                 end else begin
@@ -684,10 +686,11 @@ begin
                     if (STrw.SerialNr==prevSTrw.SerialNr) then begin
                       prevSTrw.Qty = prevSTrw.Qty + STrw.Qty;
                       MatRowPut(prevSTr,StringToInt(rowNrStTake),prevSTrw);
-                      LogText(0,"In StockTakeVc #" & STr.SerNr & " deleted row #" & (i+1) & ". Serial: " & STrw.SerialNr & ", qty: " & STrw.Qty & ", barcode: " & STrw.BarCode & ". Added to StockTakeVc #" & prevSTr.SerNr & ", row#" & (StringToInt(rowNrStTake) + 1));
+                      LogText(0,"In StockTakeVc #" & STr.SerNr & " deleted row #" & (i+1+realRowCoef) & ". Serial: " & STrw.SerialNr & ", qty: " & STrw.Qty & ", barcode: " & STrw.BarCode & ". Added to StockTakeVc #" & prevSTr.SerNr & ", row#" & (StringToInt(rowNrStTake) + 1));
                       matrowdelete(STr,i); 
           	  				i=i-1;
           	  				rwcnt = rwcnt - 1;
+          	  				realRowCoef = realRowCoef + 1;
           	  				isModifiedCurSTr = true;
                       modifiedStTakes[serNrStTake] = prevSTr;
                       ifStTakeWasModified[serNrStTake] = true;  
