@@ -20,7 +20,43 @@ external function Boolean SetInSet2(string,string);
 external procedure ItemClassTypef(string,string,var Boolean);
 external procedure ExtractObj(string,var Integer,var string);// Edit ************************** Tuesday, 23 August 2016 15:51:05
 external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);// Edit ************************** Tuesday, 23 August 2016 16:35:59
+// Edit Start ---------------------------------------------- Edit Start
+	//Friday, 9 September 2016 15:35:23
+	
+global
+function val STCompFindSerialNrQtyDate(string artcode,string variety,string serialnr,string location,string position,var string resserialnr,date dat1)
+begin
+  val instock,q;
+  Boolean foundih,testf;
+  record ItemHistVc IHr;
+  
+  	resserialnr = "";
+ 
+    foundih = true;
+    IHr.ArtCode = artcode;
+    IHr.Location = location;
+    IHr.TransDate = "";
+    while (LoopKey("ArtCodeLoc",IHr,2,foundih)) begin
+      if (IHr.Location!=location and nonblank(location)) then begin foundih = false; end;
+      if (IHr.ArtCode!=artcode) then begin foundih = false; end;
+      if (IHr.TransDate>dat1) then begin foundih = false; end;
+      if (foundih) then begin
+        testf = true;
+        if (nonblank(serialnr)) then begin
+          if (IHr.SerialNr!=serialnr) then begin testf = false; end;
+        end;
+        if (testf) then begin
+          instock = instock + IHr.Qty;
+          resserialnr = IHr.SerialNr;
+        end;
+      end;
+    end;
+  STCompFindSerialNrQtyDate = instock;
+  return;
+end;
 
+	// Edit End ---------------------------------------------- Edit End
+	
 
 SetLangMode(LangUkrainian,"UKR",0);
 
@@ -323,12 +359,12 @@ LCASE0:;
           case 2:
             if (arrcnt>0) then begin
               for (i=0;i<arrcnt;i=i+1) begin
-                instock = STCompFindSerialNrQty(INr.Code,variety,batcha[i],RepSpec.AccStr,posa[i],serialnr);
+                instock = STCompFindSerialNrQtyDate(INr.Code,variety,batcha[i],RepSpec.AccStr,posa[i],serialnr,dat1);// Edit ************************** Friday, 9 September 2016 15:32:18
                 diff = counteda[i] - instock;
                 PrintSTCompOneItem(RepSpec,INr,varf,variety,batcha[i],dat1,diff,counteda[i],instock,instock2,totinprice,brand);
               end;
             end else begin
-              instock = STCompFindSerialNrQty(INr.Code,variety,"",RepSpec.AccStr,RepSpec.LastAcc,serialnr);
+              instock = STCompFindSerialNrQtyDate(INr.Code,variety,"",RepSpec.AccStr,RepSpec.LastAcc,serialnr,dat1);// Edit ************************** Friday, 9 September 2016 15:32:15
               PrintSTCompOneItem(RepSpec,INr,varf,variety,"",dat1,diff,units,instock,instock2,totinprice,brand);// Edit ************************** Tuesday, 23 August 2016 15:46:06
             end;          
         end;
