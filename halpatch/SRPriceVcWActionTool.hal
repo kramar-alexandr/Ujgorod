@@ -68,7 +68,8 @@ LFindPurchaseInvoiceNrForSerialNr:;
 end;
 
 //Edit***************************Sasha2,15:24 08.07.2016 {
-procedure FindLastCostPriceForSRPrice(string artCode,string serial,string location,var val lastcostprice,var string cur)
+global
+procedure FindLastCostPriceForArtCode(string artCode,string serial,string location,var val lastcostprice,var string cur)
 begin
   record ItemHistVc IHr;
   record PUVc PUr;
@@ -79,7 +80,7 @@ begin
     lastcostprice = BlankVal;
     cur = "";
     /*if (blank(location)) then begin
-      goto LFindLastCostPriceForSRPrice;
+      goto LFindLastCostPriceForArtCode;
     end;*/
     
     if (NonBlank(serial)) then begin
@@ -97,8 +98,8 @@ begin
     RESETLOOP(IHr);
     while (LoopBackKey(keyname,IHr,3,TrHs)) begin
       testf = true;
-      if (NonBlank(serial) and (IHr.FileName!="PUVc" or IHr.ArtCode!=artCode or IHr.SerialNr!= serial)) then begin TrHs = false; testf = false; end;
-      if (Blank(serial) and (IHr.FileName!="PUVc" or IHr.ArtCode!=artCode)) then begin TrHs = false; testf = false; end;
+      if (IHr.FileName!="PUVc" or IHr.ArtCode!=artCode) then begin TrHs = false; testf = false; end;
+      if (NonBlank(serial) and IHr.SerialNr!= serial) then begin TrHs = false; testf = false; end;
       //if (IHr.Location!=location) then begin testf = false; end;
       if (testf) then begin
         lastcostprice = IHr.TotCostPrice/IHr.Qty;
@@ -110,7 +111,7 @@ begin
       end;
     end;
     
-LFindLastCostPriceForSRPrice:;
+LFindLastCostPriceForArtCode:;
     
   return;
 end; //Edit***************************Sasha2,15:24 08.07.2016 }
@@ -208,7 +209,7 @@ begin
   end else begin
     location = SRp.Location;
   end;
-  FindLastCostPriceForSRPrice(INr.Code,serial,location,lastcostprice,lastcostcur);
+  FindLastCostPriceForArtCode(INr.Code,serial,location,lastcostprice,lastcostcur);
   SRrw.LastCostPrice = lastcostprice;
   SRrw.CurncyCode = lastcostcur;
   FindPriceInPlAndUpdDiffs(SRrw,INr.Code,serial,SRp,true);
@@ -524,7 +525,7 @@ begin
   val lastcostprice;
   string 20 lastcostcur;
   
-    FindLastCostPriceForSRPrice(SRrw.ArtCode,SRrw.SerialNr,SRPricer.Location,lastcostprice,lastcostcur);
+    FindLastCostPriceForArtCode(SRrw.ArtCode,SRrw.SerialNr,SRPricer.Location,lastcostprice,lastcostcur);
     SRrw.LastCostPrice = lastcostprice;
     SRrw.CurncyCode = lastcostcur;
     if (blank(SRrw.SerialNr)) then begin
@@ -649,7 +650,7 @@ begin
     SRrw.CurncyCode = "";
     FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,SRrw.SerialNr,SRr,true);
   end else begin
-    FindLastCostPriceForSRPrice(SRrw.ArtCode,SRrw.SerialNr,location,lastcostprice,lastcostcur);
+    FindLastCostPriceForArtCode(SRrw.ArtCode,SRrw.SerialNr,location,lastcostprice,lastcostcur);
     SRrw.LastCostPrice = lastcostprice;
     SRrw.CurncyCode = lastcostcur;
     FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,SRrw.SerialNr,SRr,true);
