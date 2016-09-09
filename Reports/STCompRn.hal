@@ -45,6 +45,11 @@ begin
         if (nonblank(serialnr)) then begin
           if (IHr.SerialNr!=serialnr) then begin testf = false; end;
         end;
+        
+        if(IHr.StockAffectf==0)then begin
+        	testf = false;
+        end;
+        
         if (testf) then begin
           instock = instock + IHr.Qty;
           resserialnr = IHr.SerialNr;
