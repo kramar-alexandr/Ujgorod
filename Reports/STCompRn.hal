@@ -253,8 +253,8 @@ begin
        OutString(460,0,lastcostprice,true);
        //OutString(480,0,lastcostcur,true);
     end;
-    Gray_Divider(0,1);
     EndFormat;
+    Gray_Divider(0,1);
   end;
   return;
 end;
