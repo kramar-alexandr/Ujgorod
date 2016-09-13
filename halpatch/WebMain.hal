@@ -23,7 +23,7 @@ begin
 	compnr = currentcompany;
 	matrowget(Cb,compnr-1,Cbrw);
 	serverip = Cbrw.TCPIP & ":" & PSb.httpPort;
-  WebOutString("<script>location.href = 'http://" & serverip & "/filtering-removing.html'</script>");
+  WebOutString("<script>location.href = 'http://" & serverip & "/SaleStat.html'</script>");
   return;
 end;
 

@@ -1016,7 +1016,7 @@ begin
 
 	compnr = currentcompany;
 	matrowget(Cb,compnr-1,Cbrw);
-	url = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/filtering-removing.html?param=" & MD5String(GetHour(CurrentTime) & ":" & GetMinute(CurrentTime));
+	url = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/SaleStat.html?param=" & MD5String(GetHour(CurrentTime) & ":" & GetMinute(CurrentTime));
   OpenWebBrowser(url);
 
 	return;
