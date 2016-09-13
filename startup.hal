@@ -36,6 +36,7 @@ begin
 	Maintenance("Замінити символ в коді товару(карта товару,карта штрихкоду)",ReplaceCharFromINVClass,ReplaceCharFromINMn,modIN); //Edit***************************Sasha2,9:55 19.07.2016
 	Maintenance("Замінити одну класифікацію на іншу",RenameCertainDIVClass,RenameCertainDIMn,modSL); //Edit***************************Sasha2,11:57 31.08.2016
 	Maintenance("Схлопнути товари в обраних інвентаризаціях",AggregateSameItemsInStockTakeVClass,AggregateSameItemsInStockTakeMn,modIN); //Edit***************************Sasha2,13:59 02.09.2016
+	Maintenance("Перерахувати ціни в інвентаризаціях",RecalcPricesInStockTakeVClass,RecalcPricesInStockTakeMn,modIN); //Edit***************************Sasha2,10:40 13.09.2016
 	
 	SString(50000,"Ціна закупки");
 	SString(50001,"Колір");

@@ -729,3 +729,48 @@ LAggregateSameItemsInStockTakeMn:;
 
 return;
 end; //Edit***************************Sasha2,13:51 02.09.2016 }
+
+global //Edit***************************Sasha2,10:11 13.09.2016 {
+updating procedure RecalcPricesInStockTakeMn(record RcVc RepSpec)
+begin
+  record StockTakeVc STr;
+  row StockTakeVc STrw;
+  record PLVc PLr;
+	date sd,ed;
+	Boolean TrHs,testf,savef;
+	Integer i,rwcnt;
+		
+    sd = RepSpec.sStartDate;
+    ed = RepSpec.sEndDate;
+     
+    STr.TransDate = sd;
+    TrHs = true;
+    While(LoopKey("TransDate",STr,1,TrHs)) begin
+      testf = true;
+      if (NonBlankDate(sd) and STr.TransDate < sd) then begin testf = false; end;
+      if (NonBlankDate(ed) and STr.TransDate > ed) then begin testf = false; TrHs = false; end;
+      //if (STr.OKFlag!=1) then begin testf = false; end;
+      if (testf) then begin
+        savef = false;
+        rwcnt = MatRowCnt(STr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(STr,i,STrw);
+          if (NonBlank(STrw.ArtCode) and NonBlank(STrw.SerialNr)) then begin
+            PLr.SerialNr = STrw.SerialNr;
+            PLr.PLCode = "RRP";
+            PLr.ArtCode = STrw.ArtCode;
+            if (ReadFirstKey("SerialNr",PLr,3,true) and (STrw.Price!=PLr.ExVatPrice)) then begin
+              STrw.Price = PLr.ExVatPrice;
+              MatRowPut(STr,i,STrw);
+              savef = true;
+            end;
+          end;
+        end;
+        if (savef) then begin
+          RECORDSTORE(STr,true);
+        end;
+      end;   
+    end;
+
+return;
+end; //Edit***************************Sasha2,10:11 13.09.2016 }

@@ -411,3 +411,16 @@ window AggregateSameItemsInStockTakeVClass:1 //Edit***************************Sa
   EditField(h,v+=20,50,"Склад",Normal,f2,false,LocationSClass);
   EndWindow;
 end;
+
+window RecalcPricesInStockTakeVClass:1 //Edit***************************Sasha2,13:54 02.09.2016
+ wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+ begin
+  real h,h1,h2,t,v,vs;
+	 
+  vs = 20; h=150; h1=100; h2=220;
+  WindowBegin("Перерахувати ціни в інвентаризаціях",RecalcPricesInStockTakeVClass,CGMnt,RcType);
+  SetWRect(20,120,460,220);
+  PeriodField(h,v=6,"Період");
+  //CheckBox(h,v+=vs,0,"Ціни",flags[1]); v = v + 16;
+  EndWindow;
+end;
