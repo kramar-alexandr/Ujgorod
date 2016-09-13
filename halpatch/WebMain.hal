@@ -1,6 +1,6 @@
 SetLangMode(LangUkrainian,"UKR",0);
 
-global
+webpublic global
 procedure WebMainMenu()
 begin
   if (WebLoginStatus==3) then begin
@@ -9,7 +9,7 @@ begin
   return;
 end;
 
-global
+webpublic global
 procedure WebMain()
 begin
   string 60 serverip;
@@ -27,13 +27,13 @@ begin
   return;
 end;
 
-global
+webpublic global
 procedure WebUnknownLogin()
 begin
   return;
 end;
 
-global
+webpublic global
 procedure ToolWebNotLoggedinMess()
 begin
   return;
