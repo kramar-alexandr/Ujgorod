@@ -5,6 +5,7 @@ external procedure PUVc_PasteTransDate(var record PUVc,var Boolean,var Boolean,v
 external function Integer InString2(string,string);
 external function string 255 StrReplace(string,string,string);
 external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);
+external function val STCompFindSerialNrQtyDate(string,string,string,string,string,var string,date); //Edit***************************Sasha2,11:52 13.09.2016
 
 global
 procedure CalcEANCHS(var string str)
@@ -761,6 +762,50 @@ begin
             PLr.ArtCode = STrw.ArtCode;
             if (ReadFirstKey("SerialNr",PLr,3,true) and (STrw.Price!=PLr.ExVatPrice)) then begin
               STrw.Price = PLr.ExVatPrice;
+              MatRowPut(STr,i,STrw);
+              savef = true;
+            end;
+          end;
+        end;
+        if (savef) then begin
+          RECORDSTORE(STr,true);
+        end;
+      end;   
+    end;
+
+return;
+end; //Edit***************************Sasha2,10:11 13.09.2016 }
+
+global //Edit***************************Sasha2,10:11 13.09.2016 {
+updating procedure RecalcMyInStockInStockTakeMn(record RcVc RepSpec)
+begin
+  record StockTakeVc STr;
+  row StockTakeVc STrw;
+	date sd,ed;
+	Boolean TrHs,testf,savef;
+	Integer i,rwcnt;
+	val instock;
+	string 100 variety,position,resserialnr;
+		
+    sd = RepSpec.sStartDate;
+    ed = RepSpec.sEndDate;
+     
+    STr.TransDate = sd;
+    TrHs = true;
+    While(LoopKey("TransDate",STr,1,TrHs)) begin
+      testf = true;
+      if (NonBlankDate(sd) and STr.TransDate < sd) then begin testf = false; end;
+      if (NonBlankDate(ed) and STr.TransDate > ed) then begin testf = false; TrHs = false; end;
+      if (STr.OKFlag!=1) then begin testf = false; end;
+      if (testf) then begin
+        savef = false;
+        rwcnt = MatRowCnt(STr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(STr,i,STrw);
+          if (NonBlank(STrw.ArtCode) and NonBlank(STrw.SerialNr)) then begin
+            instock = STCompFindSerialNrQtyDate(STrw.ArtCode,variety,STrw.SerialNr,STr.Location,position,resserialnr,STr.TransDate);
+            if (STrw.MyInStock!=instock) then begin
+              STrw.MyInStock = instock;
               MatRowPut(STr,i,STrw);
               savef = true;
             end;
