@@ -12,7 +12,6 @@ external procedure PasteFromSysList(Integer,Integer);// Edit *******************
 external function string 255 StringFromSysList(Integer,Integer);// Edit ************************** Tuesday, 21 June 2016 16:30:17
 
 
-
 procedure ExtractSemicolStr(string ostr,var Integer pos,var string rstr)
 begin
   Integer i,l;
@@ -1004,9 +1003,9 @@ begin
 end;
 
 global
-function Boolean MyBIWClassOnOpenWindow(Integer wn)
+procedure MyBIRun()
 begin
-  string 255 subset;
+  string 255 url;
   integer compnr;
   record ProgramStatusBlock PSb;
 	record CompaniesBlock Cb;
@@ -1017,9 +1016,8 @@ begin
 
 	compnr = currentcompany;
 	matrowget(Cb,compnr-1,Cbrw);
-	subset = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/web/examples/filtering-removing.html";
-  logtext(0,subset);
-  SetWindowSubset(wn,subset);
-  MyBIWClassOnOpenWindow = false;
-  return;
+	url = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/filtering-removing.html?param=" & MD5String(GetHour(CurrentTime) & ":" & GetMinute(CurrentTime));
+  OpenWebBrowser(url);
+
+	return;
 end;

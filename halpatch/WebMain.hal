@@ -1,0 +1,40 @@
+SetLangMode(LangUkrainian,"UKR",0);
+
+global
+procedure WebMainMenu()
+begin
+  if (WebLoginStatus==3) then begin
+    WebOutString(MD5String(GetHour(CurrentTime) & ":" & GetMinute(CurrentTime)));
+  end;
+  return;
+end;
+
+global
+procedure WebMain()
+begin
+  string 60 serverip;
+	record ProgramStatusBlock PSb;
+	integer compnr;
+	record CompaniesBlock Cb;
+	row CompaniesBlock Cbrw;
+	
+	blockload(PSb);
+	blockload(Cb);
+	compnr = currentcompany;
+	matrowget(Cb,compnr-1,Cbrw);
+	serverip = Cbrw.TCPIP & ":" & PSb.httpPort;
+  WebOutString("<script>location.href = 'http://" & serverip & "/filtering-removing.html'</script>");
+  return;
+end;
+
+global
+procedure WebUnknownLogin()
+begin
+  return;
+end;
+
+global
+procedure ToolWebNotLoggedinMess()
+begin
+  return;
+end;

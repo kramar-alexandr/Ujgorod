@@ -437,3 +437,16 @@ window RecalcMyInStockInStockTakeVClass:1 //Edit***************************Sasha
   //CheckBox(h,v+=vs,0,"Ціни",flags[1]); v = v + 16;
   EndWindow;
 end;
+
+window MyBIRClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer") 
+begin
+  real h,v,vs;
+  
+  WindowBegin("Статистика продажів",MyBIRClass,CGother,-);  
+  SetWRect(20,80,400,250);
+  UseView(RcVc);
+  HalPushButton(h=50,20,h+110,40,"MyBIRun","Run");
+  
+  EndWindow;
+end;

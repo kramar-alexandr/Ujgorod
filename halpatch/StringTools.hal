@@ -1,3 +1,5 @@
+external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);
+
 //replace all "findWord"s in "Source" to "newWord"
 global
 function string 255 ReplaceAllSubStringInString(string findWord, string newWord, string Source )		//Edit----------------------Dima  02.03.2015
@@ -147,4 +149,44 @@ begin
 		parts[parts.length] = shortPart;
 	end;
   
+end;
+
+global
+function string 255 ChangeCaseStr(string source, string format) //Edit-------------------Vitalii 11:02 13.09.2016
+begin
+	string 255 res;
+  integer i;
+  
+  switch (format) begin
+    case "AA":
+      res = UpperCase(source);
+    case "aa":
+      res = LowerCase(source);
+    case "Aa":
+      res = UpperCase(left(source,1)) & LowerCase(right(source,(len(source) - 1)));
+    case "Aa Aa":
+      for(i=0;i<=len(source);i=i+1) begin
+        if (i==0) or
+           (Mid(source,i-1,1) == " ") or (Mid(source,i-1,1) == ",") or
+           (Mid(source,i-1,1) == "_") or (Mid(source,i-1,1) == ".") or
+           (Mid(source,i-1,1) == ";") or (Mid(source,i-1,1) == ":") or
+           (Mid(source,i-1,1) == "(") or (Mid(source,i-1,1) == ")") or
+           (Mid(source,i-1,1) == "[") or (Mid(source,i-1,1) == "]") or
+           (Mid(source,i-1,1) == "{") or (Mid(source,i-1,1) == "}") or
+           (Mid(source,i-1,1) == "/") or (Mid(source,i-1,1) == "\\") or
+           (Mid(source,i-1,1) == "'") or (Mid(source,i-1,1) == "\"") or
+           (Mid(source,i-1,1) == "-") or (Mid(source,i-1,1) == "+") or
+           (Mid(source,i-1,1) == "=") or (Mid(source,i-1,1) == "?") or
+           (Mid(source,i-1,1) == "&") or (Mid(source,i-1,1) == "!") or
+           (Mid(source,i-1,1) == "@") or (Mid(source,i-1,1) == "#") or
+           (Mid(source,i-1,1) == "$") or (Mid(source,i-1,1) == "%") or
+           (Mid(source,i-1,1) == "^") or (Mid(source,i-1,1) == "*") then begin
+          res = res & UpperCase(Mid(source,i,1));
+        end else begin
+          res = res & LowerCase(Mid(source,i,1));
+        end;
+      end;
+	end;
+	ChangeCaseStr = res;
+return;
 end;
