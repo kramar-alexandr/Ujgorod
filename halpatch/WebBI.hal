@@ -1,90 +1,8 @@
 external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);
 external function roundmode SetRoundModeD(Integer);
 external function Boolean LoggedInTest();
-external function string 255 ChangeCaseStr(string,string);
+external function string 255 ChangeCaseStr(string,integer);
 
-
-webpublic 
-global procedure WebSalesBI()
-begin
-	record INVc INr;
-	record ItemHistVc IHr;
-	record DIVc Dir;
-	boolean TrHs;
-	vector string 100 vClass,vName;
-	string 100 type,brand,tstr;
-	integer pos;
-	vector val vCodeDateQty;
-	array string 50 vTags;
-	longint i;
-	string 40 scode,sdate;
-	integer counter;
-	
-	
-	WebOutString("Code,Qty,Year" & chr(13) & chr(10));
-	
-  resetloop(DIr);
-	logtext(0,"LOOP DIR");
-	while(loopmain(DIr,1,true))begin
-		vClass[DIr.Code] = DIr.CType;
-		vName[DIr.Code] = DIr.Name;
-	end;
-	resetloop(INr);
-	logtext(0,"LOOP INR");
-	while(loopmain(INr,1,true))begin
-		type = "UNKNOWN";
-		brand = "UNKNOWN";
-		
-		tstr = "";
-		pos = 0;
-		ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
-		while(nonblank(tstr))begin
-			if(nonblank(tstr))then begin
-				if(vClass[tstr]=="TYPE")then begin
-					type = vName[tstr];
-				end;
-				if(vClass[tstr]=="BRAND")then begin
-					brand = vName[tstr];
-				end;
-			end;
-			ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
-		end;
-		IHr.FileName = "IVVc";
-		IHr.ArtCode = INr.Code;
-		TrHs = true;
-		while(loopkey("FNArtCode",IHr,2,TrHs))begin
-			if(IHr.FileName!="IVVc")then begin TrHs = false;	end;
-			if(IHr.ArtCode!=INr.Code)then begin TrHs = false;	end;
-			
-			if(TrHs)then begin
-			
-				vCodeDateQty[INr.Code & ":" & IHr.TransDate] = vCodeDateQty[INr.Code & ":" & IHr.TransDate] - IHr.Qty;
-			end;
-		end;
-		resetloop(IHr);
-	end;
-	
-	logtext(0,"FINISH LOOP");
-	
-	GetVectorTags(vCodeDateQty,vTags);
-	counter = 0;
-	for(i=0;i<vTags.length;i=i+1)begin
-		scode = "";
-		sdate = "";
-		scode = firstinrange(vTags[i],40);
-		sdate = lastinrange(vTags[i],40);
-		if(vCodeDateQty[vTags[i]]>0)then begin
-			counter = counter + 1;
-			WebOutString(scode & "," & round(vCodeDateQty[vTags[i]],SetRoundModeD(0)) & "," & sdate & chr(13) & chr(10));
-			logtext(0,scode & "," & vCodeDateQty[vTags[i]] & "," & sdate);
-			if(counter==100)then begin
-				i=vTags.length;
-			end;
-		end;
-	end;
-
-return;
-end;
 
 webpublic
 global procedure WebSalesBILogIn()
@@ -123,7 +41,7 @@ begin
 end;
 
 webpublic
-global procedure WebSalesBI1()
+global procedure WebSalesBI()
 begin
 	record DIVc DIr;
   record IVVc IVr;
@@ -190,32 +108,34 @@ begin
         mtrw = matrowcnt(IVr);
         for (i=0;i<mtrw;i=i+1) begin
           matrowget(IVr,i,IVrw);
-          if (IVrw.stp==kInvoiceRowTypeNormal) then begin
-            INr.Code = IVrw.ArtCode;
-            readfirstmain(INr,1,true);
-            type = "UNKNOWN";
-            brand = "UNKNOWN";
-            tstr = "";
-            pos = 0;
-            ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
-            while(nonblank(tstr))begin
-              if(nonblank(tstr))then begin
-                if(vClass[tstr]=="TYPE")then begin
-                  type = vName[tstr];
-                end;
-                if(vClass[tstr]=="BRAND")then begin
-                  brand = vName[tstr];
-                  if !vBarndInArr[brand] then begin
-                    aBrand[b] = brand;
-                    vBarndInArr[brand] = true;
-                    b = b + 1;
+          if (IVrw.Sum>=0) then begin
+            if (IVrw.stp==kInvoiceRowTypeNormal) then begin
+              INr.Code = IVrw.ArtCode;
+              readfirstmain(INr,1,true);
+              type = "UNKNOWN";
+              brand = "UNKNOWN";
+              tstr = "";
+              pos = 0;
+              ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
+              while(nonblank(tstr))begin
+                if(nonblank(tstr))then begin
+                  if(vClass[tstr]=="TYPE")then begin
+                    type = vName[tstr];
+                  end;
+                  if(vClass[tstr]=="BRAND")then begin
+                    brand = vName[tstr];
+                    if !vBarndInArr[brand] then begin
+                      aBrand[b] = brand;
+                      vBarndInArr[brand] = true;
+                      b = b + 1;
+                    end;
                   end;
                 end;
+                ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
               end;
-              ExtractObjWithSeparator(",",INr.DispGroups,true,pos,tstr);
+              vSum[brand & ";" & type] = vSum[brand & ";" & type] + IVrw.Sum;
+              vBrandSum[brand] = vBrandSum[brand] + IVrw.Sum;
             end;
-            vSum[brand & ";" & type] = vSum[brand & ";" & type] + IVrw.Sum;
-            vBrandSum[brand] = vBrandSum[brand] + IVrw.Sum;
           end;
         end;
       end;
@@ -248,10 +168,9 @@ begin
       ExtractObjWithSeparator(";",aTags[i],true,pos,brand);
       if vBarndInArr[brand] then begin
         ExtractObjWithSeparator(";",aTags[i],true,pos,type);
-        WebOutString(ChangeCaseStr(brand,"Aa Aa") & tab & ChangeCaseStr(type,"Aa Aa") & tab & vSum[aTags[i]] & nl);
+        WebOutString(ChangeCaseStr(brand,4) & tab & ChangeCaseStr(type,4) & tab & vSum[aTags[i]] & nl);
       end;
     end;
   end;
-  //WebOutString(aBrand[i] & tab & vBrandSum[aBrand[i]] & nl);
   return;
 end;
