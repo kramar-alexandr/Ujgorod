@@ -74,14 +74,16 @@ BEGIN
   record ItemHistVc IHr;
   record StockTakeVc StockTaker;
   row StockTakeVc StockTakerw;
-  Boolean TrHs,testf;
-  Integer rwcnt,i,keys;
+  Boolean TrHs,testf,foundf;// Edit ************************** Thursday, 15 September 2016 12:18:48
+  Integer rwcnt,i,keys,j;// Edit ************************** Thursday, 15 September 2016 12:17:57
   val t;
   Integer slen;
   record MainStockBlock MainStockRec;
   string 255 keystr;
   Date td;
-		
+	vector val missserials;
+	array string 100 amissserials;
+	
   lastdatep = td;
   unitprice = blankval;
   instock = blankval;
@@ -154,6 +156,7 @@ BEGIN
                   instock = instock + StockTakerw.InStock;
                 end;
                 if (nonblank(StockTakerw.SerialNr)) then begin
+                	missserials[StockTakerw.SerialNr] = 0;
                   batcha[arrcnt] = StockTakerw.SerialNr;
                   counteda[arrcnt] = StockTakerw.Qty;
                   posa[arrcnt] = StockTakerw.Position;
@@ -165,10 +168,35 @@ BEGIN
               end;
             end;
           end;
+        end else begin// Edit ************************** Thursday, 15 September 2016 12:12:43
+        	if(IHr.StockAffectf>0)then begin// Edit ************************** Thursday, 15 September 2016 12:12:44
+        		missserials[IHr.SerialNr] = missserials[IHr.SerialNr] + IHr.Qty;
+        	end;
         end;
       end;   
     end;  
 L99:;
+	GetVectorTags(missserials,amissserials);
+	
+	// Edit Start ---------------------------------------------- Edit Start
+	//Thursday, 15 September 2016 12:18:04
+	For(i=0;i<amissserials.length;i=i+1) begin
+	  if(missserials[amissserials[i]]>0)then begin
+	  	foundf = true;
+	  	For(j=0;j<arrcnt;j=j+1) begin
+	  		if(amissserials[j]==batcha[j])then begin
+	  			foundf = false;
+	  		end;
+			end; 
+			if(foundf)then begin
+				batcha[arrcnt] = amissserials[j];
+				arrcnt = arrcnt +1;
+			end;
+	  end;
+	end; 
+	// Edit End ---------------------------------------------- Edit End
+	
+
   unitsp = t;
   RETURN;
 END;
