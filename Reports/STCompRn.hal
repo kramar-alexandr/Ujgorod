@@ -99,6 +99,26 @@ BEGIN
       keys = 2;
     end;
     IHr.ArtCode = item;
+    //IHr.TransDate = "";
+    TrHs = true;
+    // Edit Start ---------------------------------------------- Edit Start
+	//Thursday, 15 September 2016 12:33:36
+    while (LoopKey(keystr,IHr,keys,TrHs)) begin
+    	testf = true;
+    	if (IHr.ArtCode<>item) then begin TrHs = false; testf = false; end;// Edit ************************** Thursday, 15 September 2016 12:33:32
+    	if (IHr.TransDate>fromdate) then begin
+        TrHs = false;
+        testf = false;
+      end;
+    	
+			if(IHr.StockAffectf>0 and testf)then begin// Edit ************************** Thursday, 15 September 2016 12:12:44
+				missserials[IHr.SerialNr] = missserials[IHr.SerialNr] + IHr.Qty;
+			end;
+		end;
+		resetloop(IHr);
+    
+	// Edit End ---------------------------------------------- Edit End
+		IHr.ArtCode = item;
     IHr.TransDate = CurrentDate;
     TrHs = true;
     while (LoopBackKey(keystr,IHr,keys,TrHs)) begin
@@ -168,15 +188,12 @@ BEGIN
               end;
             end;
           end;
-        end else begin// Edit ************************** Thursday, 15 September 2016 12:12:43
-        	if(IHr.StockAffectf>0)then begin// Edit ************************** Thursday, 15 September 2016 12:12:44
-        		missserials[IHr.SerialNr] = missserials[IHr.SerialNr] + IHr.Qty;
-        	end;
         end;
       end;   
     end;  
 L99:;
 	GetVectorTags(missserials,amissserials);
+	
 	
 	// Edit Start ---------------------------------------------- Edit Start
 	//Thursday, 15 September 2016 12:18:04
@@ -184,7 +201,7 @@ L99:;
 	  if(missserials[amissserials[i]]>0)then begin
 	  	foundf = true;
 	  	For(j=0;j<arrcnt;j=j+1) begin
-	  		if(amissserials[j]==batcha[j])then begin
+	  		if(amissserials[i]==batcha[j])then begin
 	  			foundf = false;
 	  		end;
 			end; 
@@ -196,7 +213,7 @@ L99:;
 	end; 
 	// Edit End ---------------------------------------------- Edit End
 	
-
+	messagebox(0,arrcnt);
   unitsp = t;
   RETURN;
 END;
