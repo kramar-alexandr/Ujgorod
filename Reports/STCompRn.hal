@@ -106,8 +106,8 @@ BEGIN
     while (LoopKey(keystr,IHr,keys,TrHs)) begin
     	testf = true;
     	if (IHr.ArtCode<>item) then begin TrHs = false; testf = false; end;// Edit ************************** Thursday, 15 September 2016 12:33:32
-    	if(RepSpec.AccStr!=RepSpec.RegDate)then begin testf = false; end;
-    	if (IHr.TransDate>fromdate) then begin
+    	if(RepSpec.AccStr!=IHr.Location)then begin testf = false; end;
+    	if (IHr.TransDate>RepSpec.RegDate) then begin
         TrHs = false;
         testf = false;
       end;
