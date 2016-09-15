@@ -177,7 +177,7 @@ BEGIN
                   instock = instock + StockTakerw.InStock;
                 end;
                 if (nonblank(StockTakerw.SerialNr)) then begin
-                	missserials[StockTakerw.SerialNr] = 0;
+                	missserials[StockTakerw.SerialNr] = missserials[StockTakerw.SerialNr] + 0;
                   batcha[arrcnt] = StockTakerw.SerialNr;
                   counteda[arrcnt] = StockTakerw.Qty;
                   posa[arrcnt] = StockTakerw.Position;
@@ -194,14 +194,16 @@ BEGIN
     end;  
 L99:;
 	GetVectorTags(missserials,amissserials);
-	//messagebox(0,arrcnt);
-	//messagebox(0,amissserials.length);
 	
 	// Edit Start ---------------------------------------------- Edit Start
 	//Thursday, 15 September 2016 12:18:04
 	For(i=0;i<amissserials.length;i=i+1) begin
-	  //if(missserials[amissserials[i]]>0)then begin
-	  if(true)then begin
+		/*startformat(15);
+			outstring(0,0,amissserials[i],false);
+			outstring(100,0,missserials[amissserials[i]],false);
+		endformat;*/
+	  if(missserials[amissserials[i]]>0)then begin
+	  //if(true)then begin
 	  	foundf = true;
 	  	For(j=0;j<arrcnt;j=j+1) begin
 	  		if(amissserials[i]==batcha[j])then begin
@@ -209,13 +211,13 @@ L99:;
 	  		end;
 			end; 
 			if(foundf)then begin
-				batcha[arrcnt] = amissserials[j];
+				batcha[arrcnt] = amissserials[i];
+				counteda[arrcnt] = 0;
 				arrcnt = arrcnt +1;
 			end;
 	  end;
 	end; 
 	// Edit End ---------------------------------------------- Edit End
-	//messagebox(0,arrcnt);
 	
   unitsp = t;
   RETURN;
@@ -230,7 +232,8 @@ begin
   Boolean testf;
   val lastcostprice; //Edit***************************Sasha2,17:18 09.09.2016
   string 20 lastcostcur; //Edit***************************Sasha2,17:29 09.09.2016
-
+	
+	
   if (diff!=0) or (units!=0) or (instock!=0) then begin
     testf = true;
   end;
