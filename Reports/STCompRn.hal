@@ -194,12 +194,14 @@ BEGIN
     end;  
 L99:;
 	GetVectorTags(missserials,amissserials);
-	
+	//messagebox(0,arrcnt);
+	//messagebox(0,amissserials.length);
 	
 	// Edit Start ---------------------------------------------- Edit Start
 	//Thursday, 15 September 2016 12:18:04
 	For(i=0;i<amissserials.length;i=i+1) begin
-	  if(missserials[amissserials[i]]>0)then begin
+	  //if(missserials[amissserials[i]]>0)then begin
+	  if(true)then begin
 	  	foundf = true;
 	  	For(j=0;j<arrcnt;j=j+1) begin
 	  		if(amissserials[i]==batcha[j])then begin
@@ -213,6 +215,7 @@ L99:;
 	  end;
 	end; 
 	// Edit End ---------------------------------------------- Edit End
+	//messagebox(0,arrcnt);
 	
   unitsp = t;
   RETURN;
