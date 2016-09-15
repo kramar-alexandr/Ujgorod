@@ -213,7 +213,6 @@ L99:;
 	end; 
 	// Edit End ---------------------------------------------- Edit End
 	
-	messagebox(0,arrcnt);
   unitsp = t;
   RETURN;
 END;
