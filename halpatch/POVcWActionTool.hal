@@ -68,6 +68,7 @@ external procedure PUSumUp(var record PUVc);
 external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
 external procedure POSumup(var record POVc );
 external function Boolean VIVc_PasteVECode(var record VIVc,Integer,Boolean,Boolean,var string);
+external updating procedure CheckOrCreateBarCode(record PUVc); //Edit***************************Sasha2,16:06 15.09.2016
 
 procedure CreateNewPUFromPO(record PUVc PUp,record POVc POp,LongInt ponr)
 BEGIN
@@ -644,6 +645,7 @@ BEGIN
       nrwcnt = 0;
       PUSumUp(PUp);
       if (RecordStore(PUp,false)) then begin end;
+      CheckOrCreateBarCode(PUp); //Edit***************************Sasha2,16:07 15.09.2016
       CreateRecordLink(PUp,CurrentCompany,POp,CurrentCompany);
       CreateRecordLink(POp,CurrentCompany,PUp,CurrentCompany);
       CreateNewPUFromPO(PUp,POp,ponr);
@@ -660,6 +662,7 @@ BEGIN
             nrwcnt = 0;
             PUSumUp(PUp);
             if (RecordStore(PUp,false)) then begin end;
+            CheckOrCreateBarCode(PUp); //Edit***************************Sasha2,16:07 15.09.2016
             CreateRecordLink(PUp,CurrentCompany,POp,CurrentCompany);  
             CreateRecordLink(POp,CurrentCompany,PUp,CurrentCompany);  
             CreateNewPUFromPO(PUp,POp,ponr);

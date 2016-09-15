@@ -476,6 +476,7 @@ begin
 end;
 
 //Edit***************************Sasha2,13:43 23.06.2016 {
+global
 updating procedure CheckOrCreateBarCode(record PUVc PUr)
 begin
   record BarcodeVc BarCoder,BarCodeForLoopr;
