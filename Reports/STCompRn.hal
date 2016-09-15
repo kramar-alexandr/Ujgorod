@@ -22,7 +22,7 @@ external procedure ExtractObj(string,var Integer,var string);// Edit ***********
 external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);// Edit ************************** Tuesday, 23 August 2016 16:35:59
 // Edit Start ---------------------------------------------- Edit Start
 	//Friday, 9 September 2016 15:35:23
-external procedure FindLastCostPriceForArtCode(string,string,string,var val,var string); //Edit***************************Sasha2,17:23 09.09.2016
+external procedure FindLastCostPriceForArtCode(record SRPriceVc,row SRPriceVc,string,string,string,var val,var string); //Edit***************************Sasha2,17:23 09.09.2016
 	
 global
 function val STCompFindSerialNrQtyDate(string artcode,string variety,string serialnr,string location,string position,var string resserialnr,date dat1)
@@ -227,6 +227,8 @@ procedure PrintSTCompOneItem(record RcVc RepSpec,record INVc INr,Boolean varf,st
 begin
   record BarCodeVc BarCoder;
   record PLVc PLr;
+  record SRPriceVc SRr;
+  row SRPriceVc SRrw;
   string 200 dblstr;  
   record INVc locINr;
   Boolean testf;
@@ -300,7 +302,7 @@ begin
         OutVal(420,0,diff,M4UVal,true); //Edit***************************Sasha2,16:58 09.09.2016 1 -> 420
     end;
     if (RepSpec.flags[5]!=0) then begin //Edit***************************Sasha2,17:14 09.09.2016
-       FindLastCostPriceForArtCode(INr.Code,serialnr,RepSpec.AccStr,lastcostprice,lastcostcur);
+       FindLastCostPriceForArtCode(SRr,SRrw,INr.Code,serialnr,RepSpec.AccStr,lastcostprice,lastcostcur);
        OutString(460,0,lastcostprice,true);
        //OutString(480,0,lastcostcur,true);
     end;

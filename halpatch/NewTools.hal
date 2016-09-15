@@ -6,6 +6,10 @@ external function Integer InString2(string,string);
 external function string 255 StrReplace(string,string,string);
 external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);
 external function val STCompFindSerialNrQtyDate(string,string,string,string,string,var string,date); //Edit***************************Sasha2,11:52 13.09.2016
+external function Boolean SRPriceVc_PasteArtCode(var record SRPriceVc,Integer,Boolean,var string); //Edit***************************Sasha2,14:44 15.09.2016
+external procedure SRPriceVc_PasteSerialNr(var record SRPriceVc,Integer); //Edit***************************Sasha2,14:47 15.09.2016
+external procedure SRPriceSumUp(var record SRPriceVc); //Edit***************************Sasha2,14:52 15.09.2016
+external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
 
 global
 procedure CalcEANCHS(var string str)
@@ -819,3 +823,68 @@ begin
 
 return;
 end; //Edit***************************Sasha2,10:11 13.09.2016 }
+
+global //Edit***************************Sasha2,14:02 15.09.2016 {
+updating function LongInt RecordAction_raPastePUInSRPrice(var record PUVc PUr,var record SRPriceVc SRPricer)
+BEGIN
+  row PUVc PUrw;
+  row SRPriceVc SRPricerw;
+  LongInt res,newnr;
+  Integer i,rwcnt,nrwcnt;
+  Boolean testf;
+  string 255 inwarn;
+  val fr,to1,to2,br1,br2;
+  string 5 crncy;
+       
+  RecordNew(SRPricer);
+  SRPricer.PUNr = PUr.SerNr;
+  if (SRPricer.SerNr==-1) then begin  
+    SRPricer.SerNr = NextSerNr("SRPriceVc",SRPricer.TransDate,newnr,false,"");
+    if (SRPricer.SerNr==-1) then begin 
+      res = 1747;
+      goto LRecordAction_raPastePUInSRPrice; 
+    end;
+  end;
+  crncy = "UAH";
+  GetFullCurncyRate(crncy,CurrentDate,fr,to1,to2,br1,br2);
+  if (fr!=0) then begin
+    SRPricer.HeaderRate = fr;
+  end;
+  SRPricer.Location = PUr.Location;
+  SRPricer.CalcPriceFromCostf = 1;
+  rwcnt = MatRowCnt(PUr);
+  nrwcnt = 0;
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(PUr,i,PUrw);
+    testf = true;
+    if (Blank(PUrw.ArtCode)) then begin testf = false; end;
+    if (testf) then begin
+      ClearRow(SRPricer,SRPricerw,1);
+      SRPricerw.ArtCode = PUrw.ArtCode;
+      MatRowPut(SRPricer,nrwcnt,SRPricerw);
+      SRPriceVc_PasteArtCode(SRPricer,nrwcnt,true,inwarn);
+      MatRowGet(SRPricer,nrwcnt,SRPricerw);
+      SRPricerw.Qty = PUrw.Quant;
+      SRPricerw.CurncyCode = PUr.CurncyCode;
+      SRPricerw.LastCostPrice = PUrw.CostPrice;
+      SRPricerw.SerialNr = PUrw.SerialNr;
+      MatRowPut(SRPricer,nrwcnt,SRPricerw);
+      SRPriceVc_PasteSerialNr(SRPricer,nrwcnt);
+      MatRowGet(SRPricer,nrwcnt,SRPricerw);
+      nrwcnt = MatRowCnt(SRPricer);
+    end;
+  end;
+
+  if ((MatRowCnt(SRPricer)>0) and (SRPricer.SerNr!=-1)) then begin
+    SRPriceSumUp(SRPricer);
+    if (RecordStore(SRPricer,false)) then begin 
+      CreateRecordLink(SRPricer,CurrentCompany,PUr,CurrentCompany);  
+      CreateRecordLink(PUr,CurrentCompany,SRPricer,CurrentCompany);  
+    end;
+    res = 0;
+  end;
+LRecordAction_raPastePUInSRPrice:;  
+  RecordAction_raPastePUInSRPrice = res;
+  RETURN;
+END; //Edit***************************Sasha2,14:02 15.09.2016 }
+

@@ -1680,55 +1680,55 @@ begin
       SpecialMenu("Повернення товарів",'B',7,"RetPUFromPUDsm");
     end;
   end else begin
-  if (IsEnterprise) then begin
-  SpecialMenu("Пошук товарів",'f',1,"ItemSearchDsm");
-    SpecialMenu("Статус надходження на склад",'r',4,"PUStatusDsm"); 
-  end;
-  if (HasSerialNumbers) then begin
-  SpecialMenu("Створити серійні номери",' ',2,"GenSerialNosPUDsm");
-  end;
-  if (HasModNL) then begin
-  SpecialMenu("Відкрити запис операцій",'t',4,"OpenTRFromPU");
-  end;
-  if (HasTaxMatrix) then begin
-  SpecialMenu("Відкрити матрицю податків",' ',25,"OpenVatMatrixPUDsm"); 
-  end;
-//  SpecialMenu("Надрукувати етикетки",'e',0,"PrintPULabPUDsm");
-  SpecialMenu("Надрукувати етикетки",'',14,"PrintLabelEANDsm");// Edit ************************** Monday, 16 May 2016 11:53:49
-
-  SpecialMenu("Поновити ціни",' ',1,"UpdatePricesPUDsm");
-
-  if (HasModWHM) then begin
-    SpecialMenu("Підтвердити приміщення складу",' ',9,"OKStockMovPUrDsm");  
-  end;
-  if (HasLocalization("HRV")) then begin  
-    SpecialMenu("Розрахунок цін з продажів",' ',8,"SPCHRVPUDsm");  
-  end;
-  if (HasApprovals) then begin
-    SpecialMenu("Запитати затвердження",' ',6,"PUSendforAcceptancePUDsm");  
-    SpecialMenu("Відмінити запит затвердження",' ',2,"CancelApprovalRequestDsm");  
-  end;
-  SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);  
-  if (HasModPL) then begin
-  SpecialMenu("Створити акт/накл. постачальника",'F',3,"VIFromPUDsm");
-  end;
-  if (HasQualityControl) then begin
-  SpecialMenu("Контроль якості",'u',10,"QualConFromPUDsm");
-//  SpecialMenu("Відмітка про виправлення",' ',6,"UpdateMarkPUDsm");
-  end;
-  if (HasAdvancedStock or (HasLocalization("PRT") and HasModIN) or (HasRetGoodsToSupp and HasModIN)) then begin
-  SpecialMenu("Повернення товарів",'B',7,"RetPUFromPUDsm");
-  end;
-  if (HasModRent) then begin
-//  SpecialMenu("Create Stock Movement",' ',5,"StockMovFromPUSpec");
-//  SpecialMenu("Scan",' ',8,"ScanBarCodePUDsm");
-  SpecialMenu("Створити переміщення по складам",' ',8,"INTransFromPUsm");
-  end;
+    if (IsEnterprise) then begin
+      SpecialMenu("Пошук товарів",'f',1,"ItemSearchDsm");
+      SpecialMenu("Статус надходження на склад",'r',4,"PUStatusDsm"); 
+    end;
+    if (HasSerialNumbers) then begin
+      SpecialMenu("Створити серійні номери",' ',2,"GenSerialNosPUDsm");
+    end;
+    if (HasModNL) then begin
+      SpecialMenu("Відкрити запис операцій",'t',4,"OpenTRFromPU");
+    end;
+    if (HasTaxMatrix) then begin
+      SpecialMenu("Відкрити матрицю податків",' ',25,"OpenVatMatrixPUDsm"); 
+    end;
+  //  SpecialMenu("Надрукувати етикетки",'e',0,"PrintPULabPUDsm");
+    SpecialMenu("Надрукувати етикетки",'',14,"PrintLabelEANDsm");// Edit ************************** Monday, 16 May 2016 11:53:49
+    SpecialMenu("Поновити ціни",' ',1,"UpdatePricesPUDsm");
+  
+    if (HasModWHM) then begin
+      SpecialMenu("Підтвердити приміщення складу",' ',9,"OKStockMovPUrDsm");  
+    end;
+    if (HasLocalization("HRV")) then begin  
+      SpecialMenu("Розрахунок цін з продажів",' ',8,"SPCHRVPUDsm");  
+    end;
+    if (HasApprovals) then begin
+      SpecialMenu("Запитати затвердження",' ',6,"PUSendforAcceptancePUDsm");  
+      SpecialMenu("Відмінити запит затвердження",' ',2,"CancelApprovalRequestDsm");  
+    end;
+    SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);  
+    if (HasModPL) then begin
+      SpecialMenu("Створити акт/накл. постачальника",'F',3,"VIFromPUDsm");
+    end;
+    if (HasQualityControl) then begin
+    SpecialMenu("Контроль якості",'u',10,"QualConFromPUDsm");
+  //  SpecialMenu("Відмітка про виправлення",' ',6,"UpdateMarkPUDsm");
+    end;
+    if (HasAdvancedStock or (HasLocalization("PRT") and HasModIN) or (HasRetGoodsToSupp and HasModIN)) then begin
+      SpecialMenu("Повернення товарів",'B',7,"RetPUFromPUDsm");
+    end;
+    if (HasModRent) then begin
+  //  SpecialMenu("Create Stock Movement",' ',5,"StockMovFromPUSpec");
+  //  SpecialMenu("Scan",' ',8,"ScanBarCodePUDsm");
+      SpecialMenu("Створити переміщення по складам",' ',8,"INTransFromPUsm");
+    end;
     SpecialMenu("Додати постачальника",' ',0,"AddSupplierPUDsm");  
     SpecialMenu("Додати товар",' ',0,"AddItemPUDsm");   
-    
+    SpecialMenu("Створити Переоцінку RRP",' ',0,"SRPriceFromPUDsm"); //Edit***************************Sasha2,15:05 15.09.2016
        
   end;
+  
   EndWindow;
 end;
 

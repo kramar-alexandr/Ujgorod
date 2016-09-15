@@ -4,6 +4,39 @@ remote procedure HandlePrintEAN13SRPrice(record SRPriceVc,var array record PUVc,
 external procedure Zebra_Printing(record RcVc);
 external function Boolean PUVcRowEFActiveCheck(string,Integer,Integer,Integer);
 external function Boolean PUVcEFActiveTest(Integer,Integer,record PUVc);
+remote updating function LongInt RecordAction_raPastePUInSRPrice(var record PUVc,var record SRPriceVc);
+
+global //Edit***************************Sasha2,13:15 15.09.2016 {
+updating procedure SRPriceFromPUDsm()
+BEGIN
+  record PUVc PUr;
+  record SRPriceVc SRPricer;
+  LongInt r;
+  Integer wn,nwn;
+  Boolean testf;
+  
+  wn = CurWindow;
+  if (WindowState(wn)==0) then begin //Rs_normal
+    GetWindowRecord(wn,PUr);
+    testf = true;
+    if (testf) then begin
+      r = RecordAction_raPastePUInSRPrice(PUr,SRPricer);
+      switch (r) begin
+        case -1: Beep;
+        case -2: MessageBox(1281,"");
+        case 0:
+          nwn = OpenWindow("SRPriceDClass",1,0,"","",SRPricer);
+          UpdateBrowses("PUVc");
+        otherwise
+          MessageBox(r,"");
+      end;
+    end;         
+  end else begin
+    MessageBox(1356,"");
+  end;
+LSRPriceFromPUDsm:;  
+  return;
+end; //Edit***************************Sasha2,13:16 15.09.2016 }
 
 global //Edit***************************Sasha2,13:29 08.07.2016 {
 procedure PrintEAN13SRPriceDsm()

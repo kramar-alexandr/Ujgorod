@@ -560,7 +560,7 @@ begin
   if (PUr.OKFlag!=0) then begin
     PUMakeStockMovement(PUr,false);
     UpdateVarianceStatusPU(PUr);
-    CheckOrCreateBarCode(PUr); //Edit***************************Sasha2,17:35 23.06.2016
+    //CheckOrCreateBarCode(PUr); //Edit***************************Sasha2,17:35 23.06.2016
   end;
   PUVcRecordSaveAfter = res;
   return;
@@ -622,7 +622,7 @@ begin
     PurUpdateOvst(PUr,PU2r);
   end else begin
     if ((PU2r.OKFlag==0) and (PUr.OKFlag!=0)) then begin
-      CheckOrCreateBarCode(PUr); //Edit***************************Sasha2,17:35 23.06.2016
+      //CheckOrCreateBarCode(PUr); //Edit***************************Sasha2,17:35 23.06.2016
       PurUpdateStock(PUr,false);
       PurUpdateSerialNr(PUr,false,false);//before ItemHist to get consigment stock right
       if (ihf==false) then begin
@@ -1542,6 +1542,9 @@ LPUVcRecordCheck_GenTrans:;
       end;
     end;    
   end;  
+  
+  CheckOrCreateBarCode(PUr); //Edit***************************Sasha2,13:01 15.09.2016
+  
 L99PUVcRecordCheck:;
   if (res!=0) then begin PUr.SerNr = oldnr; end;
   PUVcRecordCheck = res;

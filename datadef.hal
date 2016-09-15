@@ -191,6 +191,7 @@ begin
   RecordField(HeaderRebate,M45Val,0,0); //Edit***************************Sasha2,13:43 14.07.2016
   RecordField(PriceRoundingf,M4Int,0,0); //Edit***************************Sasha2,13:39 03.08.2016
   RecordField(Sign,M4Str,20,0);
+  RecordField(PUNr,M4Long,0,0); //Edit***************************Sasha2,14:13 15.09.2016
   ArrayBegin(Math,-,1);
   ArrayField(ArtCode,M4Code,20,INVc);
   ArrayField(Spec,M4Str,100,0);
