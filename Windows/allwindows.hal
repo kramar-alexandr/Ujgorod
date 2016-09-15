@@ -2797,6 +2797,7 @@ begin
   //EditField(h2,v,82,"Розходж. ціни",Normal,SRVarAcc,false,AccSClass);
   end;
   EditField(h,v+=vs,82,"Склад",Normal,Location,false,LocationSClass);
+  EditField(h3,v,82,"№ Надходження",Normal,PUNr,false,0);
   if (UserCanAction("HideLastCostPrice",false)==false) then begin
     EditField(h+42,v+=vs,40,"Курс ціни (XX:1 Вал.)",Normal,HeaderRate,false,0); //Edit***************************Sasha2,13:52 14.07.2016
   end;
