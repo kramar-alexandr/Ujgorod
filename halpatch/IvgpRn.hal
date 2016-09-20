@@ -996,6 +996,7 @@ begin
               OutVal(5,0,gpperc,M4Val,true);
               OutVal(6,0,gps,M4Val,true);
               EndFormat;
+              Gray_Divider(0,1); //Edit***************************Sasha2,12:40 20.09.2016
               TotSum = iv + TotSum + IVr.FrBase;
               gpsum = gpsum + gps;
           end;
