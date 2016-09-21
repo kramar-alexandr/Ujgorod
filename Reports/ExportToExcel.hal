@@ -27,7 +27,41 @@ begin
 	SetRepCol(11,500);
 	SetRepCol(12,550);
 	SetRepCol(13,600);
-
+	
+	StartFormat(15);
+	OutString(2,0,"Документ №",true);
+	OutString(3,0,SRPr.SerNr,true);
+	EndFormat;
+	StartFormat(15);
+	OutString(2,0,"Дата операції",true);
+	OutString(3,0,SRPr.TransDate,true);
+	EndFormat;
+	StartFormat(15);
+	OutString(2,0,"Причина",true);
+	OutString(3,0,SRPr.Reason,true);
+	EndFormat;
+	StartFormat(15);
+	OutString(2,0,"Склад",true);
+	OutString(3,0,SRPr.Location,true);
+	EndFormat;
+	StartFormat(15);
+	OutString(2,0,"№ Надходження",true);
+	OutString(3,0,SRPr.PUNr,true);
+	EndFormat;
+	if (UserCanAction("HideLastCostPrice",false)==false) then begin
+		StartFormat(15);
+		OutString(2,0,"Курс ціни (XX:1 Вал.)",true);
+		OutString(3,0,SRPr.HeaderRate,true);
+		EndFormat;
+	end;
+	StartFormat(15);
+	OutString(2,0,"Націнка,%",true);
+	OutString(3,0,SRPr.HeaderMarkUp,true);
+	EndFormat;
+	StartFormat(15);
+	OutString(2,0,"Знижка,%",true);
+	OutString(3,0,SRPr.HeaderRebate,true);
+	EndFormat;
 
 	StartFormat(15);
 	OutString(2,0,"№",true);
