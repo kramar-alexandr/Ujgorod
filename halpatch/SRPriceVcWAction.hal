@@ -601,3 +601,24 @@ begin
   return;
 end;
 */
+
+global//Edit----------------------Dima  01.09.2015
+procedure ExportTableToExcelSRPriceDsm()
+begin
+  record SRPriceVc SRPr;
+  record RcVc RepSpec;
+  integer wn;
+  wn = CurWindow;
+  GetWindowRecord(wn,SRPr);
+	RepSpec.Media = mtClipBoard; 
+  RepSpec.repname = "ExportTableToExcelSRPriceRn";
+  RepSpec.flags[0] = wn;
+  RepSpec.long1 = SRPr.SerNr;
+  RunReport(RepSpec,0);  
+  RepSpec.Media = mtExcel; 
+  RepSpec.repname = "ExportTableToExcelSRPriceRn";
+  RepSpec.flags[0] = wn;
+  RepSpec.long1 = SRPr.SerNr;
+  RunReport(RepSpec,0); 
+return;
+end;

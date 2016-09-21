@@ -1,0 +1,412 @@
+SetLangMode(LangUkrainian,"UKR",0);  
+  
+  
+global procedure ExportTableToExcelSRPriceRn(record RcVc RepSpec)	//Edit--------Dima 
+begin
+  record SRPriceVc SRPr;
+  row	SRPriceVc SRPrw;
+  Integer rwcnt,i,wn;
+  
+  SRPr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(SRPr,1,true)) then begin	  
+  rwcnt=MatRowCnt(SRPr);
+ 
+	StartReportJob("ExportToExcel");
+	
+	EndHeader;
+
+	SetRepCol(2,50);
+	SetRepCol(3,100);
+	SetRepCol(4,150);
+	SetRepCol(5,200);
+	SetRepCol(6,250);
+	SetRepCol(7,300);
+	SetRepCol(8,350);
+	SetRepCol(9,400);
+	SetRepCol(10,450);
+	SetRepCol(11,500);
+	SetRepCol(12,550);
+	SetRepCol(13,600);
+
+
+	StartFormat(15);
+	OutString(2,0,"№",true);
+	OutString(2,0,"Товар",true);
+	OutString(3,0,"Кіл-ть",false);
+	OutString(4,0,"Сер.№",false);
+	OutString(5,0,"Опис",false);
+	if (UserCanAction("HideLastCostPrice",false)==false) then begin
+		OutString(6,0,"Ціна закуп.",false);
+		OutString(7,0,"Курс",false);
+		OutString(8,0,"Вал.",false);
+	end;
+	OutString(9,0,"Ціна RRP",false);
+	OutString(10,0,"Стара ціна",false);
+	OutString(12,0,"Нац.%",false);
+	OutString(13,0,"Нова ціна",false);
+	OutString(14,0,"Зниж.%",false);
+	OutString(15,0,"Різн.",false);
+	EndFormat;
+	Black_Divider(0,1);
+
+	for(i=0;i<rwcnt;i=i+1) begin
+		MatRowGet(SRPr,i,SRPrw)
+		StartFormat(15);			
+		OutString(0,0,i+1,false);
+		OutString(2,0,SRPrw.ArtCode,false);
+		OutString(3,0,SRPrw.Qty,false);
+		OutString(4,0,SRPrw.SerialNr,false);
+		OutString(5,0,SRPrw.Spec,false);
+		if (UserCanAction("HideLastCostPrice",false)==false) then begin
+			OutString(6,0,SRPrw.LastCostPrice,false);
+			OutString(7,0,SRPrw.Rate,false);
+			OutString(8,0,SRPrw.CurncyCode,false);
+		end;
+		OutString(9,0,SRPrw.PLPrice,false);
+		OutString(10,0,SRPrw.FIFO,false);
+		OutVal(12,0,SRPrw.MarkUp,M45Val,false);
+		OutVal(13,0,SRPrw.NewFIFO,M45Val,false);
+		OutString(14,0,SRPrw.Rebate,false);
+		OutString(15,0,SRPrw.DiffFIFO,false);
+		
+		EndFormat;	
+	end;		
+	EndJob;
+
+  end;
+
+return;
+end;
+
+/*
+
+global procedure ExportTableToExcelPORn(record RcVc RepSpec)	//Edit--------Dima 
+begin
+  record POVc POr;
+  row	POVc POrw;
+  Integer rwcnt,i,wn;
+  
+  POr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(POr,1,true)) then begin	  
+  rwcnt=MatRowCnt(POr);
+ 
+	StartReportJob("ExportToExcel");
+	
+	EndHeader;
+
+	SetRepCol(2,50);
+	SetRepCol(3,100);
+	SetRepCol(4,150);
+	SetRepCol(5,200);
+	SetRepCol(6,250);
+	SetRepCol(7,300);
+	SetRepCol(8,350);
+	SetRepCol(9,400);
+	SetRepCol(10,450);
+	SetRepCol(11,500);
+	SetRepCol(12,550);
+	SetRepCol(13,600);
+
+
+	StartFormat(15);
+	OutString(2,0,"№",true);
+	OutString(2,0,"Товар",true);
+	OutString(3,0,"Кол-во",false);
+	OutString(4,0,"Ед.",false);
+	OutString(5,0,"Наименование",false);
+	OutString(6,0,"Альтернативный код",false);
+	OutString(7,0,"Штрихкод",false);
+	OutString(8,0,"Цена",false);
+	OutString(9,0,"%",false);
+	OutString(10,0,"Сумма",false);
+	OutString(12,0,"Объем",false);
+	OutString(13,0,"Вес",false);
+	OutString(14,0,"В ящике",false);
+	OutString(15,0,"№ паллеты",false);
+	OutString(16,0,"Комментарий",false);
+	EndFormat;
+	Black_Divider(0,1);
+
+	for(i=0;i<rwcnt;i=i+1) begin
+		MatRowGet(POr,i,POrw)
+		StartFormat(15);			
+		OutString(0,0,i+1,false);
+		OutString(2,0,POrw.ArtCode,false);
+		OutString(3,0,POrw.Quant,false);
+		OutString(4,0,POrw.UnitCode,false);
+		OutString(5,0,POrw.Spec,false);
+		OutString(6,0,POrw.AlternativeCode,false);
+		OutString(7,0,POrw.BarCode,false);
+		OutString(8,0,POrw.Price,false);
+		OutString(9,0,POrw.vRebate,false);
+		OutString(10,0,POrw.Sum,false);
+		OutVal(12,0,POrw.Volume,M45Val,false);	//Edit by Victor 30.01.15
+		OutVal(13,0,POrw.Weight,M45Val,false);	//Edit by Victor 30.01.15
+		OutString(14,0,POrw.QtyBox,false);
+		OutString(15,0,POrw.PalletNr,false);
+		OutString(16,0,POrw.Comment,false);
+		
+		EndFormat;	
+	end;		
+	EndJob;
+
+  end;
+
+return;
+end;
+
+
+
+
+
+global procedure ExportTableToExcelPURn(record RcVc RepSpec)	//Edit--------Dima 
+begin
+  record PUVc PUr;
+  row	PUVc PUrw;
+  Integer rwcnt,i,wn;
+  
+  PUr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(PUr,1,true)) then begin	  
+  rwcnt=MatRowCnt(PUr);
+ 
+	StartReportJob("ExportToExcel");
+	
+	EndHeader;
+
+	SetRepCol(2,50);
+	SetRepCol(3,100);
+	SetRepCol(4,150);
+	SetRepCol(5,200);
+	SetRepCol(6,250);
+	SetRepCol(7,300);
+	SetRepCol(8,350);
+	SetRepCol(9,400);
+	SetRepCol(10,450);
+	SetRepCol(11,500);
+	SetRepCol(12,550);
+	SetRepCol(13,600);
+
+
+	StartFormat(15);
+	OutString(0,0,"№",true);
+	OutString(2,0,"Товар",true);
+	OutString(3,0,"Кол-во",false);
+	OutString(4,0,"Ед.",false);
+	OutString(5,0,"Наименование",false);
+	OutString(6,0,"Цена",false);
+	OutString(7,0,"Себест.",false);
+	OutString(8,0,"Сумма",false);
+	EndFormat;
+	Black_Divider(0,1);
+
+	for(i=0;i<rwcnt;i=i+1) begin
+		MatRowGet(PUr,i,PUrw)
+		StartFormat(15);			
+		OutString(0,0,i+1,false);
+		OutString(2,0,PUrw.ArtCode,false);
+		OutString(3,0,PUrw.Quant,false);
+		OutString(4,0,PUrw.UnitCode,false);
+		OutString(5,0,PUrw.Spec,false);
+		OutString(6,0,PUrw.UPrice,false);
+		OutVal(7,0,PUrw.CostPrice,M4Val,false);//Edit----------------------Dima  26.04.2016
+		OutString(8,0,PUrw.Sum,false);
+		EndFormat;	
+	end;		
+	EndJob;
+
+  end;
+
+return;
+end;
+
+
+
+
+global procedure ExportTableToExcelStockMovRn(record RcVc RepSpec)	//Edit--------Dima 
+begin	
+  record StockMovVc StockMovr;
+  row	StockMovVc StockMovrw;
+  Integer rwcnt,i,wn;
+  
+  StockMovr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(StockMovr,1,true)) then begin	  
+  rwcnt=MatRowCnt(StockMovr);
+ 
+	StartReportJob("ExportToExcel");
+	
+	EndHeader;
+
+	SetRepCol(2,50);
+	SetRepCol(3,100);
+	SetRepCol(4,150);
+	SetRepCol(5,200);
+	SetRepCol(6,250);
+	SetRepCol(7,300);
+	SetRepCol(8,350);
+	SetRepCol(9,400);
+	SetRepCol(10,450);
+	SetRepCol(11,500);
+	SetRepCol(12,550);
+	SetRepCol(13,600);
+
+
+	StartFormat(15);
+	OutString(0,0,"№",true);
+	OutString(2,0,"Товар",true);
+	OutString(3,0,"Треб. кол.",false);
+	OutString(4,0,"Отпр.кол.",false);
+	OutString(5,0,"Получ.кол.",false);
+	OutString(6,0,"Наименование",false);
+	OutString(7,0,"Старая цена",false);
+	OutString(8,0,"Накл.расх.",false);
+	OutString(9,0,"Новая цена",false);
+	EndFormat;
+	Black_Divider(0,1);
+
+	for(i=0;i<rwcnt;i=i+1) begin
+		MatRowGet(StockMovr,i,StockMovrw)
+		StartFormat(15);			
+		OutString(0,0,i+1,false);
+		OutString(2,0,StockMovrw.ArtCode,false);
+		OutString(3,0,StockMovrw.OrdQuant,false);
+		OutString(4,0,StockMovrw.SentQuant,false);
+		OutString(5,0,StockMovrw.Quant,false);
+		OutString(6,0,StockMovrw.Spec,false);
+		//OutString(7,0,StockMovrw.OldPrice,false);
+		OutVal(7,0,StockMovrw.OldPrice,M4Val,false);
+		OutString(8,0,StockMovrw.ExtraSCost,false);
+		//OutString(9,0,StockMovrw.NewPrice,false);
+		OutVal(9,0,StockMovrw.NewPrice,M4Val,false);		
+		
+
+
+		EndFormat;	
+	end;		
+	EndJob;
+
+  end;
+
+return;
+end;
+
+
+
+global procedure ExportTableToExcelORRn(record RcVc RepSpec)	//Edit--------Dima  23.01.2015
+begin
+  record ORVc ORr;
+  row	ORVc ORrw;
+  Integer rwcnt,i,wn;
+  
+  ORr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(ORr,1,true)) then begin	  
+  rwcnt=MatRowCnt(ORr);
+ 
+	StartReportJob("ExportToExcel");
+	EndHeader;
+
+	SetRepCol(2,50);
+	SetRepCol(3,100);
+	SetRepCol(4,150);
+	SetRepCol(5,200);
+	SetRepCol(6,250);
+	SetRepCol(7,300);
+	SetRepCol(8,350);
+	SetRepCol(9,400);
+
+
+
+	StartFormat(15);
+	OutString(0,0,"№",true);
+	OutString(2,0,"Товар",true);
+	OutString(3,0,"Кол-во",false);
+	OutString(5,0,"Описание",false);
+	OutString(6,0,"Цена",false);
+	OutString(7,0,"Скидка,%",false);
+	OutString(8,0,"Сумма",false);
+	OutString(8,0,"Рекомендованная розница",false);// Edit ************************** Wednesday, 13 July 2016 11:26:32
+
+	EndFormat;
+	Black_Divider(0,1);
+
+	for(i=0;i<rwcnt;i=i+1) begin
+		MatRowGet(ORr,i,ORrw)
+		StartFormat(15);			
+		OutString(0,0,i+1,false);
+		OutString(2,0,ORrw.ArtCode,false);
+		OutString(3,0,ORrw.Quant,false);
+		OutString(5,0,ORrw.Spec,false);
+		OutString(6,0,ORrw.Price,false);
+		OutString(7,0,ORrw.vRebate,false);
+		OutString(8,0,ORrw.Sum,false);
+		OutString(8,0,ORrw.RRPPrice,false);// Edit ************************** Wednesday, 13 July 2016 11:26:25
+
+		EndFormat;	
+	end;		
+	EndJob;
+
+  end;
+
+return;
+end;
+
+
+
+
+global procedure ExportTableToExcelIVRn(record RcVc RepSpec)	//Edit--------Dima  23.01.2015
+begin
+  record IVVc IVr;
+  row	IVVc IVrw;
+  Integer rwcnt,i,wn;
+  
+  IVr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(IVr,1,true)) then begin	  
+  rwcnt=MatRowCnt(IVr);
+ 
+	StartReportJob("ExportToExcel");
+	
+	EndHeader;
+
+	SetRepCol(2,50);
+	SetRepCol(3,100);
+	SetRepCol(4,150);
+	SetRepCol(5,200);
+	SetRepCol(6,250);
+	SetRepCol(7,300);
+	SetRepCol(8,350);
+	SetRepCol(9,400);
+
+
+
+	StartFormat(15);
+	OutString(0,0,"№",true);
+	OutString(2,0,"Товар",true);
+	OutString(3,0,"Кол-во",false);
+	OutString(5,0,"Описание",false);
+	OutString(6,0,"Цена",false);
+	OutString(7,0,"Скидка,%",false);
+	OutString(8,0,"Сумма",false);
+	EndFormat;
+	Black_Divider(0,1);
+
+	for(i=0;i<rwcnt;i=i+1) begin
+		MatRowGet(IVr,i,IVrw)
+		StartFormat(15);
+		if(IVrw.stp == kInvoiceRowTypeNormal)	then begin		
+			OutString(0,0,i+1,false);
+		end else begin
+			OutString(0,0,"",false);
+		end;
+		OutString(2,0,IVrw.ArtCode,false);
+		OutString(3,0,IVrw.Quant,false);
+		OutString(5,0,IVrw.Spec,false);
+		OutString(6,0,IVrw.Price,false);
+		OutString(7,0,IVrw.vRebate,false);
+		OutString(8,0,IVrw.Sum,false);
+		EndFormat;	
+	end;		
+	EndJob;
+
+  end;
+
+return;
+end;*/
