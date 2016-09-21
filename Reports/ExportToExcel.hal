@@ -64,8 +64,8 @@ begin
 		end;
 		OutString(9,0,SRPrw.PLPrice,false);
 		OutString(10,0,SRPrw.FIFO,false);
-		OutVal(12,0,SRPrw.MarkUp,M45Val,false);
-		OutVal(13,0,SRPrw.NewFIFO,M45Val,false);
+		OutString(12,0,SRPrw.MarkUp,false);
+		OutString(13,0,SRPrw.NewFIFO,false);
 		OutString(14,0,SRPrw.Rebate,false);
 		OutString(15,0,SRPrw.DiffFIFO,false);
 		
