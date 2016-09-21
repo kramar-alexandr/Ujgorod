@@ -44,10 +44,12 @@ begin
 	OutString(2,0,"Склад",true);
 	OutString(3,0,SRPr.Location,true);
 	EndFormat;
-	StartFormat(15);
-	OutString(2,0,"№ Надходження",true);
-	OutString(3,0,SRPr.PUNr,true);
-	EndFormat;
+	if(SRPr.PUNr>-1)then begin
+		StartFormat(15);
+		OutString(2,0,"№ Надходження",true);
+		OutString(3,0,SRPr.PUNr,true);
+		EndFormat;
+	end;
 	if (UserCanAction("HideLastCostPrice",false)==false) then begin
 		StartFormat(15);
 		OutString(2,0,"Курс ціни (XX:1 Вал.)",true);
