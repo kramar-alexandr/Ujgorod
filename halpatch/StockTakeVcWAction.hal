@@ -963,6 +963,7 @@ BEGIN
   integer cnt,transCNT;
   string 255 md5strCli;
   
+  cnt = 0;
   transCNT = 5;
   BackupXLSX(fnserv);
   testf = true;
@@ -970,12 +971,13 @@ BEGIN
   while (testf) begin
     while (!EOF) begin
       EOF = GetPartFileToArea(fnserv,tmparea);
-      writeareatofile(tmparea,filename,1);
+      writeareatofile(tmparea,filename,cnt);
+      cnt = 1;
     end;
     md5strCli = GetFileMD5(filename);
     if (md5strCli!=md5strServ) then begin
       err = true;
-      RecoverXLSX(fnserv,"StockTakeToExcelSave");
+      RecoverXLSX(fnserv,"StockTakeToExcel");
       transCNT = transCNT - 1;
       if (transCNT==0) then begin
         testf = false;
