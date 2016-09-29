@@ -1514,7 +1514,6 @@ BEGIN
   STr.SerNr = RepSpec.long1;
   ReadFirstMain(STr,1,true);
   StockTakeToExcel(STr,fnserv,md5str);
-  logtext(0,"md5 of " & fnserv & " - " & md5str);
   ClientRemoteAsync.StockTakeToExcelSave(fnserv,RepSpec.f1,md5str);
   
   RETURN;
