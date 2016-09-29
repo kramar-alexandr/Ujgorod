@@ -963,6 +963,7 @@ BEGIN
   integer cnt,transCNT;
   string 255 md5strCli;
   
+  transCNT = 5;
   BackupXLSX(fnserv);
   testf = true;
   err = false;
@@ -974,7 +975,7 @@ BEGIN
     md5strCli = GetFileMD5(filename);
     if (md5strCli!=md5strServ) then begin
       err = true;
-      RecoverXLSX(fnserv,"BudgetObjects");
+      RecoverXLSX(fnserv,"StockTakeToExcelSave");
       transCNT = transCNT - 1;
       if (transCNT==0) then begin
         testf = false;
