@@ -27,6 +27,9 @@ external procedure FillSharedStrings(string,array string,integer,integer,array s
 external procedure ConvertToXLSX(string);
 external function string 10 GetStringCellNum(integer,integer);
 external procedure ValToText(val,Integer,string,string,var string);
+external function string 50 TimeToString(time,string,boolean);
+
+external procedure StockTakeToExcelSave(string,string,string);
 
 global
 function Boolean StockTakeVc_PasteArtCode_iPhone(var record StockTakeVc StockTakep,var record RcVc RepSpec,Integer changed,var string inwarn)
@@ -218,7 +221,7 @@ begin
 end;    
 
 global
-procedure StockTakeToExcel(record StockTakeVc STr, var string fnserv)
+procedure StockTakeToExcel(record StockTakeVc STr, var string fnserv, var string md5str)
 BEGIN
   array string 10 sheetNames;
 	array val sheetColls;
@@ -319,10 +322,10 @@ BEGIN
   end;
   reportName = "StockTakeToExcel";
   if(windowsmode==1)then begin
-    fileToSave = "tmpxlsx.xlsx";
-  end else begin
-    fileToSave = "/tmpxlsx.xlsx";
-  end;
+      fileToSave = DateToString(CurrentDate,"YYYYMMDD") & "_" & TimeToString(CurrentTime,"HHMMSS",false) & "_" & GetCurTick() & ".xlsx";
+		end else begin
+			fileToSave = "/" & DateToString(CurrentDate,"YYYYMMDD") & "_" & TimeToString(CurrentTime,"HHMMSS",false) & "_" & GetCurTick() & ".xlsx";
+		end;
   deletefolder(Left(fileToSave,(len(fileToSave) - 5)));
   numOfUniqueSharedStrings = 0;
   numOfSharedStrings = 0;
@@ -1498,6 +1501,20 @@ BEGIN
   ConvertToXLSX(fileToSave);
   MilliSleep(2000);
   fnserv = fileToSave;
-	
+	md5str = GetFileMD5(fnserv);
+  RETURN;
+END;
+
+global
+procedure StockTakeToExcelRn(record RcVc RepSpec)
+BEGIN
+  record StockTakeVc STr;
+  string 255 fnserv,md5str;
+  
+  STr.SerNr = RepSpec.long1;
+  ReadFirstMain(STr,1,true);
+  StockTakeToExcel(STr,fnserv,md5str);
+  ClientRemoteAsync.StockTakeToExcelSave(fnserv,RepSpec.f1,md5str);
+  
   RETURN;
 END;

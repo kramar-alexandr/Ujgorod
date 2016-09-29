@@ -15,8 +15,10 @@ external procedure SerialNrDimensions(string,string,var val,var val,var val);
 external function val CalculateSerialNrQuantity(string,string,string,Boolean,val,val,val,val);
 remote function Boolean GetSVOSerialItem(string,string,record SVOSerVc);
 remote function Boolean GetFirstItem(var string,var record INVc);
-remote procedure StockTakeToExcel(record StockTakeVc, var string);
-remote function boolean GetPartFileToArea(string,var longint,var area);
+remote function boolean GetPartFileToArea(string,var area);
+remote procedure DeleteXLSXJunk(string);
+remote procedure BackupXLSX(string);
+remote procedure RecoverXLSX(string,string);
 
 
 global
@@ -914,9 +916,10 @@ begin
 end;
 
 global
-updating procedure CreateStockTakeSheetDsm()
+procedure CreateStockTakeSheetDsm()
 begin
   record StockTakeVc STr;
+  record RcVc RepSpec;
   Integer wn;
   string 255 filename,tstr,fnserv;
 	area tmparea;
@@ -935,19 +938,10 @@ begin
         if(fileexists(filename))then begin
           delete_file(filename);
         end;
-        StockTakeToExcel(STr,fnserv);
-        arealen = 102400;
-        cnt = 0;
-        while (!EOF) begin
-          EOF = GetPartFileToArea(fnserv,arealen,tmparea);
-          if arealen == -1 then begin
-            Messagebox(0,"Помилка! Спробуйте повторити дію або зверніться до системного адміністратора.");
-            goto L1;
-          end;
-          writeareatofile(tmparea,filename,cnt);
-          cnt = 1;
-        end;
-        Messagebox(0,"Готово!");
+        RepSpec.long1 = STr.SerNr;
+        RepSpec.f1 = filename;
+        RepSpec.repname = "StockTakeToExcelRn";
+        RunReport(RepSpec,0);
       end;
     end else begin
       Messagebox(0,"Інвентаризація не закінчена!");
@@ -956,9 +950,45 @@ begin
     Messagebox(0,"Збережіть запис!");
 	end;
   
-  L1:;
+  //L1:;
   return;
 end;
 
-
-
+global
+procedure StockTakeToExcelSave(string fnserv,string filename, string md5strServ)
+BEGIN
+  area tmparea;
+	boolean EOF,testf,err;
+	LongInt arealen;
+  integer cnt,transCNT;
+  string 255 md5strCli;
+  
+  BackupXLSX(fnserv);
+  testf = true;
+  err = false;
+  while (testf) begin
+    while (!EOF) begin
+      EOF = GetPartFileToArea(fnserv,tmparea);
+      writeareatofile(tmparea,filename,1);
+    end;
+    md5strCli = GetFileMD5(filename);
+    if (md5strCli!=md5strServ) then begin
+      err = true;
+      RecoverXLSX(fnserv,"BudgetObjects");
+      transCNT = transCNT - 1;
+      if (transCNT==0) then begin
+        testf = false;
+      end;
+    end else begin
+      testf = false;
+    end;
+  end;
+  DeleteXLSXJunk(fnserv);
+  if (err) then begin 
+    Messagebox(0,"Проблеми зі зв'язком! Спровуйте пізніше.");
+  end else begin
+    Messagebox(0,"Готово!");
+  end;
+  
+  RETURN;
+END;
