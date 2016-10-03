@@ -241,18 +241,18 @@ BEGIN
   integer i,j,k,rowcnt,pos,cnt;
   val price,qty1,sum1,qty2,sum2,nedostacha,nadlushok,
       totqty1,totsum1,totqty2,totsum2,totnedostacha,totnadlushok;
-  row StockTakeVc STrw;
+  row StockTakeVc STrw,ST2rw,ST3rw;
   record INVc INr;
   record DIVc DIr;
   record LocationVc Locr;
   vector val STVectPrice,STVectQty,STVectInstock;
-  vector string 100 BarcodeOfSerial;
+  vector string 100 BarcodeOfSerial,GroupOfSerial,TMOfSerial;
   array string 100 GroupArray,TMArray,SerialNumArray;
   array string 255 aTags;
   vector boolean GroupInArr,TMInArr,SerialNumInArr,vTagExist;
   integer GAi,TAi,SAi;
+  record StockTakeVc CopySTr;
   
-  //setexportcodepage("UTF8");
   rowcnt = MatRowCnt(STr);
   for (i=0;i<rowcnt;i=i+1) begin
     MatRowGet(STr,i,STrw);
@@ -290,10 +290,40 @@ BEGIN
     end;
     barcode = STrw.BarCode;
     BarcodeOfSerial[serialnum] = barcode;
+    GroupOfSerial[serialnum] = group;
+    TMOfSerial[serialnum] = tm;
     STVectPrice[group & ";" & tm & ";" & serialnum] = STrw.Price;
     STVectQty[group & ";" & tm & ";" & serialnum] = STrw.Qty;
     STVectInstock[group & ";" & tm & ";" & serialnum] = STrw.MyInStock;
   end;
+  
+  
+  RecordCopy(CopySTr,STr);
+  for (j=0;j<rowcnt-1;j=j+1) begin
+    for (i=0;i<rowcnt-1;i=i+1) begin
+      MatRowGet(CopySTr,i,STrw);
+      MatRowGet(CopySTr,i+1,ST2rw);
+      if (GroupOfSerial[STrw.SerialNr] > GroupOfSerial[ST2rw.SerialNr]) then begin
+        MatRowPut(CopySTr,i+1,STrw);
+				MatRowPut(CopySTr,i,ST2rw);
+      end else begin
+        if (TMOfSerial[STrw.SerialNr] > TMOfSerial[ST2rw.SerialNr]) then begin
+          MatRowPut(CopySTr,i+1,STrw);
+          MatRowPut(CopySTr,i,ST2rw);
+        end else begin
+          if (STrw.SerialNr > ST2rw.SerialNr) then begin
+            MatRowPut(CopySTr,i+1,STrw);
+            MatRowPut(CopySTr,i,ST2rw);
+          end;
+        end;
+      end;
+    end;
+  end;
+  for (i=0;i<rowcnt;i=i+1) begin
+    MatRowGet(CopySTr,i,STrw);
+    logtext(0,(i+1) & " - " & GroupOfSerial[STrw.SerialNr] & " - " & TMOfSerial[STrw.SerialNr] & " - " & STrw.SerialNr);
+  end;
+  
   GetVectorTags(STVectPrice,aTags);
   for (i=0;i<aTags.length;i=i+1) begin
     vTagExist[aTags[i]] = true;
@@ -1084,8 +1114,8 @@ BEGIN
             group = GroupArray[GAi];
             tm = TMArray[TAi];
             serialnum = SerialNumArray[SAi];
-            barcode = BarcodeOfSerial[serialnum];
             if (vTagExist[group & ";" & tm & ";" & serialnum]) then begin
+              barcode = BarcodeOfSerial[serialnum];
               qty1 = STVectQty[group & ";" & tm & ";" & serialnum];
               qty2 = STVectInstock[group & ";" & tm & ";" & serialnum];
               if (qty1!=0 and qty1!=blankval) or (qty2!=0 and qty2!=blankval) then begin
