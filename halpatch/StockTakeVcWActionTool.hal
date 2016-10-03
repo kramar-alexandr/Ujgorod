@@ -248,7 +248,8 @@ BEGIN
   vector val STVectPrice,STVectQty,STVectInstock;
   vector string 100 BarcodeOfSerial;
   array string 100 GroupArray,TMArray,SerialNumArray;
-  vector boolean GroupInArr,TMInArr,SerialNumInArr;
+  array string 255 aTags;
+  vector boolean GroupInArr,TMInArr,SerialNumInArr,vTagExist;
   integer GAi,TAi,SAi;
   
   //setexportcodepage("UTF8");
@@ -292,6 +293,10 @@ BEGIN
     STVectPrice[group & ";" & tm & ";" & serialnum] = STrw.Price;
     STVectQty[group & ";" & tm & ";" & serialnum] = STrw.Qty;
     STVectInstock[group & ";" & tm & ";" & serialnum] = STrw.MyInStock;
+  end;
+  GetVectorTags(STVectPrice,aTags);
+  for (i=0;i<aTags.length;i=i+1) begin
+    vTagExist[aTags[i]] = true;
   end;
   for (j=0;j<GroupArray.length-1;j=j+1) begin
     for (i=0;i<GroupArray.length-1;i=i+1) begin
@@ -1080,69 +1085,71 @@ BEGIN
             tm = TMArray[TAi];
             serialnum = SerialNumArray[SAi];
             barcode = BarcodeOfSerial[serialnum];
-            qty1 = STVectQty[group & ";" & tm & ";" & serialnum];
-            qty2 = STVectInstock[group & ";" & tm & ";" & serialnum];
-            if (qty1!=0 and qty1!=blankval) or (qty2!=0 and qty2!=blankval) then begin
-              cnt = cnt + 1;
-              price = STVectPrice[group & ";" & tm & ";" & serialnum];
-              sum1 = qty1*price;
-              sum2 = qty2*price;
-              if (qty1 - qty2)>0 then begin
-                nedostacha = 0;
-                nadlushok = qty1 - qty2;
-              end else begin
-                nedostacha = qty2 - qty1;
-                nadlushok = 0;
-              end;
-              colnum = 1;
-              h = 11.25;
-              if (len(group) > 11) or (len(tm) > 13) or (len(serialnum) > 18) or (len(barcode) > 14) then begin
-                h = 22.5;
-              end;
-              if (len(group) > 20) or (len(tm) > 29) or (len(serialnum) > 38) or (len(barcode) > 28) then begin
-                h = 33.75;
-              end;
-              BeginRow(sheetnum,fileToSave,rownum,0,h);
-                style = 5;
-                NumericCell(sheetnum,fileToSave,colnum,rownum,style,cnt);
-                style = 4;
-                NumericCell(sheetnum,fileToSave,colnum,rownum,style,28);
-                style = 6;
-                StringCell(sheetnum,fileToSave,colnum,rownum,style,group,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                StringCell(sheetnum,fileToSave,colnum,rownum,style,tm,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                StringCell(sheetnum,fileToSave,colnum,rownum,style,serialnum,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                StringCell(sheetnum,fileToSave,colnum,rownum,style,barcode,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                StringCell(sheetnum,fileToSave,colnum,rownum,style,"רע",SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                style = 7;
-                NumericCell(sheetnum,fileToSave,colnum,rownum,style,price);
-                style = 9;
-                NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty1);
-                style = 7;
-                NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum1);
-                style = 9;
-                NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty2);
-                style = 7;
-                NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum2);
-                style = 9;
-                if nedostacha==0 then begin
-                  qtyOfEmpStr = 1;
-                  EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
+            if (vTagExist[group & ";" & tm & ";" & serialnum]) then begin
+              qty1 = STVectQty[group & ";" & tm & ";" & serialnum];
+              qty2 = STVectInstock[group & ";" & tm & ";" & serialnum];
+              if (qty1!=0 and qty1!=blankval) or (qty2!=0 and qty2!=blankval) then begin
+                cnt = cnt + 1;
+                price = STVectPrice[group & ";" & tm & ";" & serialnum];
+                sum1 = qty1*price;
+                sum2 = qty2*price;
+                if (qty1 - qty2)>0 then begin
+                  nedostacha = 0;
+                  nadlushok = qty1 - qty2;
                 end else begin
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,nedostacha);
+                  nedostacha = qty2 - qty1;
+                  nadlushok = 0;
                 end;
-                if nadlushok==0 then begin
-                  qtyOfEmpStr = 1;
-                  EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
-                end else begin
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,nadlushok);
+                colnum = 1;
+                h = 11.25;
+                if (len(group) > 11) or (len(tm) > 13) or (len(serialnum) > 18) or (len(barcode) > 14) then begin
+                  h = 22.5;
                 end;
-              EndRow(sheetnum,fileToSave,rownum);
-              totqty1 = totqty1 + qty1;
-              totqty2 = totqty2 + qty2;
-              totsum1 = totsum1 + sum1;
-              totsum2 = totsum2 + sum2;
-              totnadlushok = totnadlushok + nadlushok;
-              totnedostacha = totnedostacha + nedostacha;
+                if (len(group) > 20) or (len(tm) > 29) or (len(serialnum) > 38) or (len(barcode) > 28) then begin
+                  h = 33.75;
+                end;
+                BeginRow(sheetnum,fileToSave,rownum,0,h);
+                  style = 5;
+                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,cnt);
+                  style = 4;
+                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,28);
+                  style = 6;
+                  StringCell(sheetnum,fileToSave,colnum,rownum,style,group,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+                  StringCell(sheetnum,fileToSave,colnum,rownum,style,tm,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+                  StringCell(sheetnum,fileToSave,colnum,rownum,style,serialnum,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+                  StringCell(sheetnum,fileToSave,colnum,rownum,style,barcode,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+                  StringCell(sheetnum,fileToSave,colnum,rownum,style,"רע",SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+                  style = 7;
+                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,price);
+                  style = 9;
+                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty1);
+                  style = 7;
+                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum1);
+                  style = 9;
+                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty2);
+                  style = 7;
+                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum2);
+                  style = 9;
+                  if nedostacha==0 then begin
+                    qtyOfEmpStr = 1;
+                    EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
+                  end else begin
+                    NumericCell(sheetnum,fileToSave,colnum,rownum,style,nedostacha);
+                  end;
+                  if nadlushok==0 then begin
+                    qtyOfEmpStr = 1;
+                    EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
+                  end else begin
+                    NumericCell(sheetnum,fileToSave,colnum,rownum,style,nadlushok);
+                  end;
+                EndRow(sheetnum,fileToSave,rownum);
+                totqty1 = totqty1 + qty1;
+                totqty2 = totqty2 + qty2;
+                totsum1 = totsum1 + sum1;
+                totsum2 = totsum2 + sum2;
+                totnadlushok = totnadlushok + nadlushok;
+                totnedostacha = totnedostacha + nedostacha;
+              end;
             end;
           end;
         end;
