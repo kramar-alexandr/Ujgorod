@@ -241,16 +241,11 @@ BEGIN
   integer i,j,k,rowcnt,pos,cnt;
   val price,qty1,sum1,qty2,sum2,nedostacha,nadlushok,
       totqty1,totsum1,totqty2,totsum2,totnedostacha,totnadlushok;
-  row StockTakeVc STrw,ST2rw,ST3rw;
+  row StockTakeVc STrw,ST2rw;
   record INVc INr;
   record DIVc DIr;
   record LocationVc Locr;
-  vector val STVectPrice,STVectQty,STVectInstock;
   vector string 100 BarcodeOfSerial,GroupOfSerial,TMOfSerial;
-  array string 100 GroupArray,TMArray,SerialNumArray;
-  array string 255 aTags;
-  vector boolean GroupInArr,TMInArr,SerialNumInArr,vTagExist;
-  integer GAi,TAi,SAi;
   record StockTakeVc CopySTr;
   
   rowcnt = MatRowCnt(STr);
@@ -272,29 +267,11 @@ BEGIN
       end;
       ExtractObj(INr.DispGroups,pos,class);
     end;
-    if !GroupInArr[group] then begin
-      GroupInArr[group] = true;
-      GroupArray[GAi] = group;
-      GAi = GAi + 1;
-    end;
-    if !TMInArr[tm] then begin
-      TMInArr[tm] = true;
-      TMArray[TAi] = tm;
-      TAi = TAi + 1;
-    end;
     serialnum = STrw.SerialNr;
-    if !SerialNumInArr[serialnum] then begin
-      SerialNumInArr[serialnum] = true;
-      SerialNumArray[SAi] = serialnum;
-      SAi = SAi + 1;
-    end;
     barcode = STrw.BarCode;
     BarcodeOfSerial[serialnum] = barcode;
     GroupOfSerial[serialnum] = group;
     TMOfSerial[serialnum] = tm;
-    STVectPrice[group & ";" & tm & ";" & serialnum] = STrw.Price;
-    STVectQty[group & ";" & tm & ";" & serialnum] = STrw.Qty;
-    STVectInstock[group & ";" & tm & ";" & serialnum] = STrw.MyInStock;
   end;
   
   
@@ -306,55 +283,34 @@ BEGIN
       if (GroupOfSerial[STrw.SerialNr] > GroupOfSerial[ST2rw.SerialNr]) then begin
         MatRowPut(CopySTr,i+1,STrw);
 				MatRowPut(CopySTr,i,ST2rw);
-      end else begin
+      end;
+    end;
+  end;
+  for (j=0;j<rowcnt-1;j=j+1) begin
+    for (i=0;i<rowcnt-1;i=i+1) begin
+      MatRowGet(CopySTr,i,STrw);
+      MatRowGet(CopySTr,i+1,ST2rw);
+      if (GroupOfSerial[STrw.SerialNr] == GroupOfSerial[ST2rw.SerialNr]) then begin
         if (TMOfSerial[STrw.SerialNr] > TMOfSerial[ST2rw.SerialNr]) then begin
           MatRowPut(CopySTr,i+1,STrw);
           MatRowPut(CopySTr,i,ST2rw);
-        end else begin
-          if (STrw.SerialNr > ST2rw.SerialNr) then begin
-            MatRowPut(CopySTr,i+1,STrw);
-            MatRowPut(CopySTr,i,ST2rw);
-          end;
         end;
       end;
     end;
   end;
-  for (i=0;i<rowcnt;i=i+1) begin
-    MatRowGet(CopySTr,i,STrw);
-    logtext(0,(i+1) & " - " & GroupOfSerial[STrw.SerialNr] & " - " & TMOfSerial[STrw.SerialNr] & " - " & STrw.SerialNr);
+  for (j=0;j<rowcnt-1;j=j+1) begin
+    for (i=0;i<rowcnt-1;i=i+1) begin
+      MatRowGet(CopySTr,i,STrw);
+      MatRowGet(CopySTr,i+1,ST2rw);
+      if (GroupOfSerial[STrw.SerialNr] == GroupOfSerial[ST2rw.SerialNr]) and (TMOfSerial[STrw.SerialNr] == TMOfSerial[ST2rw.SerialNr]) then begin
+        if (STrw.SerialNr > ST2rw.SerialNr) then begin
+          MatRowPut(CopySTr,i+1,STrw);
+          MatRowPut(CopySTr,i,ST2rw);
+        end;
+      end;
+    end;
   end;
   
-  GetVectorTags(STVectPrice,aTags);
-  for (i=0;i<aTags.length;i=i+1) begin
-    vTagExist[aTags[i]] = true;
-  end;
-  for (j=0;j<GroupArray.length-1;j=j+1) begin
-    for (i=0;i<GroupArray.length-1;i=i+1) begin
-      if (GroupArray[i] > GroupArray[i+1]) then begin
-        tstr = GroupArray[i+1];
-        GroupArray[i+1] = GroupArray[i];
-        GroupArray[i] = tstr;
-      end;
-    end;
-  end;
-  for (j=0;j<TMArray.length-1;j=j+1) begin
-    for (i=0;i<TMArray.length-1;i=i+1) begin
-      if (TMArray[i] > TMArray[i+1]) then begin
-        tstr = TMArray[i+1];
-        TMArray[i+1] = TMArray[i];
-        TMArray[i] = tstr;
-      end;
-    end;
-  end;
-  for (j=0;j<SerialNumArray.length-1;j=j+1) begin
-    for (i=0;i<SerialNumArray.length-1;i=i+1) begin
-      if (SerialNumArray[i] > SerialNumArray[i+1]) then begin
-        tstr = SerialNumArray[i+1];
-        SerialNumArray[i+1] = SerialNumArray[i];
-        SerialNumArray[i] = tstr;
-      end;
-    end;
-  end;
   reportName = "StockTakeToExcel";
   if(windowsmode==1)then begin
       fileToSave = DateToString(CurrentDate,"YYYYMMDD") & "_" & TimeToString(CurrentTime,"HHMMSS",false) & "_" & GetCurTick() & ".xlsx";
@@ -1108,80 +1064,75 @@ BEGIN
         NumericCell(sheetnum,fileToSave,colnum,rownum,style,14);
       EndRow(sheetnum,fileToSave,rownum);
       
-      for (GAi=0;GAi<GroupArray.length;GAi=GAi+1) begin
-        for (TAi=0;TAi<TMArray.length;TAi=TAi+1) begin
-          for (SAi=0;SAi<SerialNumArray.length;SAi=SAi+1) begin
-            group = GroupArray[GAi];
-            tm = TMArray[TAi];
-            serialnum = SerialNumArray[SAi];
-            if (vTagExist[group & ";" & tm & ";" & serialnum]) then begin
-              barcode = BarcodeOfSerial[serialnum];
-              qty1 = STVectQty[group & ";" & tm & ";" & serialnum];
-              qty2 = STVectInstock[group & ";" & tm & ";" & serialnum];
-              if (qty1!=0 and qty1!=blankval) or (qty2!=0 and qty2!=blankval) then begin
-                cnt = cnt + 1;
-                price = STVectPrice[group & ";" & tm & ";" & serialnum];
-                sum1 = qty1*price;
-                sum2 = qty2*price;
-                if (qty1 - qty2)>0 then begin
-                  nedostacha = 0;
-                  nadlushok = qty1 - qty2;
-                end else begin
-                  nedostacha = qty2 - qty1;
-                  nadlushok = 0;
-                end;
-                colnum = 1;
-                h = 11.25;
-                if (len(group) > 11) or (len(tm) > 13) or (len(serialnum) > 18) or (len(barcode) > 14) then begin
-                  h = 22.5;
-                end;
-                if (len(group) > 20) or (len(tm) > 29) or (len(serialnum) > 38) or (len(barcode) > 28) then begin
-                  h = 33.75;
-                end;
-                BeginRow(sheetnum,fileToSave,rownum,0,h);
-                  style = 5;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,cnt);
-                  style = 4;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,28);
-                  style = 6;
-                  StringCell(sheetnum,fileToSave,colnum,rownum,style,group,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                  StringCell(sheetnum,fileToSave,colnum,rownum,style,tm,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                  StringCell(sheetnum,fileToSave,colnum,rownum,style,serialnum,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                  StringCell(sheetnum,fileToSave,colnum,rownum,style,barcode,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                  StringCell(sheetnum,fileToSave,colnum,rownum,style,"רע",SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
-                  style = 7;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,price);
-                  style = 9;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty1);
-                  style = 7;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum1);
-                  style = 9;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty2);
-                  style = 7;
-                  NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum2);
-                  style = 9;
-                  if nedostacha==0 then begin
-                    qtyOfEmpStr = 1;
-                    EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
-                  end else begin
-                    NumericCell(sheetnum,fileToSave,colnum,rownum,style,nedostacha);
-                  end;
-                  if nadlushok==0 then begin
-                    qtyOfEmpStr = 1;
-                    EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
-                  end else begin
-                    NumericCell(sheetnum,fileToSave,colnum,rownum,style,nadlushok);
-                  end;
-                EndRow(sheetnum,fileToSave,rownum);
-                totqty1 = totqty1 + qty1;
-                totqty2 = totqty2 + qty2;
-                totsum1 = totsum1 + sum1;
-                totsum2 = totsum2 + sum2;
-                totnadlushok = totnadlushok + nadlushok;
-                totnedostacha = totnedostacha + nedostacha;
-              end;
-            end;
+      for (i=0;i<rowcnt;i=i+1) begin
+        MatRowGet(CopySTr,i,STrw);
+        serialnum = STrw.SerialNr;
+        group = GroupOfSerial[serialnum];
+        tm = TMOfSerial[serialnum];
+        barcode = BarcodeOfSerial[serialnum];
+        qty1 = STrw.Qty;
+        qty2 = STrw.MyInStock;
+        if (qty1!=0 and qty1!=blankval) or (qty2!=0 and qty2!=blankval) then begin
+          cnt = cnt + 1;
+          price = STrw.Price;
+          sum1 = qty1*price;
+          sum2 = qty2*price;
+          if (qty1 - qty2)>0 then begin
+            nedostacha = 0;
+            nadlushok = qty1 - qty2;
+          end else begin
+            nedostacha = qty2 - qty1;
+            nadlushok = 0;
           end;
+          colnum = 1;
+          h = 11.25;
+          if (len(group) > 11) or (len(tm) > 13) or (len(serialnum) > 18) or (len(barcode) > 14) then begin
+            h = 22.5;
+          end;
+          if (len(group) > 20) or (len(tm) > 29) or (len(serialnum) > 38) or (len(barcode) > 28) then begin
+            h = 33.75;
+          end;
+          BeginRow(sheetnum,fileToSave,rownum,0,h);
+            style = 5;
+            NumericCell(sheetnum,fileToSave,colnum,rownum,style,cnt);
+            style = 4;
+            NumericCell(sheetnum,fileToSave,colnum,rownum,style,28);
+            style = 6;
+            StringCell(sheetnum,fileToSave,colnum,rownum,style,group,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+            StringCell(sheetnum,fileToSave,colnum,rownum,style,tm,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+            StringCell(sheetnum,fileToSave,colnum,rownum,style,serialnum,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+            StringCell(sheetnum,fileToSave,colnum,rownum,style,barcode,SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+            StringCell(sheetnum,fileToSave,colnum,rownum,style,"רע",SharedStrings,numOfUniqueSharedStrings,numOfSharedStrings);
+            style = 7;
+            NumericCell(sheetnum,fileToSave,colnum,rownum,style,price);
+            style = 9;
+            NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty1);
+            style = 7;
+            NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum1);
+            style = 9;
+            NumericCell(sheetnum,fileToSave,colnum,rownum,style,qty2);
+            style = 7;
+            NumericCell(sheetnum,fileToSave,colnum,rownum,style,sum2);
+            style = 9;
+            if nedostacha==0 then begin
+              qtyOfEmpStr = 1;
+              EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
+            end else begin
+              NumericCell(sheetnum,fileToSave,colnum,rownum,style,nedostacha);
+            end;
+            if nadlushok==0 then begin
+              qtyOfEmpStr = 1;
+              EmptyCell(sheetnum,fileToSave,colnum,rownum,style,qtyOfEmpStr);
+            end else begin
+              NumericCell(sheetnum,fileToSave,colnum,rownum,style,nadlushok);
+            end;
+          EndRow(sheetnum,fileToSave,rownum);
+          totqty1 = totqty1 + qty1;
+          totqty2 = totqty2 + qty2;
+          totsum1 = totsum1 + sum1;
+          totsum2 = totsum2 + sum2;
+          totnadlushok = totnadlushok + nadlushok;
+          totnedostacha = totnedostacha + nedostacha;
         end;
       end;
       colnum = 1;
