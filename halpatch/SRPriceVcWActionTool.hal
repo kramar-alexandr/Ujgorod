@@ -71,7 +71,7 @@ end;
 
 //Edit***************************Sasha2,15:24 08.07.2016 {
 global
-procedure FindLastCostPriceForArtCode(string artCode,string serial,string location,var val lastcostprice,var string cur)
+procedure FindLastCostPriceForArtCode(record SRPriceVc SRr,row SRPriceVc SRrw,string artCode,string serial,string location,var val lastcostprice,var string cur)
 begin
   record ItemHistVc IHr;
   record PUVc PUr;
@@ -79,39 +79,45 @@ begin
   Integer keycnt;
   string 20 keyname;
   
-    lastcostprice = BlankVal;
-    cur = "";
-    /*if (blank(location)) then begin
-      goto LFindLastCostPriceForArtCode;
-    end;*/
-    
-    if (NonBlank(serial)) then begin
-      IHr.ArtCode = artCode;
-      IHr.SerialNr = serial;
-      IHr.FileName = "PUVc";
-      keyname = "ArtCodeSerialNr";
+    if (SRr.PUNr>-1) then begin
+      lastcostprice = SRrw.LastCostPrice;
+      cur = SRrw.CurncyCode;
     end else begin
-      IHr.FileName = "PUVc";
-      IHr.ArtCode = artCode;
-      IHr.TransDate = CurrentDate;
-      keyname = "FNArtCode";
-    end;
-    TrHs = true;
-    RESETLOOP(IHr);
-    while (LoopBackKey(keyname,IHr,3,TrHs)) begin
-      testf = true;
-      if (IHr.FileName!="PUVc" or IHr.ArtCode!=artCode) then begin TrHs = false; testf = false; end;
-      if (NonBlank(serial) and IHr.SerialNr!= serial) then begin TrHs = false; testf = false; end;
-      //if (IHr.Location!=location) then begin testf = false; end;
-      if (testf) then begin
-        lastcostprice = IHr.TotCostPrice/IHr.Qty;
-        PUr.SerNr = IHr.TransNr;
-        if (ReadFirstMain(PUr,1,true)) then begin
-          cur = PUr.CurncyCode;
+      lastcostprice = BlankVal;
+      cur = "";
+      /*if (blank(location)) then begin
+        goto LFindLastCostPriceForArtCode;
+      end;*/
+      
+      if (NonBlank(serial)) then begin
+        IHr.ArtCode = artCode;
+        IHr.SerialNr = serial;
+        IHr.FileName = "PUVc";
+        keyname = "ArtCodeSerialNr";
+      end else begin
+        IHr.FileName = "PUVc";
+        IHr.ArtCode = artCode;
+        IHr.TransDate = CurrentDate;
+        keyname = "FNArtCode";
+      end;
+      TrHs = true;
+      RESETLOOP(IHr);
+      while (LoopBackKey(keyname,IHr,3,TrHs)) begin
+        testf = true;
+        if (IHr.FileName!="PUVc" or IHr.ArtCode!=artCode) then begin TrHs = false; testf = false; end;
+        if (NonBlank(serial) and IHr.SerialNr!= serial) then begin TrHs = false; testf = false; end;
+        //if (IHr.Location!=location) then begin testf = false; end;
+        if (testf) then begin
+          lastcostprice = IHr.TotCostPrice/IHr.Qty;
+          PUr.SerNr = IHr.TransNr;
+          if (ReadFirstMain(PUr,1,true)) then begin
+            cur = PUr.CurncyCode;
+          end;
+          TrHs = false;
         end;
-        TrHs = false;
       end;
     end;
+    
     
 LFindLastCostPriceForArtCode:;
     
@@ -195,7 +201,7 @@ begin
   string 100 curClass;
   record DIVc DIr;
   integer pos;
-  
+
   ReadFirstItem(ISr.Code & ISr.Variety,INr,true,true);
   SRrw.Coefficient = INr.UnitCoefficient;
   SRrw.ArtCode = ISr.Code & ISr.Variety;
@@ -214,7 +220,7 @@ begin
   end else begin
     location = SRp.Location;
   end;
-  FindLastCostPriceForArtCode(INr.Code,serial,location,lastcostprice,lastcostcur);
+  FindLastCostPriceForArtCode(SRp,SRrw,INr.Code,serial,location,lastcostprice,lastcostcur);
   SRrw.LastCostPrice = lastcostprice;
   SRrw.CurncyCode = lastcostcur;
   FindPriceInPlAndUpdDiffs(SRrw,INr.Code,serial,SRp,true);
@@ -543,7 +549,7 @@ begin
   val lastcostprice;
   string 20 lastcostcur;
   
-    FindLastCostPriceForArtCode(SRrw.ArtCode,SRrw.SerialNr,SRPricer.Location,lastcostprice,lastcostcur);
+    FindLastCostPriceForArtCode(SRPricer,SRrw,SRrw.ArtCode,SRrw.SerialNr,SRPricer.Location,lastcostprice,lastcostcur);
     SRrw.LastCostPrice = lastcostprice;
     SRrw.CurncyCode = lastcostcur;
     if (blank(SRrw.SerialNr)) then begin
@@ -668,7 +674,7 @@ begin
     SRrw.CurncyCode = "";
     FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,SRrw.SerialNr,SRr,true);
   end else begin
-    FindLastCostPriceForArtCode(SRrw.ArtCode,SRrw.SerialNr,location,lastcostprice,lastcostcur);
+    FindLastCostPriceForArtCode(SRr,SRrw,SRrw.ArtCode,SRrw.SerialNr,location,lastcostprice,lastcostcur);
     SRrw.LastCostPrice = lastcostprice;
     SRrw.CurncyCode = lastcostcur;
     FindPriceInPlAndUpdDiffs(SRrw,SRrw.ArtCode,SRrw.SerialNr,SRr,true);
