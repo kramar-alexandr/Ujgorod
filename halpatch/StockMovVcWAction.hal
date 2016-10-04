@@ -1187,11 +1187,11 @@ begin
       MatRowGet(SMr,rownr,SMrw);            
       switch (fieldname) begin
         case "ArtCode": 
-          if (nonblank(SMr.ThrouLocation)) then begin
+          /*if (nonblank(SMr.ThrouLocation)) then begin//Edit-------------------Vitalii 9:41 04.10.2016
             gotofieldname = "OrdQuant";
           end else begin
             gotofieldname = "Quant";
-          end;
+          end;*/
         case "Quant": 
           gotofieldname = "ArtCode";
           gotorownr = gotorownr + 1;

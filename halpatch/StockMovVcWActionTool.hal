@@ -21,6 +21,7 @@ external updating procedure StockMovUpdateStock(record StockMovVc,record StockMo
 external updating procedure SetPositionStatus(string,Integer);
 external procedure AddToStrArray(string,var array string);
 external function Boolean GetFirstItemSer(var string,var record INVc,var string);// Edit ************************** Friday, 17 June 2016 10:10:01
+external procedure ExtractObj(string,var Integer,var string);
 
 global
 function Boolean StockMovVc_PasteArtCode(var record StockMovVc StockMovp,Integer rownr,Integer changed,var array string aWarning)
@@ -31,7 +32,9 @@ BEGIN
   string 60 sz,msk,mskrep;
   string 200 varsubset;
   Boolean itemfound;
-  string 100 serial;// Edit ************************** Monday, 18 July 2016 17:18:28
+  string 100 serial,curClass;// Edit ************************** Monday, 18 July 2016 17:18:28
+  record DIVc DIr;
+  integer pos;
 
   MatRowGet(StockMovp,rownr,StockMovrw);  
   if ((changed!=0) or ((blank(StockMovrw.Spec)) and (nonblank(StockMovrw.ArtCode)))) then begin
@@ -61,6 +64,19 @@ BEGIN
       StockMovrw.UnitXval = INr.Width;
       StockMovrw.UnitYval = INr.Height;
       StockMovrw.UnitZval = INr.Depth;
+      //Edit-------------------Vitalii 11:47 04.10.2016
+      if (NonBlank(INr.DispGroups)) then begin
+        pos = 0;
+        ExtractObj(INr.DispGroups,pos,curClass);
+        while (NonBlank(curClass)) begin
+          DIr.Code = curClass;
+          if (ReadFirstMain(DIr,1,true) and DIr.CType=="BRAND") then begin
+            StockMovrw.Brand = DIr.Code;
+            pos = len(INr.DispGroups);
+          end;
+          ExtractObj(INr.DispGroups,pos,curClass);
+        end;
+      end;
       MatRowPut(StockMovp,rownr,StockMovrw);
       AddToStrArray(INr.WarnText1,aWarning);
       if (INr.ItemType!=kItemTypeStocked) then begin

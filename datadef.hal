@@ -219,6 +219,7 @@ begin
   ArrayField(MarkUp,M45Val,0,0); //Edit***************************Sasha2,13:43 14.07.2016
   ArrayField(Rebate,M45Val,0,0); //Edit***************************Sasha2,13:43 14.07.2016
   ArrayField(PLPrice,M45Val,0,0); //Edit***************************Sasha2,17:02 14.07.2016
+  ArrayField(Brand,M4UStr,0,DIVc);//Edit-------------------Vitalii 11:42 04.10.2016
   EndArray;  
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
@@ -246,7 +247,11 @@ begin
     ArrayField(Barcode,M4UStr,60,0);
     ArrayField(Classification,M4UStr,200,DIVc); //Edit***************************Sasha2,17:20 30.08.2016
 	EndRecordAdd;
-			
+
+  RecordAddBegin(StockMovVc,"MyStockMovVc1"); 
+		ArrayField(Brand,M4UStr,200,DIVc); //Edit-------------------Vitalii 11:43 04.10.2016
+	EndRecordAdd;
+				
 return;
 end;
 

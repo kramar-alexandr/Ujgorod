@@ -2183,7 +2183,7 @@ begin
   if (HasJewelleryInterface) then begin
     SetWRect(20,80,850,400);
   end else begin
-  SetWRect(20,80,700,400);
+  SetWRect(20,80,800,400);
   end;
   Sizeable(-1,-1,0,0);
   UseView(StockMovVc);
@@ -2262,6 +2262,7 @@ begin
     MatCol(1,32,"Сер. №",0,SerialNr,false,SerialNrSClass);
     EnterSkip(Quant);
     MatCol(1,130,"Товар",0,ArtCode,false,INSClass); //!!PRODTRANSLATE
+    EnterSkip(ArtCode);//Edit-------------------Vitalii 17:50 03.10.2016
     Flip(flipnr); flipnr = flipnr + 1;
     if (HasVarieties) then begin
     MatCol(1,200,"Необх.кільк.",0,OrdQuant,true,MATVARINSClass); //!!PRODTRANSLATE
@@ -2277,6 +2278,7 @@ begin
     MatCol(1,350,"Опис",0,Spec,false,0); //!!PRODTRANSLATE
   end else begin
     MatCol(1,32,"Товар",0,ArtCode,false,INSClass);
+    EnterSkip(ArtCode);//Edit-------------------Vitalii 17:50 03.10.2016
     Flip(flipnr);  flipnr = flipnr + 1;
     if (HasVarieties) then begin
   MatCol(1,86,"Зам. к-ть",0,OrdQuant,true,MATVARINSClass);
@@ -2290,6 +2292,7 @@ begin
     end;
   MatCol(1,210,"Отр. к-ть",0,Quant,true,0);
   MatCol(1,272,"Опис",0,Spec,false,0);
+  MatCol(1,-320,"Бренд",0,Brand,false,DISClass);//Edit-------------------Vitalii 12:06 04.10.2016
   end;
   if (UserCanAction("HideLastCostPrice",false)==false) then begin //Edit***************************Sasha2,13:36 13.07.2016
     MatCol(1,-260,"Стара ціна",0,OldPrice,true,0);
@@ -2309,6 +2312,7 @@ begin
   end;
   MatCol(1,210,"Отрим. к-ть",0,Quant,true,0);
   MatCol(1,272,"Опис",0,Spec,false,0);
+  MatCol(1,-320,"Бренд",0,Brand,false,DISClass);//Edit-------------------Vitalii 12:06 04.10.2016
   if (UserCanAction("HideLastCostPrice",false)==false) then begin //Edit***************************Sasha2,13:37 13.07.2016
     MatCol(1,-260,"Стара ціна",0,SentOldPrice,true,0);
     MatCol(1,-160,"Накл. витр.",0,SentExtraSCost,true,0);
@@ -2319,6 +2323,7 @@ begin
   if (HasObjects) then begin
   MatCol(1,-380,"Об'єкти",0,Objects,false,ObjSClass);
   end;
+  MatCol(1,-320,"Бренд",0,Brand,false,DISClass);//Edit-------------------Vitalii 12:06 04.10.2016
   if (HasSerialNumbers) then begin
   MatCol(1,-280,"Серійний №",0,SerialNr,false,SerialNrSClass);
   end;
@@ -2326,6 +2331,7 @@ begin
   MatCol(1,-40,"Коеф.",0,Coefficient,false,0);
   Flip(flipnr); flipnr = flipnr + 1;
   MatCol(1,86,"Опис",0,Spec,false,0);
+  MatCol(1,-320,"Бренд",0,Brand,false,DISClass);//Edit-------------------Vitalii 12:06 04.10.2016
   if (HasSerialNumbers) then begin
   MatCol(1,-280,"Серійний №",0,SerialNr,false,SerialNrSClass);
   end;
@@ -2335,6 +2341,7 @@ begin
   if (HasPositions) then begin
     Flip(flipnr); flipnr = flipnr + 1;
   MatCol(1,86,"Опис",0,Spec,false,0);
+  MatCol(1,-320,"Бренд",0,Brand,false,DISClass);//Edit-------------------Vitalii 12:06 04.10.2016
   MatCol(1,-180,"З місця",0,FrPosCode,false,UsedPosSClass);
   MatCol(1,-90,"На місце",0,ToPosCode,false,FreePosSClass);
   end;
@@ -2781,7 +2788,7 @@ begin
   Integer f,flipnr;
   
   WindowBegin("Переоцінка RRP",SRPriceDClass,CGview,-);
-  SetWRect(20,80,900,350);
+  SetWRect(20,80,1000,350);
   Sizeable(-1,-1,0,0);
   FormName(SRPriceForm);
   UseView(SRPriceVc);
@@ -2817,6 +2824,7 @@ begin
   MatrixBegin(4,v,-50,-40,-,999);
   Flip(0);
   MatCol(1,32,"Товар",0,ArtCode,false,INSClass);
+  EnterSkip(ArtCode);//Edit-------------------Vitalii 9:41 04.10.2016
   MatCol(1,94,"К-ть",0,Qty,true,0);
   flipnr = 1;
   Flip(flipnr); flipnr = flipnr + 1;
@@ -2826,6 +2834,7 @@ begin
   end else begin
     MatCol(1,144,"Description",0,Spec,false,0); //!!PRODTRANSLATE
   end;
+  MatCol(1,-520,"Бренд",0,Brand,false,DISClass);//Edit-------------------Vitalii 12:06 04.10.2016
   rightpos = -460;
   if (UserCanAction("HideLastCostPrice",false)==false) then begin
     MatCol(1,rightpos,"Ціна закуп.",0,LastCostPrice,true,0);
