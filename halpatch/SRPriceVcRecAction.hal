@@ -302,7 +302,7 @@ begin
     RecordCheckError(1854,"",-1,"Location");      
     res = -1; 
     goto LSRPriceVcRecordCheck;
-  end;
+  end; //Edit***************************Sasha2,17:07 10.10.2016 }
   
  /*if (SerNrTestSRPriceVc(SRr.SerNr,SRr.TransDate,gentrans)==false) then begin
     if (check>0) then begin
