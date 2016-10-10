@@ -295,6 +295,12 @@ begin
     end;
   end;
   
+  if (blank(SRr.Location)) then begin
+    RecordCheckError(1854,"",-1,"Location");      
+    res = -1; 
+    goto LSRPriceVcRecordCheck;
+  end;
+  
  /*if (SerNrTestSRPriceVc(SRr.SerNr,SRr.TransDate,gentrans)==false) then begin
     if (check>0) then begin
     RecordCheckError(1557,"",-1,"SerNr");      
