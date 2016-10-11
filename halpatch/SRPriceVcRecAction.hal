@@ -266,10 +266,12 @@ begin
   end;
   if (SRr.OKFlag==0) then begin
     if (stat==updatemode) then begin
-      if (SR2r.OKFlag==1) then begin unokf = true; end;
-      RecordCheckError(20884,"",-1,"Location");  //Edit***************************Sasha2,16:33 10.10.2016 {    
-      res = -1;
-      goto LSRPriceVcRecordCheck; //Edit***************************Sasha2,16:33 10.10.2016 }
+      if (SR2r.OKFlag==1) then begin 
+        unokf = true;
+        RecordCheckError(20884,"",-1,"Location");  //Edit***************************Sasha2,16:33 10.10.2016 {    
+        res = -1;
+        goto LSRPriceVcRecordCheck; //Edit***************************Sasha2,16:33 10.10.2016 }
+      end;
     end;
   end;
   /*if (unokf) then begin
