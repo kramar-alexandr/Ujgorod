@@ -374,6 +374,14 @@ begin
       if (IV2p.OKFlag==0) then begin transf = true; end;
     end;  
   end;
+  if (IVp.OKFlag!=0) and (IV2p.OKFlag==0) then begin
+    if (!UserCanAction("DisallowOKNotToday",true) and (IVp.InvDate!=CurrentDate)) then begin
+    logtext(0,IVp.InvDate & " " & CurrentDate);
+      RecordCheckError(31004,"",-1,"InvDate");  
+      res = -1;
+      goto L99;
+    end;
+  end;
   BlockLoad(ARAccb);
   BlockLoad(MSb);
   BlockLoad(SRRec);
