@@ -274,7 +274,12 @@ begin
   end;
   if (SRr.OKFlag==0) then begin
     if (stat==updatemode) then begin
-      if (SR2r.OKFlag==1) then begin unokf = true; end;
+      if (SR2r.OKFlag==1) then begin 
+        unokf = true;
+        RecordCheckError(20884,"",-1,"Location");  //Edit***************************Sasha2,16:33 10.10.2016 {    
+        res = -1;
+        goto LSRPriceVcRecordCheck; //Edit***************************Sasha2,16:33 10.10.2016 }
+      end;
     end;
   end;
   /*if (unokf) then begin
@@ -302,6 +307,12 @@ begin
       goto LSRPriceVcRecordCheck;
     end;
   end;
+  
+  if (SRr.OKFlag==1 and blank(SRr.Location)) then begin //Edit***************************Sasha2,17:07 10.10.2016 {
+    RecordCheckError(1854,"",-1,"Location");      
+    res = -1; 
+    goto LSRPriceVcRecordCheck;
+  end; //Edit***************************Sasha2,17:07 10.10.2016 }
   
  /*if (SerNrTestSRPriceVc(SRr.SerNr,SRr.TransDate,gentrans)==false) then begin
     if (check>0) then begin

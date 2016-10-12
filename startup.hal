@@ -48,8 +48,12 @@ begin
   SString(31001,"Початкова сума продаж");
   SString(31002,"Сума продаж на сьогодні");
   SString(31003,"Знижка");
-  SString(31004,"Переоцінка RRP");
-	
+  SString(31004,"Не можна затверджувати Акт/накладну, яка створена не сьогодні!");
+  SString(31005,"Не можна затверджувати Переміщення товарів, яке створене не сьогодні!");
+  SString(31006,"Не можна затверджувати відправку Переміщення товарів, яке відправлене не сьогодні!");
+  SString(31007,"Не можна затверджувати отримання Переміщення товарів, яке отриманне не сьогодні!");
+	SString(31008,"Переоцінка RRP");
+
 	
   StrSetBegin(3); /* Try to keep them in alphabetical order */
   StrSetText(AllowAddingINtoRet,"Додавання товарів до Повернення Товарів");
@@ -152,6 +156,7 @@ begin
   StrSetText(DisallowPojectChangefornonPRMan,"Не дозволяти зміну проекту усім, крім Менеджеру проетку");
   StrSetText(DisallowPRScheduleChangefornonPRMan,"Не дозволяти зміну графіку проекту усім, крім Менеджеру проетку");
   StrSetText(DisallowChangeIVQtyFromOR,"Не дозволяти зміну к-сті на акті/накл. створеній із рахунку клієнту"); 
+  StrSetText(DisallowOKNotToday,"Не дозволяти ставити ОК в документах не з поточною датою");
   StrSetText(DisallowSalesmanChange,"Заборонити зміну продавця на не затвердж. акт/накл.");
   StrSetText(DisallowIntORClose,"Заборонити закриття внутрішніх замовлень");
   StrSetText(DisallowORClose,"Заборонити закриття рахунків клієнтам");

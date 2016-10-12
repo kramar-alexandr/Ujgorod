@@ -457,7 +457,7 @@ begin
   transnr = IHr.TransNr;
   switch (IHr.FileName) begin
   	case "SRPriceVc":  // Edit ************************** Tuesday, 11 October 2016 14:48:02
-      strid = 31004;  
+      strid = 31008;  
       dblstr = "DblSRPriceVc";
     case "IVVc":  
       if (outf) then begin
