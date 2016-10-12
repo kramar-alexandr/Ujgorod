@@ -487,7 +487,7 @@ begin
   string 20 frdra,todra,reportCur;
   val possum,posgp,tval,reportRate;
   record BaseCurBlock BCb;
-  val totfifo; //Edit***************************Sasha2,12:07 10.10.2016
+  val totfifo,totfifoSum; //Edit***************************Sasha2,12:07 10.10.2016
 
   afr = FirstInRange(RepSpec.f1,20);
   ato = LastInRange(RepSpec.f1,20);
@@ -992,6 +992,7 @@ begin
               sumquan = sumquan + totquan;
               TotSum = TotSum + t;
               gpsum = gpsum + gps;
+              totfifoSum = totfifoSum + totfifo; //Edit***************************Sasha2,12:01 12.10.2016
           end;
           if (RepSpec.ArtMode==0) then begin
               StartFormat(15);
@@ -1008,6 +1009,7 @@ begin
               Gray_Divider(0,1); //Edit***************************Sasha2,12:40 20.09.2016
               TotSum = iv + TotSum + IVr.FrBase;
               gpsum = gpsum + gps;
+              totfifoSum = totfifoSum + totfifo; //Edit***************************Sasha2,12:01 12.10.2016
           end;
         end;
       end;//testf
@@ -1019,7 +1021,8 @@ begin
   OutVal(124,0,sumquan,M4Qty,true);
   if (RepSpec.ArtMode==0) then begin
     OutVal(4,0,TotSum,M4Val,true);
-    gpperc = (gpsum/TotSum)*100;
+    //gpperc = (gpsum/TotSum)*100; //Edit***************************Sasha2,12:01 12.10.2016
+    gpperc = (gpsum/totfifoSum)*100; //Edit***************************Sasha2,12:01 12.10.2016
     OutVal(5,0,gpperc,M4Val,true);
     OutVal(6,0,gpsum,M4Val,true);
   end;
