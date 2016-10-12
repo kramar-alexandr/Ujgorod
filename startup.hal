@@ -48,6 +48,7 @@ begin
   SString(31001,"Џочаткова сума продаж");
   SString(31002,"‘ума продаж на сьогоднґ");
   SString(31003,"‡нижка");
+  SString(31004,"Џереоцґнка RRP");
 	
 	
   StrSetBegin(3); /* Try to keep them in alphabetical order */

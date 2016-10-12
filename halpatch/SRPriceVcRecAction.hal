@@ -37,6 +37,9 @@ external procedure CalcSum(val,val,val,val,var val,Integer);
 external procedure GetPRInvSep(string,var Integer,var Integer);
 external function Integer GetItemTypeGroup(string,var string);
 external updating function val NextLocOKNr(string);
+external updating procedure SRPriceUpdateItemHist(record SRPriceVc);// Edit ************************** Monday, 10 October 2016 16:01:54
+external updating procedure SRPriceRemoveItemHist(record SRPriceVc);// Edit ************************** Monday, 10 October 2016 16:01:54
+
 
 //Edit***************************Sasha2,11:35 08.07.2016 {
 updating procedure UpdateRRPPrices(record SRPriceVc SRPricer)
@@ -132,6 +135,7 @@ begin
 
     if (SRr.OKFlag!=0) then begin
       UpdateRRPPrices(SRr); //Edit***************************Sasha2,11:35 08.07.2016
+      SRPriceUpdateItemHist(SRr);// Edit ************************** Monday, 10 October 2016 15:58:55
     end;
     
   SRPriceVcRecordSaveAfter = res;
@@ -158,6 +162,10 @@ begin
   
     if (SR2r.OKFlag==0 and SRr.OKFlag!=0) then begin
       UpdateRRPPrices(SRr); //Edit***************************Sasha2,11:35 08.07.2016
+      SRPriceUpdateItemHist(SRr);// Edit ************************** Monday, 10 October 2016 15:58:55
+    end;
+    if (SR2r.OKFlag==1 and SRr.OKFlag==0) then begin
+    	SRPriceRemoveItemHist(SRr);// Edit ************************** Monday, 10 October 2016 16:15:04
     end;
   
   SRPriceVcRecordUpdateAfter = res;
