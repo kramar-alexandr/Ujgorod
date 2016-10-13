@@ -363,8 +363,10 @@ LItemHistItemHeader:;
         StartFormat(15);
         OutString(0,0,item,false);
         OutString(100,0,name,false);
+        OutString(250,0,"Ціна закупки",false);// Edit ************************** Thursday, 13 October 2016 14:21:41
         OutString(300,0,unittext,false);
-        OutString(300,0,"",false);
+        OutString(350,0,"Стара ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43  
+        OutString(420,0,"Нова ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43 
         OutString(100,0,USetStr(2492),false);
         OutString(300,0,"",false);
         OutString(300,0,"",false);
@@ -400,8 +402,11 @@ LItemHistItemHeader:;
         if (RepSpec.flags[9]!=0) then begin
           StartFormat(15);
           OutString(0,0,item,false);
-          OutString(60,0,name,false);         
+          OutString(60,0,name,false);   
+          OutString(250,0,"Ціна закупки",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43    
           OutString(300,0,unittext,false);
+          OutString(350,0,"Стара ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43  
+          OutString(420,0,"Нова ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43  
           EndFormat;
           Gray_Divider(0,1);
           StartFormat(15);
@@ -737,10 +742,10 @@ LPrintItemHistExcel:;
 						OutString(115,dblstr,transnr,false);
 						
 						OutString(165,0,IHr.SerialNr,false);
-						
-						OutString(300,0,SRPricerw.PLPrice,false);
-						OutString(380,0,SRPricerw.NewFIFO,false);
-						OutString(410,0,SRPricerw.DiffFIFO,true);
+						OutString(250,0,SRPricerw.LastCostPrice,false);
+						OutString(350,0,SRPricerw.PLPrice,false);
+						OutString(420,0,SRPricerw.NewFIFO,false);
+						//OutString(410,0,SRPricerw.DiffFIFO,true);
 						
 						EndFormat;
         	end else begin// Edit ************************** Tuesday, 11 October 2016 14:53:40

@@ -622,3 +622,17 @@ begin
   RunReport(RepSpec,0); 
 return;
 end;
+
+
+
+global procedure DblSRPriceVc(string dblstr,string l,Integer currepwn)
+begin
+  record SRPriceVc SRPricer;
+  Integer wn;
+  
+  SRPricer.SerNr = dblstr;
+  if (ReadFirstMain(SRPricer,1,true)) then begin
+    wn = OpenWindow("SRPriceDClass",1,0,"","",SRPricer);
+  end;
+  return;
+end;
