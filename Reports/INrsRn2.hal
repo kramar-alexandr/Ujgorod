@@ -126,7 +126,9 @@ LLPrintItemHistHeaderExcel:;
           end;
           if (RepSpec.flags[12]==1) then begin OutStringAdjustBiDi(170,0,USetStr(7593),true,M4Val,420); end;    
           if (RepSpec.flags[12]==2) then begin OutStringAdjustBiDi(170,0,USetStr(7594),true,M4Val,420); end;     
-          OutStringAdjustBiDi(410,0,USetStr(5009),true,M4Val,450);
+          OutStringAdjustBiDi(400,0,USetStr(5009),true,M4Val,450);
+          OutString(430,0,"С.Ціна",true);// Edit ************************** Thursday, 13 October 2016 16:07:08
+          OutString(440,0,"Н.Ціна",false);   // Edit ************************** Thursday, 13 October 2016 16:07:08      
           OutStringAdjustBiDi(480,0,USetStr(5011),true,M4Val,520);
           EndFormat;
         end;
@@ -148,7 +150,9 @@ LLPrintItemHistHeaderExcel:;
           end;
           OutStringAdjustBiDi(340,0,USetStr(5009),true,M4Val,350);        
           if (UserCanAction("ViewCostPrice",true)) then begin
-            OutStringAdjustBiDi(400,0,USetStr(5013),true,M4Val,420);       
+            OutStringAdjustBiDi(400,0,USetStr(5013),true,M4Val,420);    
+            OutString(430,0,"С.Ціна",true);// Edit ************************** Thursday, 13 October 2016 16:07:08
+            OutString(440,0,"Н.Ціна",false);   // Edit ************************** Thursday, 13 October 2016 16:07:08      
             OutStringAdjustBiDi(480,0,USetStr(5015),true,M4Val,500);
           end;
           EndFormat;
@@ -365,8 +369,8 @@ LItemHistItemHeader:;
         OutString(100,0,name,false);
         OutString(250,0,"Ціна закупки",false);// Edit ************************** Thursday, 13 October 2016 14:21:41
         OutString(300,0,unittext,false);
-        OutString(350,0,"Стара ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43  
-        OutString(420,0,"Нова ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43 
+        //OutString(350,0,"Стара ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43  
+        //OutString(420,0,"Нова ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43 
         OutString(100,0,USetStr(2492),false);
         OutString(300,0,"",false);
         OutString(300,0,"",false);
@@ -403,10 +407,10 @@ LItemHistItemHeader:;
           StartFormat(15);
           OutString(0,0,item,false);
           OutString(60,0,name,false);   
-          OutString(250,0,"Ціна закупки",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43    
+          //OutString(250,0,"Ціна закупки",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43    
           OutString(300,0,unittext,false);
-          OutString(350,0,"Стара ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43  
-          OutString(420,0,"Нова ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43  
+          //OutString(350,0,"Стара ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43  
+          //OutString(420,0,"Нова ціна",false);  // Edit ************************** Thursday, 13 October 2016 14:21:43  
           EndFormat;
           Gray_Divider(0,1);
           StartFormat(15);
@@ -742,9 +746,9 @@ LPrintItemHistExcel:;
 						OutString(115,dblstr,transnr,false);
 						
 						//OutString(165,0,IHr.SerialNr,false);
-						OutString(250,0,SRPricerw.LastCostPrice,false);
-						OutString(350,0,SRPricerw.PLPrice,false);
-						OutString(420,0,SRPricerw.NewFIFO,false);
+						//OutString(250,0,SRPricerw.LastCostPrice,false);
+						OutString(430,0,SRPricerw.PLPrice,true);
+						OutString(440,0,SRPricerw.NewFIFO,false);
 						//OutString(410,0,SRPricerw.DiffFIFO,true);
 						
 						EndFormat;
@@ -785,9 +789,10 @@ LPrintItemHistExcel:;
 						OutDate(0,0,IHr.TransDate,false);
 						OutString(60,0,USetStr(strid),false);
 						OutString(115,dblstr,transnr,false);						
-						OutString(350,0,SRPricerw.PLPrice,false);
-						OutString(400,0,SRPricerw.LastCostPrice,false);
-						OutString(420,0,SRPricerw.NewFIFO,false);
+						
+						OutString(400,0,SRPricerw.LastCostPrice,true);
+						OutString(430,0,SRPricerw.PLPrice,true);
+						OutString(440,0,SRPricerw.NewFIFO,false);
 						
 						EndFormat;
         	end else begin// Edit ************************** Tuesday, 11 October 2016 14:53:40
