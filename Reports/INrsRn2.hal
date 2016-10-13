@@ -784,10 +784,9 @@ LPrintItemHistExcel:;
         		StartFormat(15);
 						OutDate(0,0,IHr.TransDate,false);
 						OutString(60,0,USetStr(strid),false);
-						OutString(115,dblstr,transnr,false);
-												
-						OutString(250,0,SRPricerw.LastCostPrice,false);
+						OutString(115,dblstr,transnr,false);						
 						OutString(350,0,SRPricerw.PLPrice,false);
+						OutString(400,0,SRPricerw.LastCostPrice,false);
 						OutString(420,0,SRPricerw.NewFIFO,false);
 						
 						EndFormat;
