@@ -835,7 +835,9 @@ BEGIN
   string 255 inwarn;
   val fr,to1,to2,br1,br2;
   string 5 crncy;
+  record BaseCurBlock BCb;//Edit***************************Sasha2,11:38 26.10.2016
        
+  BlockLoad(BCb); //Edit***************************Sasha2,11:38 26.10.2016
   RecordNew(SRPricer);
   SRPricer.PUNr = PUr.SerNr;
   if (SRPricer.SerNr==-1) then begin  
@@ -865,7 +867,8 @@ BEGIN
       SRPriceVc_PasteArtCode(SRPricer,nrwcnt,true,inwarn);
       MatRowGet(SRPricer,nrwcnt,SRPricerw);
       SRPricerw.Qty = PUrw.Quant;
-      SRPricerw.CurncyCode = PUr.CurncyCode;
+      //SRPricerw.CurncyCode = PUr.CurncyCode; //Edit***************************Sasha2,11:40 26.10.2016
+      SRPricerw.CurncyCode = BCb.BaseCur1; //Edit***************************Sasha2,11:40 26.10.2016
       SRPricerw.LastCostPrice = PUrw.CostPrice;
       SRPricerw.SerialNr = PUrw.SerialNr;
       MatRowPut(SRPricer,nrwcnt,SRPricerw);

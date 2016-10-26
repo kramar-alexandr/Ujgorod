@@ -201,7 +201,9 @@ begin
   string 100 curClass;
   record DIVc DIr;
   integer pos;
+  record BaseCurBlock BCb;//Edit***************************Sasha2,11:38 26.10.2016
 
+  BlockLoad(BCb); //Edit***************************Sasha2,11:38 26.10.2016
   ReadFirstItem(ISr.Code & ISr.Variety,INr,true,true);
   SRrw.Coefficient = INr.UnitCoefficient;
   SRrw.ArtCode = ISr.Code & ISr.Variety;
@@ -222,7 +224,8 @@ begin
   end;
   FindLastCostPriceForArtCode(SRp,SRrw,INr.Code,serial,location,lastcostprice,lastcostcur);
   SRrw.LastCostPrice = lastcostprice;
-  SRrw.CurncyCode = lastcostcur;
+  //SRrw.CurncyCode = lastcostcur; //Edit***************************Sasha2,11:39 26.10.2016
+  SRrw.CurncyCode = BCb.BaseCur1; //Edit***************************Sasha2,11:39 26.10.2016
   FindPriceInPlAndUpdDiffs(SRrw,INr.Code,serial,SRp,true);
   //Edit-------------------Vitalii 11:47 04.10.2016
   if (NonBlank(INr.DispGroups)) then begin
