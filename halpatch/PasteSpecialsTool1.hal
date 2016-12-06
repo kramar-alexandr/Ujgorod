@@ -4,7 +4,7 @@ external function Boolean FindCustomerRelation(string,string,var record CUVc);
 remote procedure FillKnownSerialNr(string,var Array string,var Integer);
 remote procedure FillSerialNr2(string,string,var Array string,var Integer);
 remote procedure FillSerialNr(string,string,var Array string,var Integer);
-remote procedure MyFillSerialNr(string,string,var Array string,var Integer,integer);// Edit ************************** Thursday, 30 June 2016 17:45:15
+remote procedure MyFillSerialNr(string,string,var Array string,var Integer,integer,string);// Edit ************************** Thursday, 30 June 2016 17:45:15
 external procedure M4PadString(string,Integer,string,Boolean,var string);
 remote procedure ContactSClassOnOpenRemote(string,var Array string,var Integer);
 remote procedure ContactSClassOnOpenRemote2(string,var Array string,var Integer);
@@ -612,7 +612,7 @@ BEGIN
       location = IVr.Location;
     end;
     switch (type) begin
-      case 1: MyFillSerialNr(IVrw.ArtCode,location,asernrstr,acnt,IVrw.Quant);
+      case 1: MyFillSerialNr(IVrw.ArtCode,location,asernrstr,acnt,IVrw.Quant,IVr.CustCode);
       case 2: FillSerialNr2(IVrw.ArtCode,location,asernrstr,acnt);
     end;   
   end;  

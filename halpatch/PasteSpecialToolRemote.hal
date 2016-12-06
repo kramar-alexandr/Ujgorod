@@ -1669,7 +1669,7 @@ BEGIN
 END;
 
 global
-procedure MyFillSerialNr(string item,string location,var Array string asernrstr,var Integer acnt,integer qty)
+procedure MyFillSerialNr(string item,string location,var Array string asernrstr,var Integer acnt,integer qty,string custcode)
 BEGIN
   record SerBalVc SBr;
   Boolean found,infound;
@@ -1728,22 +1728,27 @@ BEGIN
   		if(testf)then begin
   			IVr.SerNr = IHr.TransNr;
   			readfirstmain(IVr,1,true);
-  			mtrw = matrowcnt(IVr);
-  			if(mtrw>IHr.Row)then begin
-  				Matrowget(IVr,IHr.Row,IVrw);
+  			if(nonblank(custcode) and custcode!=IVr.CustCode)then begin
+  				testf = false;
   			end;
-  			if(IVrw.vRebate==0)then begin
-  				IVrw.vRebate = 0;
-  			end;
-  			if(IVrw.FIFO==0)then begin
-  				IVrw.FIFO = 0;
-  			end;
-  			if(IVrw.FIFORowVal==0)then begin
-  				IVrw.FIFORowVal = 0;
-  			end;
-  			
-  			asernrstr[acnt] = IHr.SerialNr & " " & IHr.TransDate & " " & IVrw.Price & " " & IVrw.vRebate & " " & IVrw.Sum & " " & IVr.SerNr & " " & IHr.Row;
-				acnt = acnt + 1;
+  			if(testf)then begin
+					mtrw = matrowcnt(IVr);
+					if(mtrw>IHr.Row)then begin
+						Matrowget(IVr,IHr.Row,IVrw);
+					end;
+					if(IVrw.vRebate==0)then begin
+						IVrw.vRebate = 0;
+					end;
+					if(IVrw.FIFO==0)then begin
+						IVrw.FIFO = 0;
+					end;
+					if(IVrw.FIFORowVal==0)then begin
+						IVrw.FIFORowVal = 0;
+					end;
+				
+					asernrstr[acnt] = IHr.SerialNr & " " & IHr.TransDate & " " & IVrw.Price & " " & IVrw.vRebate & " " & IVrw.Sum & " " & IVr.SerNr & " " & IHr.Row;
+					acnt = acnt + 1;
+				end;
   		end;
   	end;
   	
