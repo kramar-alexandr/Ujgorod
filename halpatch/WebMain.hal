@@ -38,3 +38,11 @@ procedure ToolWebNotLoggedinMess()
 begin
   return;
 end;
+
+webpublic global
+updating procedure WebDoLogout()
+begin
+  WebLogout;
+  //WebMain;
+  return;
+end;

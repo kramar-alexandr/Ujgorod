@@ -427,12 +427,44 @@ end;
 window MyBIRClass:1
   wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer") 
 begin
-  real h,v,vs;
+  real h,h2,v,vs;
   
   WindowBegin("Статистика продажів",MyBIRClass,CGother,-);  
   SetWRect(20,80,400,250);
   UseView(RcVc);
-  HalPushButton(h=50,20,h+110,40,"MyBIRun","Run");
+  v = 16; vs = 25; h = 120; h2 = 250;
+  /*PeriodField(h,v,"Період");
+  EditField(h,v+=vs,80,"Склад (магазин)",Normal,f1,false,LocationSClass);*/
+  HalPushButton(h2,v+vs,h2+80,40,"MyBIRun","Запуск");
+  
+  EndWindow;
+end;
+
+window SalesRepWebRClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer") 
+begin
+  real h,h2,v,vs;
+  
+  WindowBegin("Звіт з продажів",SalesRepWebRClass,CGother,-);  
+  SetWRect(20,80,400,250);
+  UseView(RcVc);
+  v = 16; vs = 25; h = 120; h2 = 250;
+  PeriodField(h,v,"Період");
+  /*EditField(h,v+=vs,80,"Склад (магазин)",Normal,f1,false,LocationSClass);*/
+  HalPushButton(h2,v+vs,h2+80,40,"SalesRepWebRun","Запуск");
+  
+  EndWindow;
+end;
+
+window TestWebRClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer") 
+begin
+  real h,h2,v,vs;
+  
+  WindowBegin("TestWebRClass продажів",TestWebRClass,CGRcW,RcType);
+  SetWRect(20,80,400,250);
+  UseView(RcVc);
+  v = 16; vs = 25; h = 120; h2 = 250;
   
   EndWindow;
 end;

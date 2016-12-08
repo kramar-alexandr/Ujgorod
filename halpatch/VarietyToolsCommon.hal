@@ -10,7 +10,8 @@ external function string 255 AddStr(string,string,string);
 remote procedure POVc_VARColorSClass(record POVc,integer,Integer,Integer,Integer,var Array string,var Integer);// Edit ************************** Tuesday, 21 June 2016 16:13:14
 external procedure PasteFromSysList(Integer,Integer);// Edit ************************** Tuesday, 21 June 2016 16:29:16
 external function string 255 StringFromSysList(Integer,Integer);// Edit ************************** Tuesday, 21 June 2016 16:30:17
-
+remote function Time GetCurTimeOnServ();
+external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);
 
 procedure ExtractSemicolStr(string ostr,var Integer pos,var string rstr)
 begin
@@ -1010,13 +1011,51 @@ begin
   record ProgramStatusBlock PSb;
 	record CompaniesBlock Cb;
 	row CompaniesBlock Cbrw;
+  record RcVc RepSpec;
+	integer wn,pos;
+  string 20 sd,ed;
 
+  wn = curwindow;
+	deselectwindow(wn,true);
+	getwindowrecord(wn,RepSpec);
 	blockload(PSb);
 	blockload(Cb);
-
+  
+  ExtractObjWithSeparator(":",RepSpec.Period2Str,true,pos,sd);
+  ExtractObjWithSeparator(":",RepSpec.Period2Str,true,pos,ed);
 	compnr = currentcompany;
 	matrowget(Cb,compnr-1,Cbrw);
-	url = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/SaleStat.html?param=" & MD5String(GetHour(CurrentTime) & ":" & GetMinute(CurrentTime));
+	url = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/SaleStat.html?param=" & MD5String(GetHour(GetCurTimeOnServ) & ":" & GetMinute(GetCurTimeOnServ)) & "&sd=" & sd & "&ed=" & ed & "&loc=" & RepSpec.f1;
+  OpenWebBrowser(url);
+
+	return;
+end;
+
+global
+procedure SalesRepWebRun()
+begin
+  string 255 url;
+  integer compnr;
+  record ProgramStatusBlock PSb;
+	record CompaniesBlock Cb;
+	row CompaniesBlock Cbrw;
+  record RcVc RepSpec;
+	integer wn,pos;
+  string 20 sd,ed;
+
+  wn = curwindow;
+	deselectwindow(wn,true);
+	getwindowrecord(wn,RepSpec);
+	blockload(PSb);
+	blockload(Cb);
+  
+  ExtractObjWithSeparator(":",RepSpec.Period2Str,true,pos,sd);
+  sd = DateToString(StringToDate(sd),"YYYY-MM-DD");
+  ExtractObjWithSeparator(":",RepSpec.Period2Str,true,pos,ed);
+  ed = DateToString(StringToDate(ed),"YYYY-MM-DD");
+	compnr = currentcompany;
+	matrowget(Cb,compnr-1,Cbrw);
+	url = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/SaleReport.html?sd=" & sd & "&ed=" & ed;
   OpenWebBrowser(url);
 
 	return;
