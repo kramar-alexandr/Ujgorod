@@ -251,7 +251,7 @@ begin
   row IVVc IVrw;
   record SysFormatBlock SysFormatRec;
   integer i,rwcnt,pos;
-  boolean TrHs,testf,firstf;
+  boolean TrHs,testf,testf1,firstf;
   val fr,tb1,tb2,br1,br2,
       price,sum,cost,profit,cred;
   Date sd,ed;
@@ -309,8 +309,11 @@ begin
     TrHs = true;
     IVr.InvDate = sd;
     while (LoopKey("InvDate",IVr,1,TrHs)) begin
-      if (DateInRange(IVr.InvDate,sd,ed)==false) then begin TrHs = false; end;
-      if (TrHs) then begin
+      testf = true;
+      if (DateInRange(IVr.InvDate,sd,ed)==false) then begin TrHs = false; testf = false; end;
+      if (IVr.OKFlag==0) then begin testf = false; end;
+      if (IVr.OKFlag==0) then begin testf = false; end;
+      if (testf) then begin
         fr = IVr.FrRate;
         tb1 = IVr.ToRateB1;
         tb2 = IVr.ToRateB2;
@@ -322,11 +325,14 @@ begin
         end;	
         rwcnt = MatRowCnt(IVr);
         for(i=0;i<rwcnt;i=i+1) begin
-          testf = true;
+          testf1 = true;
           MatRowGet(IVr,i,IVrw);
-          if (IVrw.stp!=kInvoiceRowTypeNormal) then begin testf = false; end;
-          if (blank(IVrw.ArtCode)) then begin testf = false; end;
-          if (testf) then begin
+          if (IVrw.stp!=kInvoiceRowTypeNormal) then begin testf1 = false; end;
+          if (IVr.Invalid<>0) then begin testf = false; end;
+          if (blank(IVrw.ArtCode)) then begin testf1 = false; end;
+          if (blank(IVrw.Quant)) then begin testf1 = false; end;
+          if (IVrw.Quant==0) then begin testf1 = false; end;
+          if (testf1) then begin
             price = MulRateToBase1(IVr.CurncyCode,IVrw.Price,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
             sum = MulRateToBase1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff)*cred;
             cost = IVrw.FIFORowVal;
@@ -348,4 +354,4 @@ begin
   end;
   
   return;
-end;  
+end;
