@@ -75,7 +75,7 @@ begin
   ed = StringToDate(WebGetArg("ed"));
   // -------OLD-------
   mydate = currentdate;
-  mydate = StringToDate("1/8/2016");
+  //mydate = StringToDate("1/8/2016");
   sd = StringToDate("01/" & GetMonth(mydate) & "/" & GetYear(mydate));
   ed = StringToDate(DaysInMonth(GetYear(mydate), GetMonth(mydate)) & GetMonth(mydate) & "/" & GetYear(mydate));
   loc = "";
