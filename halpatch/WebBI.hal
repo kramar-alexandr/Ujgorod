@@ -74,7 +74,8 @@ begin
 	sd = StringToDate(WebGetArg("sd"));
   ed = StringToDate(WebGetArg("ed"));
   // -------OLD-------
-  mydate = StringToDate("01/08/2016");
+  mydate = currentdate;
+  mydate = StringToDate("1/8/2016");
   sd = StringToDate("01/" & GetMonth(mydate) & "/" & GetYear(mydate));
   ed = StringToDate(DaysInMonth(GetYear(mydate), GetMonth(mydate)) & GetMonth(mydate) & "/" & GetYear(mydate));
   loc = "";
@@ -115,16 +116,16 @@ begin
     TrHs = true;
     t = 0;
     IVr.InvDate = sd;
-    while(loopkey("TransDate",IVr,1,TrHs))begin
+    while(loopkey("InvDate",IVr,1,TrHs))begin
       testf = true;
-      if (IVr.InvDate>ed) then begin TrHs = false; testf = false; end;
+      if (DateInRange(IVr.InvDate,sd,ed)==false) then begin TrHs = false; testf = false; end;
       if (nonblank(loc) and (IVr.Location!=loc)) then begin testf = false; end;
       if (IVr.OKFlag==0) then begin testf = false; end;
       if (testf) then begin
         mtrw = matrowcnt(IVr);
         for (i=0;i<mtrw;i=i+1) begin
           matrowget(IVr,i,IVrw);
-          if (IVrw.Sum>=0) then begin
+          if (IVrw.Sum!=0) then begin
             if (IVrw.stp==kInvoiceRowTypeNormal) then begin
               INr.Code = IVrw.ArtCode;
               readfirstmain(INr,1,true);
@@ -180,11 +181,13 @@ begin
       vBarndInArr[aBrand[i]] = true;
     end;
     for (i=0;i<aTags.length;i=i+1) begin
-      pos = 0;
-      ExtractObjWithSeparator(";",aTags[i],true,pos,brand);
-      if vBarndInArr[brand] then begin
-        ExtractObjWithSeparator(";",aTags[i],true,pos,type);
-        WebOutString(ChangeCaseStr(brand,4) & tab & ChangeCaseStr(type,4) & tab & vSum[aTags[i]] & nl);
+      if (vSum[aTags[i]]!=0) then begin
+        pos = 0;
+        ExtractObjWithSeparator(";",aTags[i],true,pos,brand);
+        if vBarndInArr[brand] then begin
+          ExtractObjWithSeparator(";",aTags[i],true,pos,type);
+          WebOutString(ChangeCaseStr(brand,4) & tab & ChangeCaseStr(type,4) & tab & vSum[aTags[i]] & nl);
+        end;
       end;
     end;
   end;
