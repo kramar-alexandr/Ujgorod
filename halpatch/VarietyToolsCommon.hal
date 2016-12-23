@@ -1025,7 +1025,8 @@ begin
   ExtractObjWithSeparator(":",RepSpec.Period2Str,true,pos,ed);
 	compnr = currentcompany;
 	matrowget(Cb,compnr-1,Cbrw);
-	url = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/SaleStat.html?param=" & MD5String(GetHour(GetCurTimeOnServ) & ":" & GetMinute(GetCurTimeOnServ)) & "&sd=" & sd & "&ed=" & ed & "&loc=" & RepSpec.f1;
+  url = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/SaleStat.html?param=" & MD5String(GetHour(GetCurTimeOnServ) & ":" & GetMinute(GetCurTimeOnServ));
+	//url = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/SaleStat.html?param=" & MD5String(GetHour(GetCurTimeOnServ) & ":" & GetMinute(GetCurTimeOnServ)) & "&sd=" & sd & "&ed=" & ed & "&loc=" & RepSpec.f1;
   OpenWebBrowser(url);
 
 	return;
