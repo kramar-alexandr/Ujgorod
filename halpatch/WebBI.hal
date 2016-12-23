@@ -79,9 +79,11 @@ begin
   sd = StringToDate("01/" & GetMonth(mydate) & "/" & GetYear(mydate));
   ed = StringToDate(DaysInMonth(GetYear(mydate), GetMonth(mydate)) & GetMonth(mydate) & "/" & GetYear(mydate));
   loc = "";
-  SetAreaZeroSize(log);
-  AddTextToArea(CurrentDate & " " & CurrentTime & " " & CurrentUser & " - SaleStat.html" & chr(13) & chr(10),log);
-  writeareatofile(log,"web.log",1);
+  if (CurrentUser!= "SA") and (CurrentUser!= "SA_") then begin
+	SetAreaZeroSize(log);
+	AddTextToArea(CurrentDate & " " & CurrentTime & " " & CurrentUser & " - SaleStat.html" & chr(13) & chr(10),log);
+	writeareatofile(log,"web.log",1);
+  end;
   
   checkTime = CurrentTime;
   cti = 0;
@@ -186,7 +188,7 @@ begin
         ExtractObjWithSeparator(";",aTags[i],true,pos,brand);
         if vBarndInArr[brand] then begin
           ExtractObjWithSeparator(";",aTags[i],true,pos,type);
-          WebOutString(ChangeCaseStr(brand,4) & tab & ChangeCaseStr(type,4) & tab & vSum[aTags[i]] & nl);
+          WebOutString(ChangeCaseStr(brand,4) & tab & ChangeCaseStr(type,4) & tab & vSum[aTags[i]]*100 & nl);
         end;
       end;
     end;
@@ -268,9 +270,11 @@ begin
   integer deltaMin,cti;
   boolean isLogedIn;
 
-  SetAreaZeroSize(log);
-  AddTextToArea(CurrentDate & " " & CurrentTime & " " & CurrentUser & " - SaleReport.html" & chr(13) & chr(10),log);
-  writeareatofile(log,"web.log",1);
+  if (CurrentUser!= "SA") and (CurrentUser!= "SA_") then begin
+	SetAreaZeroSize(log);
+	AddTextToArea(CurrentDate & " " & CurrentTime & " " & CurrentUser & " - SaleStat.html" & chr(13) & chr(10),log);
+	writeareatofile(log,"web.log",1);
+  end;
   deltaMin = 2;
   sentMD5 = WebGetArg("param");
   checkTime = CurrentTime;
