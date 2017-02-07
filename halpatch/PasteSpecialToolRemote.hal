@@ -17,6 +17,8 @@ external procedure CreateSBString(Integer,string,string,string,val,Boolean,val,B
 external function val GetORRowReserv(LongInt,string,string,var val,var string,var string,Boolean);
 external function val GetIntORRowReserv(LongInt,string,string,var val,var string,var string,var string,Boolean);
 
+SetLangMode(LangUkrainian,"UKR",0);  
+
 function Boolean FindLastOffSerNrRecord(Date invdate,string filename,string serie,string tserstart,string tserend,var record OffSerNrIVVc resOffSNIVr)
 begin
   Boolean res,found,testf;
@@ -1720,7 +1722,7 @@ BEGIN
   	TrHs = true;
   	while(loopbackkey("FNArtCode",IHr,3,TrHs))begin
   		testf = true;
-  		if(IHr.TransDate<addmonth(currentdate,-3))then begin TrHs = false; testf = false; end;
+  		if(custcode!="’ˆŽ’ˆŠ€" and IHr.TransDate<addmonth(currentdate,-3))then begin TrHs = false; testf = false; end;
   		if(IHr.ArtCode!=item)then begin TrHs = false; testf = false; end;
   		if(IHr.FileName!="IVVc")then begin TrHs = false; testf = false; end;
   		if(IHr.Qty>0)then begin testf = false; end;
