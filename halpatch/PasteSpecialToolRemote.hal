@@ -1747,7 +1747,17 @@ BEGIN
 					if(IVrw.FIFORowVal==0)then begin
 						IVrw.FIFORowVal = 0;
 					end;
-				
+					
+					if(IVrw.Price==blankval)then begin
+						IVrw.Price = 0;
+					end;
+					if(IVrw.vRebate==blankval)then begin
+						IVrw.vRebate = 0;
+					end;
+					if(IVrw.Sum==blankval)then begin
+						IVrw.Sum = 0;
+					end;
+					
 					asernrstr[acnt] = IHr.SerialNr & " " & IHr.TransDate & " " & IVrw.Price & " " & IVrw.vRebate & " " & IVrw.Sum & " " & IVr.SerNr & " " & IHr.Row;
 					acnt = acnt + 1;
 				end;
