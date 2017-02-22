@@ -13,6 +13,7 @@ begin
   Report("Звіт по складу (модифікований)",NewINRClass,NewInvValRn,0,modIN); //Edit***************************Sasha2,15:24 11.07.2016
 	Report("Статистика продажів",MyBIRClass,MyBIRn,0,modSL);//Edit-------------------Vitalii 11:30 22.08.2016
   Report("Звіт з продажів (Web)",SalesRepWebRClass,SalesRepWebRn,0,modSL);//Edit-------------------Vitalii 16:21 08.12.2016
+  Report("Звіт невідповідностей в акт/н. на повернення",RetIVCoincidenceRClass,RetIVCoincidenceRn,0,modSL); //Edit***************************Sasha2,17:51 22.02.2017
 	//Report("!TestWeb",TestWebRClass,TestWebRn,0,modSL);
 	Setting("Налаштування Zebra",ZebraPrinterTClass,modIN); //Edit***************************Sasha2,14:17 20.07.2016
   
