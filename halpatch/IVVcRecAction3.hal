@@ -610,6 +610,8 @@ begin
   string 20 poscur;
   integer pos;
   record BaseCurBlock bascur;
+  record IVVc retIVr; //Edit***************************Sasha2,16:39 22.02.2017
+  row IVVc retIVrw; //Edit***************************Sasha2,16:39 22.02.2017
 
   
   // Edit Start ---------------------------------------------- Edit Start
@@ -753,6 +755,21 @@ begin
        goto LkInvoiceRowTypeNormal2;
      case kInvoiceRowTypeNormal:
 LkInvoiceRowTypeNormal2:;
+       if (IVrw.Quant<0 and IVrw.RetIVNum>-1) then begin //Edit***************************Sasha2,16:37 22.02.2017 {
+         retIVr.SerNr = IVrw.RetIVNum;
+         ReadFirstMain(retIVr,1,true);
+         MatRowGet(retIVr,IVrw.RetIVRow,retIVrw);
+         if (IVrw.ArtCode!=retIVrw.ArtCode) then begin
+           RecordCheckError(31009,"",i,"ArtCode");      
+           res = -1; 
+           goto L99;
+         end;
+         if (IVrw.SerialNr!=retIVrw.SerialNr) then begin
+           RecordCheckError(31009,"",i,"SerialNr");      
+           res = -1; 
+           goto L99;
+         end;
+       end; //Edit***************************Sasha2,16:37 22.02.2017 }
        if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin
           if (IVp.UpdStockFlag!=0) then begin
             if (IVp.OrderNr>0) then begin
