@@ -741,8 +741,10 @@ if (HasTouchScreenLook==false) then begin
   if (GuiType!=kGuiiPhone) then begin
     MatCol(t,144,"Опис",0,Spec,false,0);
   end;
-  MatCol(t,-240,"Ном. клієнтa",0,CustomsNr,false,0);
-  MatCol(t,-100,"Країна",0,CountryOfOrg,false,CountrySClass);
+  MatCol(t,-200,"RetIVNum",0,RetIVNum,false,0);
+  MatCol(t,-150,"RetIVRow",0,RetIVRow,false,0);
+  MatCol(t,-100,"Ном. клієнтa",0,CustomsNr,false,0);
+  MatCol(t,-50,"Країна",0,CountryOfOrg,false,CountrySClass);
   MatCol(t=kInvoiceRowTypeStructuredItemComponent,144,"Опис",0,Spec,false,0);
   MatCol(t,-240,"Ном. клієнтa",0,CustomsNr,false,0);
   MatCol(t,-100,"Країна",0,CountryOfOrg,false,CountrySClass);
