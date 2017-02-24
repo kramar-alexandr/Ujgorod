@@ -951,6 +951,8 @@ begin
                   end;
                 end;
               end;RESETLOOP(stockMovIHr);
+            otherwise
+              LogText(0,"Another IHr.FileName:" & IHr.FileName);
           end;
         end;
         
