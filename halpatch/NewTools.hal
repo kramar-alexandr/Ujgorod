@@ -10,6 +10,7 @@ external function Boolean SRPriceVc_PasteArtCode(var record SRPriceVc,Integer,Bo
 external procedure SRPriceVc_PasteSerialNr(var record SRPriceVc,Integer); //Edit***************************Sasha2,14:47 15.09.2016
 external procedure SRPriceSumUp(var record SRPriceVc); //Edit***************************Sasha2,14:52 15.09.2016
 external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
+external function val AbsoluteVal(val);
 
 global
 procedure CalcEANCHS(var string str)
@@ -891,3 +892,153 @@ LRecordAction_raPastePUInSRPrice:;
   RETURN;
 END; //Edit***************************Sasha2,14:02 15.09.2016 }
 
+updating
+procedure ChangeCostInNextTargetRegisters(LongInt sourceNr,val unitCost) 
+begin
+    record ItemHistVc IHr,stockMovIHr;
+    record IVVc IVr;
+    row IVVc IVrw;
+    record StockMovVc SMr;
+    row StockMovVc SMrw;
+    boolean TrHs,testf;
+    
+    IHr.Source = sourceNr;
+    TrHs = true;
+    while (LoopKey("Source",IHr,1,TrHs)) begin
+      testf = true;
+      if (IHr.Source!=sourceNr) then begin TrHs = false; testf = false; end;
+      if (testf) then begin
+        LogText(0,">>>>>>>>>>>");
+        LogText(0,"IHr.SerNr:" & IHr.SerNr & "  former cost:" & IHr.TotCostPrice & "  new cost:" & AbsoluteVal(unitCost*IHr.Qty));
+        IHr.TotCostPrice = AbsoluteVal(unitCost*IHr.Qty);
+        IHr.RemCostPrice = AbsoluteVal(unitCost*IHr.RemQty);
+        if (RECORDSTORE(IHr,true)) then begin
+          switch (IHr.FileName) begin
+            case "IVVc":
+              LogText(0,"IVVc: IHr.SerNr:" & IHr.SerNr & " TransNr:" & IHr.TransNr);
+              IVr.SerNr = IHr.TransNr;
+              if (ReadFirstMain(IVr,1,true)) then begin
+                MatRowGet(IVr,IHr.Row,IVrw);
+                IVrw.FIFO = unitCost;
+                IVrw.FIFORowVal = unitCost*IVrw.Quant;
+                MatRowPut(IVr,IHr.Row,IVrw);
+                RECORDSTORE(IVr,true);
+                LogText(0,"IVVc stored IVr.SerNr:" & IVr.SerNr);
+              end;
+            case "StockMovVc":
+              stockMovIHr.FileName = IHr.FileName;
+              stockMovIHr.TransNr = IHr.TransNr;
+              stockMovIHr.Row = IHr.Row;
+              TrHs = true;
+              while (loopkey("FNTransNr",stockMovIHr,3,TrHs)) begin
+                if (stockMovIHr.FileName!=IHr.FileName or stockMovIHr.TransNr!=IHr.TransNr or stockMovIHr.Row!=IHr.Row) then begin TrHs = false; end;
+                if (TrHs) then begin
+                  stockMovIHr.TotCostPrice = AbsoluteVal(unitCost*stockMovIHr.Qty);
+                  stockMovIHr.RemCostPrice = AbsoluteVal(unitCost*stockMovIHr.RemQty);
+                  LogText(0,"StockMovVc: IHr.SerNr:" & stockMovIHr.SerNr & " TransNr:" & stockMovIHr.TransNr);
+                  RECORDSTORE(stockMovIHr,true);
+                  SMr.SerNr = IHr.TransNr;
+                  if (ReadFirstMain(SMr,1,true)) then begin
+                    MatRowGet(SMr,IHr.Row,SMrw);
+                    SMrw.OldPrice = unitCost;
+                    SMrw.NewPrice = unitCost;
+                    MatRowPut(SMr,IHr.Row,SMrw);
+                    RECORDSTORE(SMr,true);
+                    LogText(0,"StockMovVc stored SMr.SerNr:" & SMr.SerNr);
+                  end;
+                  if (stockMovIHr.Qty>0) then begin
+                    ChangeCostInNextTargetRegisters(stockMovIHr.SerNr,unitCost);
+                  end;
+                end;
+              end;RESETLOOP(stockMovIHr);
+          end;
+        end;
+        
+      end;
+    end;RESETLOOP(IHr);
+  
+  return;
+end;
+
+
+global //Edit***************************Sasha2,10:39 23.02.2017 {
+updating procedure RetIVCoincidenceCheckMn(record RcVc RepSpec)
+begin
+  record IVVc IVr,retIVr,secIVr;
+  row IVVc IVrw,retIVrw,secIVrw;
+  record ItemHistVc sourceIHr,targetIHr;
+  Integer pos,rwcnt,i;
+  boolean TrHs,testf,foundf,storeIVf;
+  val unitCost;
+  LongInt sourceIVNr;
+  
+    IVr.SerNr = -1;
+    while (LoopMain(IVr,1,true)) begin
+    	rwcnt = MatRowCnt(IVr);
+    	storeIVf = false;
+    	for (i=0;i<rwcnt;i=i+1) begin
+    	  MatRowGet(IVr,i,IVrw);
+    	  if (IVrw.Quant<0 and IVrw.RetIVNum>-1) then begin
+    	    
+          retIVr.SerNr = IVrw.RetIVNum;
+          ReadFirstMain(retIVr,1,true);
+          MatRowGet(retIVr,IVrw.RetIVRow,retIVrw);
+          if (IVrw.ArtCode!=retIVrw.ArtCode or IVrw.SerialNr!=retIVrw.SerialNr) then begin
+            
+            sourceIHr.SerialNr = IVrw.SerialNr;
+            sourceIHr.FileName = "IVVc";
+            TrHs = true;
+            foundf = false;
+            unitCost = blankval;
+            sourceIVNr = -1;
+            while (LoopbackKey("SerialNr",sourceIHr,2,TrHs)) begin
+              testf = true;
+              if (sourceIHr.ArtCode!=IVrw.ArtCode or sourceIHr.SerialNr!=IVrw.SerialNr or sourceIHr.FileName!="IVVc") then begin TrHs = true; testf = false; end;
+              if (sourceIHr.TransDate>IVr.InvDate) then begin testf = false; end;
+              if (IVr.SerNr==sourceIHr.TransNr) then begin  testf = false; end;
+              if (sourceIHr.Qty>0)then begin testf = false; end;
+              if (testf) then begin
+                if (sourceIHr.Row==IVrw.RetIVNum) then begin
+                  unitCost = AbsoluteVal(sourceIHr.TotCostPrice/sourceIHr.Qty);
+                  sourceIVNr = sourceIHr.TransNr;
+                  TrHs = false;
+                  foundf = true;
+                  LogText(0,IVrw.ArtCode & " " & IVrw.SerialNr & "   cost:" & IVrw.FIFO);
+                  LogText(0,sourceIHr.ArtCode & " " & sourceIHr.SerialNr & "   Row:" & sourceIHr.Row & "   Cost:"  & AbsoluteVal(sourceIHr.TotCostPrice/sourceIHr.Qty) & "   Source:" & sourceIHr.TransNr);
+                  LogText(0,"--------------------------");
+                end;
+              end;
+            end;RESETLOOP(sourceIHr);
+            if (foundf==false) then begin
+              LogText(0,"Not found such item");
+              LogText(0,IVrw.ArtCode & " " & IVrw.SerialNr & "   cost:" & IVrw.FIFO);
+            end;
+            LogText(0,"============================");
+            targetIHr.FileName = "IVVc";
+            targetIHr.TransNr = IVr.SerNr;
+            targetIHr.Row = i;
+            if (ReadFirstKey("FNTransNr",targetIHr,3,true) and foundf) then begin
+              targetIHr.TotCostPrice = AbsoluteVal(unitCost*sourceIHr.Qty);
+              targetIHr.RemCostPrice = AbsoluteVal(unitCost*sourceIHr.RemQty);
+              if (RECORDSTORE(targetIHr,true)) then begin
+                IVrw.FIFO = unitCost;
+                IVrw.FIFORowVal = unitCost*IVrw.Quant;
+                IVrw.RetIVRow = IVrw.RetIVNum;
+                IVrw.RetIVNum = sourceIVNr;
+                MatRowPut(IVr,i,IVrw);
+                storeIVf = true;
+                ChangeCostInNextTargetRegisters(targetIHr.SerNr,unitCost);
+                LogText(0,"============================");
+                LogText(0," ");
+              end;
+            end;
+          end;
+        end;
+    	end;
+    	if (storeIVf) then begin
+    	  RECORDSTORE(IVr,true);
+    	end;
+    end; 
+
+return;
+end; //Edit***************************Sasha2,10:39 23.02.2017 }
