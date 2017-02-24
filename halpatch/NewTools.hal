@@ -1006,7 +1006,7 @@ begin
                   TrHs = false;
                   foundf = true;
                   LogText(0,IVrw.ArtCode & " " & IVrw.SerialNr & "   cost:" & IVrw.FIFO);
-                  LogText(0,sourceIHr.ArtCode & " " & sourceIHr.SerialNr & "   Row:" & sourceIHr.Row & "   Cost:"  & AbsoluteVal(sourceIHr.TotCostPrice/sourceIHr.Qty) & "   Source:" & sourceIHr.TransNr);
+                  LogText(0,sourceIHr.ArtCode & " " & sourceIHr.SerialNr & "   Row:" & sourceIHr.Row & "   Cost:"  & AbsoluteVal(sourceIHr.TotCostPrice/sourceIHr.Qty) & "   IVVc Source Nr:" & sourceIHr.TransNr);
                   LogText(0,"--------------------------");
                 end;
               end;
