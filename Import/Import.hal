@@ -511,36 +511,36 @@ begin
     		      ReadFirstMain(targetIVr,1,true);
     		      MatRowGet(targetIVr,IHr.Row,targetIVrw);
     		      if (targetIVrw.RetIVNum==sourceIHr.TransNr and targetIVrw.RetIVRow==sourceIHr.Row) then begin
-    		        AddStringToArea("Source IHr.ArtCode:" & sourceIHr.ArtCode & ", serialNr:" & sourceIHr.SerialNr & ", IHr.Transnr:" & IVSerNr & ", IHr.SerNr:" & sourceIHr.SerNr & nextline,armes);
+    		        AddTextToArea("Source IHr.ArtCode:" & sourceIHr.ArtCode & ", serialNr:" & sourceIHr.SerialNr & ", IHr.Transnr:" & IVSerNr & ", IHr.SerNr:" & sourceIHr.SerNr & nextline,armes);
     		        TrHs1= false;
   		          foundf1 = true;
       		      foundf = true;
       		      TrHs = false;
       		      if (AbsoluteVal(sourceIHr.TotCostPrice/sourceIHr.Qty)!=AbsoluteVal(IHr.TotCostPrice/IHr.Qty)) then begin
-        		      AddStringToArea("Target IHr.ArtCode:" & IHr.ArtCode & ", serialNr:" & IHr.SerialNr & ", IHr.SerNr:" & IHr.SerNr & nextline,armes);
-        		      AddStringToArea("source cost:" & AbsoluteVal(sourceIHr.TotCostPrice/sourceIHr.Qty) & ", target cost:" & AbsoluteVal(IHr.TotCostPrice/IHr.Qty) & nextline,armes);
+        		      AddTextToArea("Target IHr.ArtCode:" & IHr.ArtCode & ", serialNr:" & IHr.SerialNr & ", IHr.SerNr:" & IHr.SerNr & nextline,armes);
+        		      AddTextToArea("source cost:" & AbsoluteVal(sourceIHr.TotCostPrice/sourceIHr.Qty) & ", target cost:" & AbsoluteVal(IHr.TotCostPrice/IHr.Qty) & nextline,armes);
         		    end else begin
-        		      AddStringToArea("good" & nextline,armes);
+        		      AddTextToArea("good" & nextline,armes);
       		      end;
     		      end;     
     		    end;
     		  end; RESETLOOP(IHr);
     		  if (foundf==false) then begin
-    		    AddStringToArea("----------Target not found IHr.ArtCode:" & artcode & ", serialNr:" & serialNr & nextline,armes);
+    		    AddTextToArea("----------Target not found IHr.ArtCode:" & artcode & ", serialNr:" & serialNr & nextline,armes);
     		  end;
   		  end;
   		end; RESETLOOP(sourceIHr);
   		if (foundf1==false) then begin
-  		  AddStringToArea("not found source IHr.ArtCode:" & artcode & ", serialNr:" & serialNr & ", IHr.Transnr:" & IVSerNr & nextline,armes);
+  		  AddTextToArea("not found source IHr.ArtCode:" & artcode & ", serialNr:" & serialNr & ", IHr.Transnr:" & IVSerNr & nextline,armes);
   		end;
-  		AddStringToArea("======================================" & nextline,armes);
+  		AddTextToArea("======================================" & nextline,armes);
     end;
 		
 
 		NextImportLine(true);
 	end;
-	
-	WriteAreaToFile	(armes,"miscoincidence.txt",0);
+	LogText(0,"Area length:" & GetAreaLength(armes));
+	WriteAreaToFile	(armes,"mismatch.txt",0);
 
   
 end; //Edit***************************Sasha2,12:45 27.02.2017 }
