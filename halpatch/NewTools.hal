@@ -1020,8 +1020,8 @@ begin
             targetIHr.TransNr = IVr.SerNr;
             targetIHr.Row = i;
             if (ReadFirstKey("FNTransNr",targetIHr,3,true) and foundf) then begin
-              targetIHr.TotCostPrice = AbsoluteVal(unitCost*sourceIHr.Qty);
-              targetIHr.RemCostPrice = AbsoluteVal(unitCost*sourceIHr.RemQty);
+              targetIHr.TotCostPrice = AbsoluteVal(unitCost*targetIHr.Qty);
+              targetIHr.RemCostPrice = AbsoluteVal(unitCost*targetIHr.RemQty);
               if (RECORDSTORE(targetIHr,true)) then begin
                 IVrw.FIFO = unitCost;
                 IVrw.FIFORowVal = unitCost*IVrw.Quant;

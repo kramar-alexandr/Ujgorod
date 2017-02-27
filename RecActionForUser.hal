@@ -1,0 +1,43 @@
+
+global
+updating function LongInt IVVcRecordUpdate(record IVVc IVr,record IVVc IV2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+
+  if(currentuser!="SA_")then begin
+		res = inner.IVVcRecordUpdate(IVr,IV2r,stat,long4);
+	end;
+	
+  IVVcRecordUpdate = res;
+  RETURN;
+END;
+
+
+global
+updating function LongInt IVVcRecordUpdateAfter(record IVVc IVr,record IVVc IV2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  
+  if(currentuser!="SA_")then begin
+		res = inner.IVVcRecordUpdateAfter(IVr,IV2r,stat,long4);
+	end;
+
+  IVVcRecordUpdateAfter = res;
+  RETURN;
+END;
+
+
+
+global
+updating function LongInt IVVcRecordCheck(record IVVc IVr,record IVVc IV2r,LongInt stat,LongInt check)
+BEGIN
+  LongInt res;
+  
+  res = 0;
+  if(currentuser!="SA_")then begin		
+		res = inner.IVVcRecordCheck(IVr,IV2r,stat,check);
+	end;
+  
+  IVVcRecordCheck = res;
+  RETURN;
+END;
