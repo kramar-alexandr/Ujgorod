@@ -900,7 +900,7 @@ begin
     row IVVc IVrw;
     record StockMovVc SMr;
     row StockMovVc SMrw;
-    boolean TrHs,testf;
+    boolean TrHs,testf,TrHs1;
     
     IHr.Source = sourceNr;
     TrHs = true;
@@ -929,10 +929,10 @@ begin
               stockMovIHr.FileName = IHr.FileName;
               stockMovIHr.TransNr = IHr.TransNr;
               stockMovIHr.Row = IHr.Row;
-              TrHs = true;
-              while (loopkey("FNTransNr",stockMovIHr,3,TrHs)) begin
-                if (stockMovIHr.FileName!=IHr.FileName or stockMovIHr.TransNr!=IHr.TransNr or stockMovIHr.Row!=IHr.Row) then begin TrHs = false; end;
-                if (TrHs) then begin
+              TrHs1 = true;
+              while (loopkey("FNTransNr",stockMovIHr,3,TrHs1)) begin
+                if (stockMovIHr.FileName!=IHr.FileName or stockMovIHr.TransNr!=IHr.TransNr or stockMovIHr.Row!=IHr.Row) then begin TrHs1 = false; end;
+                if (TrHs1) then begin
                   stockMovIHr.TotCostPrice = AbsoluteVal(unitCost*stockMovIHr.Qty);
                   stockMovIHr.RemCostPrice = AbsoluteVal(unitCost*stockMovIHr.RemQty);
                   LogText(0,"StockMovVc: IHr.SerNr:" & stockMovIHr.SerNr & " TransNr:" & stockMovIHr.TransNr);

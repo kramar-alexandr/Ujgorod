@@ -3,6 +3,7 @@ external procedure PUSumUp(var record PUVc);
 external function Boolean PUVc_PasteArtCode(var record PUVc,Integer,var string,var string);
 external function string 255 StrReplace(string,string,string);
 external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);
+external function val AbsoluteVal(val);
 
 global updating procedure INImportIn()		//Edit----------------------Dima  05.02.2016
 begin
@@ -464,3 +465,82 @@ begin
 		
 	end;  
 end; //Edit***************************Sasha2,15:22 11.08.2016 }
+
+global //Edit***************************Sasha2,12:45 27.02.2017 {
+updating procedure RetIVMismatchIn()
+begin
+	record ItemHistVc IHr,sourceIHr;	
+	string 255 artcode,serialNr;
+	Boolean TrHs,testf,foundf,TrHs1,testf1,foundf1;
+	area armes;
+	string 10 nextline;
+	LongInt IVSerNr;
+	record IVVc sourceIVr,targetIVr;
+	row IVVc sourceIVrw,targetIVrw;
+
+	//SetImportCodepage("CP1251");
+	nextline = chr(13) & chr(10);
+
+	while (TestEOF()==false) begin
+		artcode = ImportField;
+		serialNr = ImportField;
+		IVSerNr = StringToLongInt(ImportField);
+		
+    if (IVSerNr>-1) then begin
+      sourceIHr.TransNr = IVSerNr;
+  		sourceIHr.FileName = "IVVc";
+  		TrHs1 = true;
+  		foundf1 = false;
+  		while (LoopKey("FNTransNr",sourceIHr,2,TrHs1)) begin
+  		  testf1 = true;
+  		  if (sourceIHr.TransNr!=IVSerNr or sourceIHr.FileName!="IVVc") then begin testf1 = false; TrHs1 = false; end;
+  		  if (sourceIHr.ArtCode!=artcode or sourceIHr.SerialNr!=serialNr) then begin testf1 = false; end;
+  		  if (testf1) then begin
+    		  IHr.ArtCode = artcode;
+    		  IHr.SerialNr = serialNr;
+    		  IHr.FileName = "IVVc";
+    		  IHr.SerNr = sourceIHr.SerNr;
+    		  TrHs = true;
+    		  foundf = false;
+    		  while (LoopKey("ArtCodeSerialNr",IHr,4,TrHs)) begin
+    		    testf = true;
+    		    if (IHr.ArtCode!=artcode or IHr.SerialNr!=serialNr or IHr.FileName!="IVVc") then begin TrHs = false; testf = false; end;
+    		    if (IHr.Qty<0) then begin testf = false; end;
+    		    if (testf) then begin
+    		      targetIVr.SerNr = IHr.TransNr;
+    		      ReadFirstMain(targetIVr,1,true);
+    		      MatRowGet(targetIVr,IHr.Row,targetIVrw);
+    		      if (targetIVrw.RetIVNum==sourceIHr.TransNr and targetIVrw.RetIVRow==sourceIHr.Row) then begin
+    		        AddStringToArea("Source IHr.ArtCode:" & sourceIHr.ArtCode & ", serialNr:" & sourceIHr.SerialNr & ", IHr.Transnr:" & IVSerNr & ", IHr.SerNr:" & sourceIHr.SerNr & nextline,armes);
+    		        TrHs1= false;
+  		          foundf1 = true;
+      		      foundf = true;
+      		      TrHs = false;
+      		      if (AbsoluteVal(sourceIHr.TotCostPrice/sourceIHr.Qty)!=AbsoluteVal(IHr.TotCostPrice/IHr.Qty)) then begin
+        		      AddStringToArea("Target IHr.ArtCode:" & IHr.ArtCode & ", serialNr:" & IHr.SerialNr & ", IHr.SerNr:" & IHr.SerNr & nextline,armes);
+        		      AddStringToArea("source cost:" & AbsoluteVal(sourceIHr.TotCostPrice/sourceIHr.Qty) & ", target cost:" & AbsoluteVal(IHr.TotCostPrice/IHr.Qty) & nextline,armes);
+        		    end else begin
+        		      AddStringToArea("good" & nextline,armes);
+      		      end;
+    		      end;     
+    		    end;
+    		  end; RESETLOOP(IHr);
+    		  if (foundf==false) then begin
+    		    AddStringToArea("----------Target not found IHr.ArtCode:" & artcode & ", serialNr:" & serialNr & nextline,armes);
+    		  end;
+  		  end;
+  		end; RESETLOOP(sourceIHr);
+  		if (foundf1==false) then begin
+  		  AddStringToArea("not found source IHr.ArtCode:" & artcode & ", serialNr:" & serialNr & ", IHr.Transnr:" & IVSerNr & nextline,armes);
+  		end;
+  		AddStringToArea("======================================" & nextline,armes);
+    end;
+		
+
+		NextImportLine(true);
+	end;
+	
+	WriteAreaToFile	(armes,"miscoincidence.txt",0);
+
+  
+end; //Edit***************************Sasha2,12:45 27.02.2017 }

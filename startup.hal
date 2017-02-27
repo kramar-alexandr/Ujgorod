@@ -25,6 +25,7 @@ begin
   Import("§мпорт залишкґв",ImportIClass,ImportStockRemains2In,modDBMain);		//Edit----------------------Dima  14.06.2016
   Import("§мпорт контактґв",ImportIClass,ImportCUVcIn,modDBMain);  //Edit-------------------Vitalii 17:04 02.08.2016
   Import("Њодифґкувати серґйний номер в регґстрґ \"трих-код\"",ModifySerialNrIClass,ModifySerialNrIn,modIN); //Edit***************************Sasha2,15:51 11.08.2016
+  Import("RetIVMismatchIn",ImportIClass,MisCoincidenceIn,modDBMain); //Edit***************************Sasha2,13:04 27.02.2017
   
 	Document("…тикетки штрихкодґв" ,LabelItem9RClass,ItemLabForm9,MyLabelItemFClass,modIN); //Edit***************************Sasha2,12:08 23.10.2014
 
