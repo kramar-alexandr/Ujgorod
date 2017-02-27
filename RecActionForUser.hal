@@ -1,5 +1,5 @@
 
-global
+/*global
 updating function LongInt IVVcRecordUpdate(record IVVc IVr,record IVVc IV2r,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;
@@ -55,4 +55,4 @@ BEGIN
   
   IVDClassActiveEditField = res;
   RETURN;
-END;
+END;*/
