@@ -16,6 +16,7 @@ external function Boolean GetCOSAcc(string,string,string,record AccBlock,record 
 external procedure CreateSBString(Integer,string,string,string,val,Boolean,val,Boolean,var string);
 external function val GetORRowReserv(LongInt,string,string,var val,var string,var string,Boolean);
 external function val GetIntORRowReserv(LongInt,string,string,var val,var string,var string,var string,Boolean);
+external function val AbsoluteVal(val);
 
 SetLangMode(LangUkrainian,"UKR",0);  
 
@@ -1671,17 +1672,22 @@ BEGIN
 END;
 
 global
-procedure MyFillSerialNr(string item,string location,var Array string asernrstr,var Integer acnt,integer qty,string custcode)
+procedure MyFillSerialNr(string item,string location,var Array string asernrstr,var Integer acnt,integer qty,record IVVc sourceIVr,integer rownr)
 BEGIN
   record SerBalVc SBr;
   Boolean found,infound;
-  string 255 tstr;
+  string 255 tstr,custcode;
   record INVc INr;
   record ItemHistVc IHr;// Edit ************************** Thursday, 30 June 2016 17:48:43
   boolean TrHs,testf;// Edit ************************** Thursday, 30 June 2016 17:48:41
   record IVVc IVr;
   row IVVc IVrw;
-  integer i,mtrw;
+  integer i,mtrw,vectQty;
+  vector string 20 returnItemsInfo;
+  vector integer returnItemsQty;
+  array string 20 aTags;
+  //string 10 skipCommand;
+  //string 100 vectvalue;
 	
 	if(qty>=0)then begin
 	
@@ -1716,11 +1722,98 @@ BEGIN
 			end;
 		end;  
   end else begin
+    //!!!!!!!!!!!!!!! works good if every return IVrw contains SerNr and rownr of source invoice
+    
+    //skipCommand = "!skip!";
+    mtrw = MatRowCnt(sourceIVr);
+    for (i=0;i<mtrw;i=i+1) begin
+      MatRowGet(sourceIVr,i,IVrw);
+      if (IVrw.stp==kInvoiceRowTypeNormal and IVrw.Quant<0) then begin
+        //returnItemsInfo[IVrw.RetIVNum & " " & IVrw.RetIVRow] = skipCommand;
+        returnItemsQty[IVrw.RetIVNum & " " & IVrw.RetIVRow] = returnItemsQty[IVrw.RetIVNum & " " & IVrw.RetIVRow] - AbsoluteVal(IVrw.Quant);
+      end;
+    end;
+    
+    custcode = sourceIVr.CustCode;
   	IHr.TransDate = currentdate;
   	IHr.ArtCode = item;
   	IHr.FileName = "IVVc";
   	TrHs = true;
-  	while(loopbackkey("FNArtCode",IHr,3,TrHs))begin
+  	while(loopbackkey("FNArtCode",IHr,3,TrHs)) begin
+  		testf = true;
+  		if(custcode!="íêàéèíàäÄ" and IHr.TransDate<addmonth(currentdate,-3))then begin TrHs = false; testf = false; end;
+  		if(IHr.ArtCode!=item)then begin TrHs = false; testf = false; end;
+  		if(IHr.FileName!="IVVc")then begin TrHs = false; testf = false; end;
+  		if (testf) then begin
+  		  IVr.SerNr = IHr.TransNr;
+		    readfirstmain(IVr,1,true);
+		    if(nonblank(custcode) and custcode!=IVr.CustCode)then begin
+  				testf = false;
+  			end;
+  		end;
+  		if(testf)then begin
+  		  if (IHr.Qty>0) then begin
+  			  mtrw = matrowcnt(IVr);
+  			  if (mtrw>IHr.Row) then begin
+  			    Matrowget(IVr,IHr.Row,IVrw);
+  			    if (IVrw.Quant<0 and IVrw.RetIVNum>-1) then begin
+  			      //returnItemsInfo[IVrw.RetIVNum & " " & IVrw.RetIVRow] = skipCommand;
+  			      returnItemsQty[IVrw.RetIVNum & " " & IVrw.RetIVRow] = returnItemsQty[IVrw.RetIVNum & " " & IVrw.RetIVRow] - AbsoluteVal(IHr.Qty);
+  			    end;
+  			  end;
+  		  end else begin
+    			//if (returnItemsInfo[IVr.SerNr & " " & IHr.Row]==skipCommand) then begin
+    			  //testf = false;
+    			//end;
+    			if(testf)then begin
+  					mtrw = matrowcnt(IVr);
+  					if(mtrw>IHr.Row)then begin
+  						Matrowget(IVr,IHr.Row,IVrw);
+  					end;
+  					if(IVrw.vRebate==0)then begin
+  						IVrw.vRebate = 0;
+  					end;
+  					if(IVrw.FIFO==0)then begin
+  						IVrw.FIFO = 0;
+  					end;
+  					if(IVrw.FIFORowVal==0)then begin
+  						IVrw.FIFORowVal = 0;
+  					end;
+  					
+  					if(IVrw.Price==blankval)then begin
+  						IVrw.Price = 0;
+  					end;
+  					if(IVrw.vRebate==blankval)then begin
+  						IVrw.vRebate = 0;
+  					end;
+  					if(IVrw.Sum==blankval)then begin
+  						IVrw.Sum = 0;
+  					end;
+  					
+  					returnItemsInfo[IVr.SerNr & " " & IHr.Row] = IHr.SerialNr & " " & IHr.TransDate & " " & IVrw.Price & " " & IVrw.vRebate & " " & IVrw.Sum & " ";
+  					returnItemsQty[IVr.SerNr & " " & IHr.Row] = returnItemsQty[IVr.SerNr & " " & IHr.Row] + AbsoluteVal(IHr.Qty);
+  				end;
+  		  end;
+  		end;
+  	end;
+  	
+  	GetVectorTags(returnItemsInfo,aTags);
+    for (i=0;i<aTags.length;i=i+1) begin
+      vectQty = returnItemsQty[aTags[i]];
+      if (vectQty>0) then begin
+        asernrstr[acnt] = returnItemsInfo[aTags[i]] & aTags[i];
+  			acnt = acnt + 1;
+      end;
+    end;
+    
+    /* Old function for paste special
+    
+    custcode = sourceIVr.CustCode;
+  	IHr.TransDate = currentdate;
+  	IHr.ArtCode = item;
+  	IHr.FileName = "IVVc";
+  	TrHs = true;
+  	while(loopbackkey("FNArtCode",IHr,3,TrHs)) begin
   		testf = true;
   		if(custcode!="íêàéèíàäÄ" and IHr.TransDate<addmonth(currentdate,-3))then begin TrHs = false; testf = false; end;
   		if(IHr.ArtCode!=item)then begin TrHs = false; testf = false; end;
@@ -1762,7 +1855,7 @@ BEGIN
 					acnt = acnt + 1;
 				end;
   		end;
-  	end;
+  	end;*/
   	
   end;
   RETURN;
