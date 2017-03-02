@@ -8,7 +8,7 @@ begin
   Register("ARPayVc","ARPayVc",ARPayVc,modDBMain);
   Register("APVc","APVc",APVc,modDBMain);
   Register("Переоцінка RRP","SRPriceVc",SRPriceVc,modIN);
-  
+
   Report("Звіт по касі",POSPaymentsRClass,POSPaymentsRn,0,modSL); //Edit***************************Sasha2,16:40 17.11.2014
   Report("Звіт по складу (модифікований)",NewINRClass,NewInvValRn,0,modIN); //Edit***************************Sasha2,15:24 11.07.2016
 	Report("Статистика продажів",MyBIRClass,MyBIRn,0,modSL);//Edit-------------------Vitalii 11:30 22.08.2016
@@ -16,8 +16,8 @@ begin
   Report("Звіт невідповідностей в акт/н. на повернення",RetIVCoincidenceRClass,RetIVCoincidenceRn,0,modSL); //Edit***************************Sasha2,17:51 22.02.2017
 	//Report("!TestWeb",TestWebRClass,TestWebRn,0,modSL);
 	Setting("Налаштування Zebra",ZebraPrinterTClass,modIN); //Edit***************************Sasha2,14:17 20.07.2016
-  
-  
+
+
 	Import("Импорт товаров и классификаций",ImportIClass,INImportIn,modDBMain);
 	Import("Импорт вариантов товаров",ImportIClass,VARImportIn,modDBMain);
 	Import("Импорт цен и штрих-кодов",ImportIClass,ItemPricesImportIn,modDBMain);
@@ -26,7 +26,7 @@ begin
   Import("Імпорт контактів",ImportIClass,ImportCUVcIn,modDBMain);  //Edit-------------------Vitalii 17:04 02.08.2016
   Import("Модифікувати серійний номер в регістрі \"Штрих-код\"",ModifySerialNrIClass,ModifySerialNrIn,modIN); //Edit***************************Sasha2,15:51 11.08.2016
   //Import("RetIVMismatchIn",ImportIClass,RetIVMismatchIn,modDBMain); //Edit***************************Sasha2,13:04 27.02.2017
-  
+
 	Document("Етикетки штрихкодів" ,LabelItem9RClass,ItemLabForm9,MyLabelItemFClass,modIN); //Edit***************************Sasha2,12:08 23.10.2014
 
 
@@ -42,7 +42,7 @@ begin
 	Maintenance("Перерахувати ціни в інвентаризаціях",RecalcPricesInStockTakeVClass,RecalcPricesInStockTakeMn,modIN); //Edit***************************Sasha2,10:40 13.09.2016
 	Maintenance("Перерахувати InStock в інвентаризаціях",RecalcMyInStockInStockTakeVClass,RecalcMyInStockInStockTakeMn,modIN); //Edit***************************Sasha2,12:02 13.09.2016
 	Maintenance("Перерахувати невідповідності в акт/н. на повернення",MyVClass,RetIVCoincidenceCheckMn,modDBMain); //Edit***************************Sasha2,12:02 13.09.2016
-	
+
 	SString(50000,"Ціна закупки");
 	SString(50001,"Колір");
 	SString(50002,"Колір");
@@ -58,31 +58,32 @@ begin
   SString(31007,"Не можна затверджувати отримання Переміщення товарів, яке отриманне не сьогодні!");
 	SString(31008,"Переоцінка RRP");
 	SString(31009,"Товар для повернення не відповідає товару з оригінальної акт/накладної");
+	SString(31010,"Товара возвращается больше допустимого");
 
-	
+
   StrSetBegin(3); /* Try to keep them in alphabetical order */
   StrSetText(AllowAddingINtoRet,"Додавання товарів до Повернення Товарів");
   StrSetText(AllowAddingINtoRetPOSIV,"Дозволяти додавання товарів до повернених накладних ЕККА");
   StrSetText(AllowAddingOrderDiscount,"Додати знижку до панелі вкладок");
-  StrSetText(AllowCashDiscountIP,"Додати знижку до платежу"); 
+  StrSetText(AllowCashDiscountIP,"Додати знижку до платежу");
   StrSetText(AllowUsersAdding,"Додавання користувачів");
   StrSetText(AllowWriteoffIP,"Додавання списання до платежу");
   StrSetText(AdminClient,"Режим адміністратора");
   StrSetText(AlertWhenNewVEIV,"Інформувати коли створено новий ел. акт/накл. постач.");
-  StrSetText(AllowPrintEInvoicesFromIV,"Дозволити роздрук електронних актів/накл. із записів актів/накл.");  
+  StrSetText(AllowPrintEInvoicesFromIV,"Дозволити роздрук електронних актів/накл. із записів актів/накл.");
   StrSetText(AllowAmendLine,"Дозволяти редагування рядка в накладній (сенсорн. екран)");
-  StrSetText(ApproveSchedImport,"Затвердити графік імпортування"); 
+  StrSetText(ApproveSchedImport,"Затвердити графік імпортування");
   StrSetText(ApproveSchedMaint,"Затвердити графік обслуговування");
   StrSetText(AuthExp,"Підписати авансовий звіт");
   StrSetText(BUQTToIV,"Пропозиція бюджету в акт/накл.");
   StrSetText(AllowNPTSIVCancel,"Дозволяти скасування накладної (сенсорн. екран)");
   StrSetText(AllowCheckinBeforePlanned,"Заселення до запланованії дати");
-  StrSetText(AllowCheckoutBeforePlanned,"Заселення після запланованії дати"); 
+  StrSetText(AllowCheckoutBeforePlanned,"Заселення після запланованії дати");
   StrSetText(AllowRestAccTransDateChange,"Зміна дати в замовленні ресторану");
   StrSetText(AllowRestAccSerNrChange,"Зміна нумерацію панелі вкладок");
   StrSetText(AllowIVBranchIDChange,"Зміна код філії на акт/накл.");
   StrSetText(AllowQTBranchIDChange,"Зміна код філії на комерц. пропоз.");
-  StrSetText(AllowJobBranchIDChange,"Зміна код філії в резервації"); 
+  StrSetText(AllowJobBranchIDChange,"Зміна код філії в резервації");
   StrSetText(AllowORBranchIDChange,"Змінf код філії на замовл.");
   StrSetText(UpdateCashEvent,"Зміна події каси");
   StrSetText(AllowCashierCountChange,"Зміна дати в підрахунку готівки");
@@ -91,9 +92,9 @@ begin
   StrSetText(AllowCUSerNrChange,"Зміна номеру контакту");
   StrSetText(AllowSRPriceChangePrice,"Зміна ціни в переоцінці");// Edit ************************** Tuesday, 23 August 2016 16:58:27
   StrSetText(ChangingCostOnInvoiceRow,"Зміна собівартості в рядках акта/накладної");
-  StrSetText(ChangingCostOnORRow,"Changeing Cost on Sales Order Rows");  
-  StrSetText(ChangingCostOnPU,"Змінювати вартість при прийомі товару");  
-  StrSetText(ChangingCostOnStockMov,"Змінювати вартість при переміщенні по складах");  
+  StrSetText(ChangingCostOnORRow,"Changeing Cost on Sales Order Rows");
+  StrSetText(ChangingCostOnPU,"Змінювати вартість при прийомі товару");
+  StrSetText(ChangingCostOnStockMov,"Змінювати вартість при переміщенні по складах");
   StrSetText(AllowChangeCreditLimit,"Зміна ліміту кредиту");
   StrSetText(AllowChangeCreditLimitDays,"Change Credit Limit Days");
   StrSetText(AllowCustChange,"Зміна деталей клієнта");
@@ -107,17 +108,17 @@ begin
   StrSetText(AllowRoomChanging,"Зміна кімнати");
   StrSetText(AllowIVInvDateChange,"Зміна дати в акті/накл.");
   StrSetText(AllowIVSerNrChange,"Зміна номера акта/накл.");
-  StrSetText(ChangeSHItemSpec,"Зміна наменув. товару у відвантаженні"); 
+  StrSetText(ChangeSHItemSpec,"Зміна наменув. товару у відвантаженні");
   StrSetText(ChangeIVItemSpec,"Змінити найменув. товару на акті/накл.");
-  StrSetText(ChangeORItemSpec,"Зміна наменув. товару у разунку клієнту"); 
-  StrSetText(ChangeQTItemSpec,"Зміна наменув. товару у пропозиції"); 
+  StrSetText(ChangeORItemSpec,"Зміна наменув. товару у разунку клієнту");
+  StrSetText(ChangeQTItemSpec,"Зміна наменув. товару у пропозиції");
   StrSetText(AllowINCostModelChange,"Зміна моделі вартості товару");
   StrSetText(ChangingINType,"Зміна типу об'єкта");
   StrSetText(AllowINWeighedAvChange,"Зміна средньозваженої ціни в картці товару");
   StrSetText(IssueOwnChk,"Зміна статус власного чека");
   StrSetText(ReconciledChequeToEndorsed,"Change #Cheque# State from Reconciled to Endorsed");
   StrSetText(EndorsedReconciledChequeToEndorsed,"Change #Cheque# State from Endorsed and Reconciled to Endorsed");
-  StrSetText(ChangeRecordHeaderWhenPending,"Change Record Header when Approval Status is Pending"); 
+  StrSetText(ChangeRecordHeaderWhenPending,"Change Record Header when Approval Status is Pending");
   StrSetText(ChangeRecordMatrixWhenPending,"Change Record Matrix when Approval Status is Pending");
   StrSetText(ChangeDateinResourcePlanner,"Зміна дати в плануванні ресурсів");
   StrSetText(AllowPasswdChanging,"Зміна пароля");
@@ -128,7 +129,7 @@ begin
   StrSetText(ChangeReserved,"Зміна статусу резервування в замовленнях та переміщеннях ");
   StrSetText(ChangeDropShipOrders,"Change Sales Order with Drop Ship Type");
   StrSetText(AllowORSerNrChange,"Зміна номера рахунка клієнту");
-  StrSetText(AllowSalesmanChangeonContact,"Зміна продавця на Контакті"); 
+  StrSetText(AllowSalesmanChangeonContact,"Зміна продавця на Контакті");
   StrSetText(AllowSalesmanChange,"Зміна продавця на затверджених актах/накл. клієнта");
   StrSetText(AllowSalesmanChangeOnPOS,"Зміна продавця на акті/накл. ЕККА");
   StrSetText(AmendLineChangePrice,"Дозволяти зміну ціни при редагуванні рядка");
@@ -140,27 +141,27 @@ begin
   StrSetText(PositionStatusChanging,"Дозволяти зміну статусу місця");
   StrSetText(AllowWSUpdateStockChange,"Дозволити зміну таблиці робіт обновлення скада");
   StrSetText(DiffHalcust,"Порівняти halcust & halpatch");
-  StrSetText(CompletingServiceOrders,"Завершення замовлення на обслуговув."); 
+  StrSetText(CompletingServiceOrders,"Завершення замовлення на обслуговув.");
   StrSetText(InvToCO,"Контракт з актом/накладною");
   StrSetText(AllowCreateCust,"Дозволяти створення клієнтів");
   StrSetText(AllowCreateDealer,"Дозволяти створення дилерів");
   StrSetText(AllowCreateGuest,"Дозволяти створення гостей");
   StrSetText(AllowNewCustomerfromNPTS,"Дозволяти створення нового клієнта із накладн. ЕККА, сенс, екран");
   StrSetText(AllowCreateSupp,"Дозволяти створення постачальників");
-  StrSetText(CreatingWithholdingCertificates,"Creating Withholding Certificates");  
-  StrSetText(RetPUToVI,"Кредит. накладна із повернення товарів постачальнику"); 
+  StrSetText(CreatingWithholdingCertificates,"Creating Withholding Certificates");
+  StrSetText(RetPUToVI,"Кредит. накладна із повернення товарів постачальнику");
   StrSetText(RetToIV,"Створення кредитового акту/накл. з повернення товарів");
   StrSetText(AllowRestAccRowsDelete,"Дозволяти видалення товарів на замов-ні");
   StrSetText(AllowIVTSRowsDelete,"Дозволяти видалення товарів з накладної (сенсорн. екран)");
-  StrSetText(DeleteNotOKedInvoiceWithCAE,"Deleting not OKed Invoices with CAE/CAEA");  
+  StrSetText(DeleteNotOKedInvoiceWithCAE,"Deleting not OKed Invoices with CAE/CAEA");
   StrSetText(DeleteSharedRecord,"Знищення записів в Shared Registers");
-  StrSetText(DeleteAnyRecord,"Видалення записів"); 
+  StrSetText(DeleteAnyRecord,"Видалення записів");
   StrSetText(ORToSH,"Відвантаження з замовлень клієнтів");
-  StrSetText(DisallowRetClose,"Не дозволяти зміну 'Номер кредит. накладної' на Поверненні Товарів"); 
+  StrSetText(DisallowRetClose,"Не дозволяти зміну 'Номер кредит. накладної' на Поверненні Товарів");
   StrSetText(DisallowPRBudgetChangefornonPRMan,"Не дозволяти зміну бюджету проекту усім, крім Менеджеру проетку");
   StrSetText(DisallowPojectChangefornonPRMan,"Не дозволяти зміну проекту усім, крім Менеджеру проетку");
   StrSetText(DisallowPRScheduleChangefornonPRMan,"Не дозволяти зміну графіку проекту усім, крім Менеджеру проетку");
-  StrSetText(DisallowChangeIVQtyFromOR,"Не дозволяти зміну к-сті на акті/накл. створеній із рахунку клієнту"); 
+  StrSetText(DisallowChangeIVQtyFromOR,"Не дозволяти зміну к-сті на акті/накл. створеній із рахунку клієнту");
   StrSetText(DisallowOKNotToday,"Не дозволяти ставити ОК в документах не з поточною датою");
   StrSetText(DisallowSalesmanChange,"Заборонити зміну продавця на не затвердж. акт/накл.");
   StrSetText(DisallowIntORClose,"Заборонити закриття внутрішніх замовлень");
@@ -186,18 +187,18 @@ begin
   StrSetText(ShowSerialNronPOSInvoices,"Відображати сер. № на актах/накл. ЕККА");
   StrSetText(AllowDispute,"Дозволяти узгодження актів/накл.");
   StrSetText(DownloadHalcust,"Завантажити halcust & halpatch");
-  StrSetText(POToDownPay,"Передплата з замовлення постачальнику");  
+  StrSetText(POToDownPay,"Передплата з замовлення постачальнику");
   StrSetText(ORToDownPay,"Дозволяти передплати з рахунків клієнтам");
   StrSetText(XXGRToXXGR,"Копіювання визначень балансу і прибутків/збитків");
-  StrSetText(EditingCAEandCAEExpiry,"Редагування CAE та CAE Expiry полів на актах/накладних"); 
-  StrSetText(EditingWithholdingCertificates,"Editing Withholding Certificates");  
+  StrSetText(EditingCAEandCAEExpiry,"Редагування CAE та CAE Expiry полів на актах/накладних");
+  StrSetText(EditingWithholdingCertificates,"Editing Withholding Certificates");
   StrSetText(EMailFromAcceptedPO,"Створення E-mail з прийнятих замовлень постачальникам");
   StrSetText(EMailFromOKPO,"Створення E-mail з затверджених замовлень постачальникам");
   StrSetText(IVToEDIInv,"Накладна EDI з акту/накл.");
   StrSetText(EditingWSCostAcc,"Дозволяти зміну рахунку вартості на таблиці робіт");
   StrSetText(JobELockingSystem,"Система електронних замків");
   StrSetText(POToPU,"Надходження з замовлення постачальнику");
-  StrSetText(AllowIncorrectSerial,"Невірні серійні номери на накладних ЕККА"); 
+  StrSetText(AllowIncorrectSerial,"Невірні серійні номери на накладних ЕККА");
   StrSetText(ActInvalid,"Анулювання діяльності");
   StrSetText(AT2WrofInvalid,"Анулювання списання НА");
   StrSetText(RestAccInvalid,"Анулювання рахунків ресторану");
@@ -213,18 +214,18 @@ begin
   StrSetText(InstallHalcust,"Інстолювати Halcust & Halpatch");
   StrSetText(InvalidateInvoice,"Анулювання накладної (сенсорний екран)");
   StrSetText(COToInv,"Акт/накладна з контракту");
-  StrSetText(JobToInv,"Актюнакладна із резервування готелю"); 
-  StrSetText(SHToInv,"Акт/накл. з відвантаження");  
+  StrSetText(JobToInv,"Актюнакладна із резервування готелю");
+  StrSetText(SHToInv,"Акт/накл. з відвантаження");
   StrSetText(ORToInv,"Акт/накладна з рахунка клієнту");
   StrSetText(QTToIV,"Акт/накладна з комерційної пропозиції");
   StrSetText(SVOToInv,"Акт/накладна з обслуговування і ремонту");
   StrSetText(SVOToOffHire,"Items In from Service Order");
   StrSetText(SVOToDispatch,"Items Out from Service Order");
-  StrSetText(LockIgnoreTR,"Блокувати виключення для транзакцій");  
-  StrSetText(LockIgnoreVI,"Блокувати виключення для розрахунків з постачальниками");  
-  StrSetText(LockIgnoreIV,"Блокувати виключення для розрахунків з клієнтами");  
-  StrSetText(LockIgnoreAct,"Блокувати виключення для діяльностей");  
-  StrSetText(LockIgnoreOther,"Блокувати виключення для інших записів");  
+  StrSetText(LockIgnoreTR,"Блокувати виключення для транзакцій");
+  StrSetText(LockIgnoreVI,"Блокувати виключення для розрахунків з постачальниками");
+  StrSetText(LockIgnoreIV,"Блокувати виключення для розрахунків з клієнтами");
+  StrSetText(LockIgnoreAct,"Блокувати виключення для діяльностей");
+  StrSetText(LockIgnoreOther,"Блокувати виключення для інших записів");
   StrSetText(AllowLoginOutsideWorkHours,"Дозволити вхід в систему у неробочий час");
   StrSetText(AllowNPTSIVLogout,"Дозволяти вихід з системи із накладної (сенсорн. екран)");
   StrSetText(LogoutUserAfterPrintingBarTab,"Вихід користувача з системи після друку рахунку ресторану");
@@ -236,8 +237,8 @@ begin
   StrSetText(AllowNegCLOut,"Дозволяти від'ємні суми в видачах готівки");
   StrSetText(AllowNegOP,"Дозволяти від'ємні суми в платежі постачальнику");
   StrSetText(AllowNegIP,"Дозволяти від'ємні суми в платежі клієнта");
-  StrSetText(AllowPOSIVNegQty,"Від'ємна к-сть на накладних ЕККА"); 
-  StrSetText(AllowNegativePriceonIV,"Від'ємна ціна на накладних"); 
+  StrSetText(AllowPOSIVNegQty,"Від'ємна к-сть на накладних ЕККА");
+  StrSetText(AllowNegativePriceonIV,"Від'ємна ціна на накладних");
   StrSetText(ActOK,"Затвердження діяльностей");
   StrSetText(AT2WrofOK,"Затвердження списання ОЗ");
   StrSetText(BudOK,"Затвердження бюджетів");
@@ -276,7 +277,7 @@ begin
   StrSetText(TimeSheetOK,"Затвердження таблиць часу");
   StrSetText(WorkSheetOK,"Затвердження таблиць робіт");
   StrSetText(OpenCashDrawer,"Відкриття грошової скриньки");
-  StrSetText(OpenMarketplace,"Відкрити Магазин");  
+  StrSetText(OpenMarketplace,"Відкрити Магазин");
   StrSetText(OpenVcFromTBIV,"Відкриття реєстра з запису операції по проекту");
   StrSetText(OpenTRFromSpec,"Відкриття запису з меню Операції");
   StrSetText(EDIORToOR,"Рахунок клієнту з EDI рахунків");
@@ -316,12 +317,12 @@ begin
   StrSetText(RestrictInvoiceForCashier,"Обрізати вікно акта/накладної для касира"); //Edit***************************Sasha2,14:35 13.07.2016
   StrSetText(SMToTrans,"Операції з симуляцій");
   StrSetText(POToDropSH,"Оповіщ. про відв. із зам. постач. ");
-  StrSetText(ReloadBIData,"Перезавантажити дані БА"); 
+  StrSetText(ReloadBIData,"Перезавантажити дані БА");
   StrSetText(PUToRetPU,"Повернення товарів з надходжень");
   StrSetText(ORToRet,"Повернення товарів з замовлень клієнтів");
   StrSetText(POToRetPU,"Повернення товарів з замовлення постачальнику");
-  StrSetText(SVOToRet,"Повернення товарів із замовлення на обслуговування"); 
-  StrSetText(WSToRet,"Повернення товарів із таблиці робіт"); 
+  StrSetText(SVOToRet,"Повернення товарів із замовлення на обслуговування");
+  StrSetText(WSToRet,"Повернення товарів із таблиці робіт");
   StrSetText(HideLastCostPrice,"Приховати вартість останньої покупки"); //Edit***************************Sasha2,14:32 13.07.2016
   StrSetText(SentStockMovOK,"Створення переміщень");
   StrSetText(SVOToSVGM,"Service Stock Transaction from Service Order");
@@ -354,18 +355,18 @@ begin
   StrSetText(AllowUsingSubonBarTab,"Allow using 'Subtract' Button on Bar Tab");
   StrSetText(ViewBI,"Перегляд BI");
   StrSetText(ViewDashboard,"Перегляд панелі інструментів");
-  StrSetText(ViewDashboardTopCustomers,"View Dashboard Top Customers");  
-  StrSetText(ViewDashboardDebCred,"View Dashboard Top Debtors");  
-  StrSetText(ViewDashboardTopItemGroups,"View Dashboard Top Item Groups");  
-  StrSetText(ViewDashboardPipeline,"View Dashboard Top Pipeline");  
-  StrSetText(ViewDashboardPnL,"View Dashboard Top P&L");  
-  StrSetText(ViewDashboardTopSalesmen,"View Dashboard Top Salesmen");  
+  StrSetText(ViewDashboardTopCustomers,"View Dashboard Top Customers");
+  StrSetText(ViewDashboardDebCred,"View Dashboard Top Debtors");
+  StrSetText(ViewDashboardTopItemGroups,"View Dashboard Top Item Groups");
+  StrSetText(ViewDashboardPipeline,"View Dashboard Top Pipeline");
+  StrSetText(ViewDashboardPnL,"View Dashboard Top P&L");
+  StrSetText(ViewDashboardTopSalesmen,"View Dashboard Top Salesmen");
   StrSetText(ViewCostPrice,"Переглядати собівартість");
   StrSetText(AllowRestAccRowsVoid,"Дозволяти скасування рядків замов-ня");
   StrSetText(AllowIVTSRowsVoid,"Дозволяти відміну рядків накладн. ЕККА, сенс, екран");
   StrSetText(AllowNPTSIVRowsVoid,"Дозволяти скасування рядків накладної (сенсорн. екран)");
   StrSetText(AllowNoClockInOut,"Allow Working without Clock In/Out Activities");
   EndStrSet;
-  
+
 	return;
 end;
