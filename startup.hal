@@ -9,7 +9,7 @@ begin
   Register("APVc","APVc",APVc,modDBMain);
   Register("Џереоцґнка RRP","SRPriceVc",SRPriceVc,modIN);
 
-  Report("‡вґт по касґ",POSPaymentsRClass,POSPaymentsRn,0,modSL); //Edit***************************Sasha2,16:40 17.11.2014
+  Report("‡вґт по касґ",POSPaymentsRClass,POSPaymentsRn,0,modSL); //Edit***************************Sasha2,16:40 17.11.2014 
   Report("‡вґт по складу (модифґкований)",NewINRClass,NewInvValRn,0,modIN); //Edit***************************Sasha2,15:24 11.07.2016
 	Report("‘татистика продажґв",MyBIRClass,MyBIRn,0,modSL);//Edit-------------------Vitalii 11:30 22.08.2016
   Report("‡вґт з продажґв (Web)",SalesRepWebRClass,SalesRepWebRn,0,modSL);//Edit-------------------Vitalii 16:21 08.12.2016
