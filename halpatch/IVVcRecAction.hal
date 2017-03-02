@@ -303,15 +303,14 @@ begin
       rwcnt2 = MatRowCnt(normIVr);
       for (j=0;j<rwcnt2;j=j+1) begin
         MatRowGet(normIVr,j,normIVrw);
-        //LogText(0,normIVrw.ArtCode & "   " & normIVrw.Quant & "   " & normIVrw.RetIVNum &  "   " & normIVrw.RetIVRow);
         if (curitem!=normIVrw.ArtCode) then begin
           ClearVector(returnItemsQty);
           LookUpAvailableReturnItemsInIVs(returnItemsInfo,returnItemsQty," ",normIVrw.ArtCode,IVr,-1,false);
           curitem = normIVrw.ArtCode;
         end;
         if (AbsoluteVal(normIVrw.Quant)>returnItemsQty[normIVrw.RetIVNum & " " & normIVrw.RetIVRow]) then begin
-          LogText(0,normIVrw.ArtCode & "   " & normIVrw.Quant & "   " & normIVrw.RetIVNum &  "   " & normIVrw.RetIVRow);
-          LogText(0,returnItemsQty[normIVrw.RetIVNum & " " & normIVrw.RetIVRow]);
+          //LogText(0,normIVrw.ArtCode & "   " & normIVrw.Quant & "   " & normIVrw.RetIVNum &  "   " & normIVrw.RetIVRow);
+          //LogText(0,returnItemsQty[normIVrw.RetIVNum & " " & normIVrw.RetIVRow]);
           RecordCheckError(31010,"",normIVrw.RetRow,"Quant");      
           res = -1; 
           j = rwcnt2;
