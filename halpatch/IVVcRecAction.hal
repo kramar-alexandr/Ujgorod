@@ -310,7 +310,7 @@ begin
         end;
         if (AbsoluteVal(normIVrw.Quant)>returnItemsQty[normIVrw.RetIVNum & " " & normIVrw.RetIVRow]) then begin
           //LogText(0,normIVrw.ArtCode & "   " & normIVrw.Quant & "   " & normIVrw.RetIVNum &  "   " & normIVrw.RetIVRow);
-          //LogText(0,returnItemsQty[normIVrw.RetIVNum & " " & normIVrw.RetIVRow]); 
+          //LogText(0,returnItemsQty[normIVrw.RetIVNum & " " & normIVrw.RetIVRow]);
           RecordCheckError(31010,"",normIVrw.RetRow,"Quant");      
           res = -1; 
           j = rwcnt2;
