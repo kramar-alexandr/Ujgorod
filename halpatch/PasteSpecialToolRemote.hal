@@ -1703,7 +1703,7 @@ BEGIN
   	TrHs = true;
   	while(loopbackkey("FNArtCode",IHr,3,TrHs)) begin
   		testf = true;
-  		if(custcode!="’ˆ’ˆŠ€" and IHr.TransDate<addmonth(currentdate,-3))then begin TrHs = false; testf = false; end;
+  		if(custcode!="’ˆ’ˆŠ€" and custcode!="€ƒˆ–€" and custcode!="‡‹’€" and IHr.TransDate<addmonth(currentdate,-3))then begin TrHs = false; testf = false; end;
   		if(IHr.ArtCode!=item)then begin TrHs = false; testf = false; end;
   		if(IHr.FileName!="IVVc")then begin TrHs = false; testf = false; end;
   		if (testf) then begin
