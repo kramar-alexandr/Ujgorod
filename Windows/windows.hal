@@ -494,7 +494,7 @@ begin
   SetWRect(20,80,400,250);
   UseView(RcVc);
   v = 16; vs = 25; h = 120; h2 = 250;
-  EditField(h,v+=20,70,"Дата",Normal,d1,false,pastecurdate);
+  EditField(h,v+=20,70,"Дата",Normal,d1,false,PasteCurDate);
   EditField(h,v+=20,70,"Склад",Normal,f1,false,LocationSClass);
   
   EndWindow;

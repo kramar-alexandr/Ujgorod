@@ -25,7 +25,10 @@ begin
 	end;
 	
 	c = 0;
+	k = 0;
 	collection[c] = "NoCollection";
+	brand[k] = "NoBrand";
+	k=k+1;
 	c=c+1;
 	
 	startreportnoheaderjob("");
