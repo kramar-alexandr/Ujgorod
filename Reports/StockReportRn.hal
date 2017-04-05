@@ -1,0 +1,177 @@
+external procedure ExtractObj(string,var Integer,var string);
+
+SetLangMode(LangUkrainian,"UKR",0);  
+
+global procedure StockReportRn(record RcVc RepSpec)
+begin
+	record INVc INr;
+	record DIVc DIr;
+	record ITVc ITr;
+	record ItemHistVc IHr;
+	record IVVc IVr;
+	date todate;
+	array string 100 collection,brand;
+	vector val colqty,colsum,totcolsum,totcolqty;
+	vector boolean colvec,brandvec;
+	string 100 location,tstr,inbrand,incol;
+	boolean testf,TrHs,intestf;
+	integer k,pos,i,c,j;
+	val rowsum,rowqty;
+	
+	todate = RepSpec.d1;
+	location = RepSpec.f1;
+	if(blankdate(RepSpec.d1))then begin
+		todate = currentdate;
+	end;
+	
+	c = 0;
+	collection[c] = "NoCollection";
+	c=c+1;
+	
+	startreportnoheaderjob("");
+	INr.Code = "";
+	while(loopmain(INr,1,true))begin
+		intestf = true;
+		inbrand = "";
+		if(INr.Terminated!=0)then begin intestf = false; end;
+		
+		
+		if(intestf)then begin
+			pos = 0;
+			ExtractObj(INr.DispGroups,pos,tstr);
+			while (nonblank(tstr)) begin
+				DIr.Code = tstr;
+				if(readfirstmain(DIr,1,true))then begin
+					if(DIr.CType=="BRAND")then begin
+						if(brandvec[DIr.Name]==false)then begin
+							inbrand = DIr.Name;
+							brand[k] = inbrand;
+							k=k+1;
+							brandvec[DIr.Name] = true;
+						end else begin
+							inbrand = DIr.Name;
+						end;
+					end;
+				end;
+				ExtractObj(INr.DispGroups,pos,tstr);
+			end;
+			
+			
+			TrHs = true;
+			IHr.ArtCode = INr.Code;
+			IHr.TransDate = stringtodate("1/1/2001");
+			while(loopkey("ArtCode",IHr,2,TrHs))begin
+				testf = true;
+				incol = "NoCollection";
+				if(IHr.ArtCode!=INr.Code)then begin testf = false; TrHs = false; end;
+				if(nonblank(location) and IHr.Location!=location)then begin testf = false; end;
+				if(IHr.StockAffectf==0)then begin testf = false; end;
+				if(IHr.TransDate>todate)then begin testf = false; TrHs = false; end;
+			
+				if(testf)then begin
+					if(nonblank(IHr.SerialNr))then begin
+						pos = 0;
+						ExtractObj(IHr.SerialNr,pos,tstr);
+						while (nonblank(tstr)) begin
+							if(nonblank(tstr))then begin
+								incol = tstr;
+							end;
+							ExtractObj(IHr.SerialNr,pos,tstr);
+						end;
+						if(colvec[incol]==false)then begin
+							colvec[incol] = true;
+							collection[c] = incol;
+							c=c+1;
+						end;
+						colqty[inbrand & ":" & incol] = colqty[inbrand & ":" & incol] + IHr.Qty;
+						totcolqty[incol] = totcolqty[incol] + IHr.Qty;
+						if(IHr.Qty>0)then begin
+							colsum[inbrand & ":" & incol] = colsum[inbrand & ":" & incol] + IHr.TotCostPrice;
+							totcolsum[incol] = totcolsum[incol] + IHr.TotCostPrice;
+						end else begin
+							colsum[inbrand & ":" & incol] = colsum[inbrand & ":" & incol] - IHr.TotCostPrice;
+							totcolsum[incol] = totcolsum[incol] - IHr.TotCostPrice;
+						end;
+						
+					end else begin
+						colqty[inbrand & ":" & "NoCollection"] = colqty[inbrand & ":" & "NoCollection"] + IHr.Qty;
+						totcolqty["NoCollection"] = totcolqty["NoCollection"] + IHr.Qty;
+						if(IHr.Qty>0)then begin
+							colsum[inbrand & ":" & "NoCollection"] = colsum[inbrand & ":" & "NoCollection"] + IHr.TotCostPrice;
+							totcolsum["NoCollection"] = totcolsum["NoCollection"] + IHr.TotCostPrice;
+						end else begin
+							colsum[inbrand & ":" & "NoCollection"] = colsum[inbrand & ":" & "NoCollection"] - IHr.TotCostPrice;
+							totcolsum["NoCollection"] = totcolsum["NoCollection"] - IHr.TotCostPrice;
+						end;
+					end;
+				end;
+			end;
+			resetloop(IHr);
+		end;
+	end;
+	
+	startformat(15);
+		outstring(0,0,"Звіт по залишку товару Fashion House",false);
+	endformat;
+	startformat(15);
+		outstring(150,0,"станом на",false);
+		outstring(190,0,todate,false);
+	endformat;
+	startformat(15);
+		outstring(0,0,"",false);
+		outstring(10,0,"",false);
+		outstring(20,0,"",false);
+		outstring(30,0,"",false);
+		outstring(40,0,"валюта - евро",false);
+	endformat;
+	startformat(15);
+		outstring(0,0,"Назва бренду",false);
+		For(i=0;i<c;i=i+1) begin
+	  	outstring(50+i*35,0,collection[i],false);
+			outstring(50+i*35+18,0,"",false);
+		end; 
+		outstring(1,0,"РАЗОМ",true);
+	endformat;
+	startformat(15);
+		outstring(0,0,"",false);
+		For(i=0;i<c;i=i+1) begin
+	  	outstring(50+i*35,0,"К-сть",false);
+			outstring(50+i*35+18,0,"Сума закупки",false);
+		end; 
+		outstring(-70,0,"К-сть",true);
+		outstring(1,0,"Сума закупки",true);
+	endformat;
+	
+	For(i=0;i<k;i=i+1) begin
+		rowsum = 0;
+		rowqty = 0;
+		startformat(15);
+			outstring(0,0,brand[i],false);
+			For(j=0;j<c;j=j+1) begin
+				outstring(50+j*35,0,colqty[brand[i] & ":" & collection[j]],false);
+				outstring(50+j*35+18,0,colsum[brand[i] & ":" & collection[j]],false);
+				rowsum = rowsum + colsum[brand[i] & ":" & collection[j]];
+				rowqty = rowqty + colqty[brand[i] & ":" & collection[j]];
+			end; 
+			outstring(-70,0,rowqty,true);
+			outstring(1,0,rowsum,true);
+		endformat;
+	end;
+	rowsum = 0;
+	rowqty = 0;
+	startformat(15);
+			outstring(0,0,"Разом",false);
+			For(j=0;j<c;j=j+1) begin
+				outstring(50+j*35,0,totcolqty[collection[j]],false);
+				outstring(50+j*35+18,0,totcolsum[collection[j]],false);
+				rowsum = rowsum + totcolsum[collection[j]];
+				rowqty = rowqty + totcolqty[collection[j]];
+			end; 
+			outstring(-70,0,rowqty,true);
+			outstring(1,0,rowsum,true);
+		endformat;
+	
+	endjob;
+
+return;
+end;

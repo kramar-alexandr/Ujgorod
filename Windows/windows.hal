@@ -484,3 +484,18 @@ begin
 
   EndWindow;
 end; //Edit***************************Sasha2,17:52 22.02.2017 }
+
+window StockReportRClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer") 
+begin
+  real h,h2,v,vs;
+  
+  WindowBegin("Залишки по товарам на дату",StockReportRClass,CGRcW,RcType);  
+  SetWRect(20,80,400,250);
+  UseView(RcVc);
+  v = 16; vs = 25; h = 120; h2 = 250;
+  EditField(h,v+=20,70,"Дата",Normal,d1,false,pastecurdate);
+  EditField(h,v+=20,70,"Склад",Normal,f1,false,LocationSClass);
+  
+  EndWindow;
+end;
