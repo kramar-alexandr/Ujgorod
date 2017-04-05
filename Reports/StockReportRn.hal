@@ -162,9 +162,11 @@ begin
 				outstring(0,0,brand[i],false);
 				pos = 0;
 				For(j=0;j<c;j=j+1) begin
-					outstring(50+pos*35,0,colqty[brand[i] & ":" & collection[j]],false);
-					outstring(50+pos*35+18,0,colsum[brand[i] & ":" & collection[j]],false);
-					pos = pos + 1;
+					if(totcolqty[collection[j]]!=0)then begin
+						outstring(50+pos*35,0,colqty[brand[i] & ":" & collection[j]],false);
+						outstring(50+pos*35+18,0,colsum[brand[i] & ":" & collection[j]],false);
+						pos = pos + 1;
+					end;
 				end; 
 				outstring(-70,0,rowqty,true);
 				outstring(1,0,rowsum,true);
