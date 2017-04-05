@@ -160,9 +160,11 @@ begin
 		if(rowsum!=0 or rowqty!=0)then begin
 			startformat(15);
 				outstring(0,0,brand[i],false);
+				pos = 0;
 				For(j=0;j<c;j=j+1) begin
-					outstring(50+j*35,0,colqty[brand[i] & ":" & collection[j]],false);
-					outstring(50+j*35+18,0,colsum[brand[i] & ":" & collection[j]],false);
+					outstring(50+pos*35,0,colqty[brand[i] & ":" & collection[j]],false);
+					outstring(50+pos*35+18,0,colsum[brand[i] & ":" & collection[j]],false);
+					pos = pos + 1;
 				end; 
 				outstring(-70,0,rowqty,true);
 				outstring(1,0,rowsum,true);
@@ -174,8 +176,10 @@ begin
 	startformat(15);
 			outstring(0,0,"Разом",false);
 			For(j=0;j<c;j=j+1) begin
-				outstring(50+j*35,0,totcolqty[collection[j]],false);
-				outstring(50+j*35+18,0,totcolsum[collection[j]],false);
+				pos = 0;
+				outstring(50+pos*35,0,totcolqty[collection[j]],false);
+				outstring(50+pos*35+18,0,totcolsum[collection[j]],false);
+				pos = pos + 1;
 				rowsum = rowsum + totcolsum[collection[j]];
 				rowqty = rowqty + totcolqty[collection[j]];
 			end; 
