@@ -121,11 +121,16 @@ begin
 		outstring(190,0,todate,false);
 	endformat;
 	startformat(15);
-		outstring(0,0,"",false);
-		outstring(10,0,"",false);
-		outstring(20,0,"",false);
-		outstring(30,0,"",false);
-		outstring(40,0,"валюта - евро",false);
+		outstring(150,0,"Склад: ",false);
+		if(blank(location))then begin
+			outstring(190,0,"Всі",false);
+		end else begin
+			outstring(190,0,location,false);
+		end;
+		
+	endformat;
+	startformat(15);
+		outstring(150,0,"валюта - евро",false);
 	endformat;
 	startformat(15);
 		outstring(0,0,"Назва бренду",false);
