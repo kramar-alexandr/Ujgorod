@@ -35,7 +35,7 @@ begin
 	INr.Code = "";
 	while(loopmain(INr,1,true))begin
 		intestf = true;
-		inbrand = "";
+		inbrand = "NoBrand";
 		if(INr.Terminated!=0)then begin intestf = false; end;
 		
 		
