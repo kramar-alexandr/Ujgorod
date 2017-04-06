@@ -290,7 +290,7 @@ begin
 								end else begin
 									tempsum = IVrw.Sum/IVrw.Quant*IHr.Qty/IVr.FrRate*IVr.ToRateB1;
 								end;
-								costsum[inbrand] = costsum[inbrand] + IHr.TotCostPrice;
+								costsum[inbrand] = costsum[inbrand] - IHr.TotCostPrice;
 								pricesum[inbrand] = pricesum[inbrand] + tempsum;
 								totalsum = totalsum + tempsum;
 								totalcost = totalcost - IHr.TotCostPrice;
