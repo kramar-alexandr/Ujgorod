@@ -355,7 +355,7 @@ begin
 	For(i=0;i<k;i=i+1) begin
 		rowsum = 0;
 		rowqty = 0;
-		if(colqty[brand[i]]!=0 or pricesum[brand[i]]!=0 or costsum[brand[i]]!=0)then begin
+		//if(colqty[brand[i]]!=0 or pricesum[brand[i]]!=0 or costsum[brand[i]]!=0)then begin
 			startformat(15);
 				outstring(0,0,brand[i],false);
 				outstring(90,0,-colqty[brand[i]],true);
@@ -370,7 +370,7 @@ begin
 				outstring(1,0,(pricesum[brand[i]]/totalsum)*100,true);
 			endformat;
 			totalgp = totalgp + pricesum[brand[i]]-costsum[brand[i]];
-		end;
+		//end;
 
 	end;
 	rowsum = 0;
