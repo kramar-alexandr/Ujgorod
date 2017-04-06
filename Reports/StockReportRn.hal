@@ -292,7 +292,6 @@ begin
 								end;
 								costsum[inbrand] = costsum[inbrand] + IHr.TotCostPrice;
 								pricesum[inbrand] = pricesum[inbrand] + tempsum;
-								totcolsum[incol] = totcolsum[inbrand] - IHr.TotCostPrice;
 								totalsum = totalsum + tempsum;
 								totalcost = totalcost - IHr.TotCostPrice;
 							end else begin
@@ -304,7 +303,6 @@ begin
 								end;
 								costsum[inbrand] = costsum[inbrand] + IHr.TotCostPrice;
 								pricesum[inbrand] = pricesum[inbrand] + tempsum;
-								totcolsum[incol] = totcolsum[inbrand] + IHr.TotCostPrice;
 								totalsum = totalsum + tempsum;
 								totalcost = totalcost + IHr.TotCostPrice;
 							end;
