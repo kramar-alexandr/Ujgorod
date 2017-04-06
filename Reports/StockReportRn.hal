@@ -1,4 +1,5 @@
 external procedure ExtractObj(string,var Integer,var string);
+external procedure GetBaseCurncy(Integer,var string);
 
 SetLangMode(LangUkrainian,"UKR",0);  
 
@@ -31,7 +32,7 @@ begin
 	k=k+1;
 	c=c+1;
 	
-	startreportnoheaderjob("");
+	startreportnoheaderjob("Звіт по залишку товару Fashion House");
 	INr.Code = "";
 	while(loopmain(INr,1,true))begin
 		intestf = true;
@@ -197,6 +198,193 @@ begin
 			end; 
 			outstring(-70,0,rowqty,true);
 			outstring(1,0,rowsum,true);
+		endformat;
+	
+	endjob;
+
+return;
+end;
+
+global procedure SalesStockReportRn(record RcVc RepSpec)
+begin
+	record INVc INr;
+	record DIVc DIr;
+	record ITVc ITr;
+	record ItemHistVc IHr;
+	date todate,frdate;
+	array string 100 collection,brand;
+	vector val colqty,colsum,totcolsum,totcolqty,costsum,pricesum;
+	vector boolean colvec,brandvec;
+	string 100 location,tstr,inbrand,incol;
+	boolean testf,TrHs,intestf;
+	integer k,pos,i,c,j,mtrw;
+	val rowsum,rowqty;
+	record IVVc IVr;
+	row IVVc IVrw;
+	val tempsum,totalsum,totalqty,totalgp,totalcost;
+	string 5 basecur;
+	
+	GetBaseCurncy(1,basecur);
+	
+	frdate = RepSpec.sStartDate;
+	todate = RepSpec.sEndDate;
+	location = RepSpec.f1;
+	if(blankdate(RepSpec.d1))then begin
+		todate = currentdate;
+	end;
+	k = 0;
+	brand[k] = "NoBrand";
+	k=k+1;
+	
+	startreportnoheaderjob("Структура продаж Fashion House");
+	INr.Code = "";
+	while(loopmain(INr,1,true))begin
+		intestf = true;
+		inbrand = "NoBrand";
+		if(INr.Terminated!=0)then begin intestf = false; end;
+		
+		if(intestf)then begin
+			pos = 0;
+			ExtractObj(INr.DispGroups,pos,tstr);
+			while (nonblank(tstr)) begin
+				DIr.Code = tstr;
+				if(readfirstmain(DIr,1,true))then begin
+					if(DIr.CType=="BRAND")then begin
+						if(brandvec[DIr.Name]==false)then begin
+							inbrand = DIr.Name;
+							brand[k] = inbrand;
+							k=k+1;
+							brandvec[DIr.Name] = true;
+						end else begin
+							inbrand = DIr.Name;
+						end;
+					end;
+				end;
+				ExtractObj(INr.DispGroups,pos,tstr);
+			end;
+			
+			
+			TrHs = true;
+			IHr.ArtCode = INr.Code;
+			IHr.TransDate = frdate;
+			while(loopkey("ArtCode",IHr,2,TrHs))begin
+				testf = true;
+				if(IHr.ArtCode!=INr.Code)then begin testf = false; TrHs = false; end;
+				if(nonblank(location) and IHr.Location!=location)then begin testf = false; end;
+				if(IHr.StockAffectf==0)then begin testf = false; end;
+				if(IHr.TransDate>todate)then begin testf = false; TrHs = false; end;
+				if(IHr.FileName!="IVVc")then begin testf = false; end;
+			
+				if(testf)then begin
+					IVr.SerNr = IHr.TransNr;
+					if(readfirstmain(IVr,1,true))then begin
+						mtrw = matrowcnt(IVr);
+						if(IHr.Row<mtrw)then begin
+							matrowget(IVr,IHr.Row,IVrw);
+							colqty[inbrand] = colqty[inbrand] + IHr.Qty;
+							totalqty = totalqty + IHr.Qty;
+							if(IHr.Qty>0)then begin
+								tempsum = blankval;
+								if(IVr.CurncyCode==basecur)then begin
+									tempsum = IVrw.Sum/IVrw.Quant*IHr.Qty;
+								end else begin
+									tempsum = IVrw.Sum/IVrw.Quant*IHr.Qty/IVr.FrRate*IVr.ToRateB1;
+								end;
+								costsum[inbrand] = costsum[inbrand] + IHr.TotCostPrice;
+								pricesum[inbrand] = pricesum[inbrand] + tempsum;
+								totcolsum[incol] = totcolsum[inbrand] - IHr.TotCostPrice;
+								totalsum = totalsum + tempsum;
+								totalcost = totalcost - IHr.TotCostPrice;
+							end else begin
+								tempsum = blankval;
+								if(IVr.CurncyCode==basecur)then begin
+									tempsum = -IVrw.Sum/IVrw.Quant*IHr.Qty;
+								end else begin
+									tempsum = -IVrw.Sum/IVrw.Quant*IHr.Qty/IVr.FrRate*IVr.ToRateB1;
+								end;
+								costsum[inbrand] = costsum[inbrand] + IHr.TotCostPrice;
+								pricesum[inbrand] = pricesum[inbrand] + tempsum;
+								totcolsum[incol] = totcolsum[inbrand] + IHr.TotCostPrice;
+								totalsum = totalsum + tempsum;
+								totalcost = totalcost + IHr.TotCostPrice;
+							end;
+						end;
+					end;
+				end;
+			end;
+			resetloop(IHr);
+		end;
+	end;
+	
+	startformat(15);
+		outstring(0,0,"Структура продаж Fashion House",false);
+	endformat;
+	startformat(15);
+		outstring(150,0,"станом на",false);
+		outstring(190,0,todate,false);
+	endformat;
+	startformat(15);
+		outstring(150,0,"Склад: ",false);
+		if(blank(location))then begin
+			outstring(190,0,"Всі",false);
+		end else begin
+			outstring(190,0,location,false);
+		end;
+		
+	endformat;
+	startformat(15);
+		outstring(150,0,"валюта - евро",false);
+	endformat;
+	startformat(15);
+		outstring(0,0,"Назва бренду",false);
+		outstring(90,0,"К-сть",true);
+		outstring(150,0,"Сума	",false);
+		outstring(200,0,"",false);
+		outstring(250,0,"Заробіток	",false);
+		outstring(300,0,"",false);
+		outstring(1,0,"Відсоток продажу в загальному т/о",true);
+	endformat;
+	startformat(15);
+		outstring(0,0,"",false);
+		outstring(90,0,"",true);
+		outstring(150,0,"закупки",false);
+		outstring(200,0,"продажи",false);
+		outstring(250,0,"%",false);
+		outstring(300,0,"сума",false);
+		outstring(1,0,"",true);
+	endformat;
+	
+	For(i=0;i<k;i=i+1) begin
+		rowsum = 0;
+		rowqty = 0;
+		if(colqty[brand[i]]!=0)then begin
+			startformat(15);
+				outstring(0,0,brand[i],false);
+				outstring(90,0,-colqty[brand[i]],true);
+				outstring(150,0,costsum[brand[i]],false);
+				outstring(200,0,pricesum[brand[i]],false);
+				if(((pricesum[brand[i]]-costsum[brand[i]])/pricesum[brand[i]]*100)<(-500))then begin
+					outstring(250,0,-100,false);
+				end else begin
+					outstring(250,0,(pricesum[brand[i]]-costsum[brand[i]])/pricesum[brand[i]]*100,false);
+				end;
+				outstring(300,0,pricesum[brand[i]]-costsum[brand[i]],false);
+				outstring(1,0,(pricesum[brand[i]]/totalsum)*100,true);
+			endformat;
+			totalgp = totalgp + pricesum[brand[i]]-costsum[brand[i]];
+		end;
+
+	end;
+	rowsum = 0;
+	rowqty = 0;
+	startformat(15);
+			outstring(0,0,"Разом",false);
+			outstring(90,0,-totalqty,true);
+			outstring(150,0,totalcost,false);
+			outstring(200,0,totalsum,false);
+			outstring(250,0,(totalsum-totalcost)/totalsum*100,false);
+			outstring(300,0,totalsum-totalcost,false);
+			outstring(1,0,"",true);
 		endformat;
 	
 	endjob;
