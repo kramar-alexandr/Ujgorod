@@ -124,6 +124,9 @@ begin
 		end;
 	end;
 	
+	SortStringArray(collection);
+	SortStringArray(brand);
+	
 	startformat(15);
 		outstring(0,0,"‡вґт по залишку товару Fashion House",false);
 	endformat;
@@ -361,7 +364,7 @@ begin
 		outstring(300,0,"сума",false);
 		outstring(1,0,"",true);
 	endformat;
-	
+	SortStringArray(brand);
 	For(i=0;i<k;i=i+1) begin
 		rowsum = 0;
 		rowqty = 0;
