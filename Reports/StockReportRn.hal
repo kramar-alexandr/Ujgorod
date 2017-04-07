@@ -29,6 +29,7 @@ begin
 	c = 0;
 	k = 0;
 	collection[c] = "0";
+	colvec["0"] = true;
 	brand[k] = "NoBrand";
 	k=k+1;
 	c=c+1;
