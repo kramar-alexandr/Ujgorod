@@ -16,8 +16,9 @@ begin
 	vector boolean colvec,brandvec;
 	string 100 location,tstr,inbrand,incol;
 	boolean testf,TrHs,intestf;
-	integer k,pos,i,c,j;
+	integer k,pos,i,c,j,sercount;
 	val rowsum,rowqty;
+	
 	
 	todate = RepSpec.d1;
 	location = RepSpec.f1;
@@ -27,7 +28,7 @@ begin
 	
 	c = 0;
 	k = 0;
-	collection[c] = "NoCollection";
+	collection[c] = "0";
 	brand[k] = "NoBrand";
 	k=k+1;
 	c=c+1;
@@ -66,7 +67,7 @@ begin
 			IHr.TransDate = stringtodate("1/1/2001");
 			while(loopkey("ArtCode",IHr,2,TrHs))begin
 				testf = true;
-				incol = "NoCollection";
+				incol = "";
 				if(IHr.ArtCode!=INr.Code)then begin testf = false; TrHs = false; end;
 				if(nonblank(location) and IHr.Location!=location)then begin testf = false; end;
 				if(IHr.StockAffectf==0)then begin testf = false; end;
@@ -75,10 +76,18 @@ begin
 				if(testf)then begin
 					if(nonblank(IHr.SerialNr))then begin
 						pos = 0;
+						sercount = 0;
 						ExtractObj(IHr.SerialNr,pos,tstr);
 						while (nonblank(tstr)) begin
 							if(nonblank(tstr))then begin
-								incol = tstr;
+								sercount = sercount + 1;
+								if(sercount==4)then begin
+									incol = tstr;
+								end else begin
+									if(blank(incol))then begin
+										incol = "0";
+									end;
+								end;
 							end;
 							ExtractObj(IHr.SerialNr,pos,tstr);
 						end;

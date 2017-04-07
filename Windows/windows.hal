@@ -505,7 +505,7 @@ window SalesStockReportRClass:1
 begin
   real h,h2,v,vs;
   
-  WindowBegin("Залишки по товарам на дату",SalesStockReportRClass,CGRcW,RcType);  
+  WindowBegin("Структура продаж Fashion House по брендам",SalesStockReportRClass,CGRcW,RcType);  
   SetWRect(20,80,400,250);
   UseView(RcVc);
   v = 16; vs = 25; h = 120; h2 = 250;
