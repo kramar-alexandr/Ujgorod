@@ -150,7 +150,7 @@ begin
 		outstring(0,0,"Назва бренду",false);
 		pos = 0;
 		For(i=0;i<c;i=i+1) begin
-			if(totcolqty[collection[i]]!=0 or totcolsum[collection[j]]!=0)then begin
+			if(totcolqty[collection[i]]!=0 or totcolsum[collection[i]]!=0)then begin
 				outstring(50+pos*35,0,collection[i],false);
 				outstring(50+pos*35+18,0,"",false);
 				pos = pos + 1;
@@ -162,7 +162,7 @@ begin
 		outstring(0,0,"",false);
 		pos = 0;
 		For(i=0;i<c;i=i+1) begin
-			if(totcolqty[collection[i]]!=0 or totcolsum[collection[j]]!=0)then begin
+			if(totcolqty[collection[i]]!=0 or totcolsum[collection[i]]!=0)then begin
 				outstring(50+pos*35,0,"К-сть",false);
 				outstring(50+pos*35+18,0,"Сума закупки",false);
 				pos = pos + 1;
