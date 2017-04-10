@@ -487,7 +487,7 @@ begin
   string 20 frdra,todra,reportCur;
   val possum,posgp,tval,reportRate;
   record BaseCurBlock BCb;
-  val totFifo,totFifoSum; //Edit***************************Sasha2,12:07 10.10.2016
+  val totFifo,includedFifo,totFifoSum; //Edit***************************Sasha2,12:07 10.10.2016
 
   afr = FirstInRange(RepSpec.f1,20);
   ato = LastInRange(RepSpec.f1,20);
@@ -753,7 +753,7 @@ begin
                       t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
                       FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
                       tval = IVGetFIFO(IVr,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant); //Edit***************************Sasha2,12:09 10.10.2016
-                      totFifo = totFifo + tval; //Edit***************************Sasha2,12:09 10.10.2016
+                      includedFifo = tval; //Edit***************************Sasha2,12:09 10.10.2016
                       gp = rowinbase - tval; //Edit***************************Sasha2,12:09 10.10.2016
                     otherwise
                       t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
@@ -776,7 +776,7 @@ begin
                     t = IVrw.Sum;
                     //FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
                     tval = IVGetFIFO(IVr,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
-                    totFifo = totFifo + tval; //Edit***************************Sasha2,12:09 10.10.2016
+                    includedFifo = tval; //Edit***************************Sasha2,12:09 10.10.2016
                     if (reportRate<>0) then begin
                       tval = tval * reportRate;
                     end else begin
@@ -792,13 +792,13 @@ begin
                       end;
                       //FindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
                       tval = IVGetFIFO(IVr,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
-                      totFifo = totFifo + tval; //Edit***************************Sasha2,12:09 10.10.2016
+                      includedFifo = tval; //Edit***************************Sasha2,12:09 10.10.2016
                       gp = t - tval;
                     end else begin
                       t = MULRATETOBASE1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
                       //SFindSalesExVat(TMr,IVrw.VATCode,t,IVr.InclVAT,IVr.NoTAXonVAT,rowinbase);
                       tval = IVGetFIFO(IVr,i,IVrw.FIFORowVal,IVrw.FIFO,IVrw.Quant);
-                      totFifo = totFifo + tval; //Edit***************************Sasha2,12:09 10.10.2016
+                      includedFifo = tval; //Edit***************************Sasha2,12:09 10.10.2016
                       if (reportRate<>0) then begin
                         t = t * reportRate;
                       end else begin
@@ -886,6 +886,7 @@ begin
                       iv = iv + t;//extra
                   end;
                 end;
+                totFifo = totFifo + includedFifo; //Edit***************************Sasha2,16:11 10.04.2017
               end;  
           end;
         end;
