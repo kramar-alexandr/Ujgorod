@@ -496,6 +496,9 @@ begin
   v = 16; vs = 25; h = 120; h2 = 250;
   EditField(h,v+=20,70,"Дата",Normal,d1,false,PasteCurDate);
   EditField(h,v+=20,70,"Склад",Normal,f1,false,LocationSClass);
+  ButtonFrame(h,v+=44,160,2,"Сортування");
+  RadioButton(h,v,0,0,"Бренд",flags[0]);
+  RadioButton(h,v+=16,1,0,"Тип",flags[0]);  
   
   EndWindow;
 end;
@@ -511,6 +514,9 @@ begin
   v = 16; vs = 25; h = 120; h2 = 250;
   PeriodField(h,v,"Період");
   EditField(h,v+=20,70,"Склад",Normal,f1,false,LocationSClass);
+  ButtonFrame(h,v+=44,160,2,"Сортування");
+  RadioButton(h,v,0,0,"Бренд",flags[0]);
+  RadioButton(h,v+=16,1,0,"Тип",flags[0]); 
   
   EndWindow;
 end;

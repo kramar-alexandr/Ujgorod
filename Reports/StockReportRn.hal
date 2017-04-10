@@ -14,7 +14,7 @@ begin
 	array string 100 collection,brand;
 	vector val colqty,colsum,totcolsum,totcolqty;
 	vector boolean colvec,brandvec;
-	string 100 location,tstr,inbrand,incol;
+	string 100 location,tstr,inbrand,incol,sorttype;
 	boolean testf,TrHs,intestf;
 	integer k,pos,i,c,j,sercount;
 	val rowsum,rowqty;
@@ -26,11 +26,19 @@ begin
 		todate = currentdate;
 	end;
 	
+	sorttype = "BRAND";
+	if(RepSpec.flags[0]==1)then begin
+		sorttype = "TYPE";
+	end;
+	
 	c = 0;
 	k = 0;
 	collection[c] = "0";
 	colvec["0"] = true;
 	brand[k] = "NoBrand";
+	if(RepSpec.flags[0]==1)then begin
+		brand[k] = "NoType";
+	end;
 	k=k+1;
 	c=c+1;
 	
@@ -39,6 +47,9 @@ begin
 	while(loopmain(INr,1,true))begin
 		intestf = true;
 		inbrand = "NoBrand";
+		if(RepSpec.flags[0]==1)then begin
+			inbrand = "NoType";
+		end;
 		if(INr.Terminated!=0)then begin intestf = false; end;
 		
 		
@@ -48,7 +59,7 @@ begin
 			while (nonblank(tstr)) begin
 				DIr.Code = tstr;
 				if(readfirstmain(DIr,1,true))then begin
-					if(DIr.CType=="BRAND")then begin
+					if(DIr.CType==sorttype)then begin
 						if(brandvec[DIr.Name]==false)then begin
 							inbrand = DIr.Name;
 							brand[k] = inbrand;
@@ -228,7 +239,7 @@ begin
 	array string 100 collection,brand;
 	vector val colqty,colsum,totcolsum,totcolqty,costsum,pricesum;
 	vector boolean colvec,brandvec;
-	string 100 location,tstr,inbrand,incol;
+	string 100 location,tstr,inbrand,incol,sorttype;
 	boolean testf,TrHs,intestf;
 	integer k,pos,i,c,j,mtrw;
 	val rowsum,rowqty;
@@ -242,18 +253,23 @@ begin
 	frdate = RepSpec.sStartDate;
 	todate = RepSpec.sEndDate;
 	location = RepSpec.f1;
-	if(blankdate(RepSpec.d1))then begin
-		todate = currentdate;
-	end;
 	k = 0;
 	brand[k] = "NoBrand";
 	k=k+1;
+	
+	sorttype = "BRAND";
+	if(RepSpec.flags[0]==1)then begin
+		sorttype = "TYPE";
+	end;
 	
 	startreportnoheaderjob("Структура продаж Fashion House");
 	INr.Code = "";
 	while(loopmain(INr,1,true))begin
 		intestf = true;
 		inbrand = "NoBrand";
+		if(RepSpec.flags[0]==1)then begin
+			inbrand = "NoType";
+		end;
 		if(INr.Terminated!=0)then begin intestf = false; end;
 		
 		if(intestf)then begin
@@ -262,7 +278,7 @@ begin
 			while (nonblank(tstr)) begin
 				DIr.Code = tstr;
 				if(readfirstmain(DIr,1,true))then begin
-					if(DIr.CType=="BRAND")then begin
+					if(DIr.CType==sorttype)then begin
 						if(brandvec[DIr.Name]==false)then begin
 							inbrand = DIr.Name;
 							brand[k] = inbrand;
@@ -380,11 +396,11 @@ begin
 				outstring(90,0,-colqty[brand[i]],true);
 				outstring(150,0,costsum[brand[i]],false);
 				outstring(200,0,pricesum[brand[i]],false);
-				if(((pricesum[brand[i]]-costsum[brand[i]])/pricesum[brand[i]]*100)<(-500))then begin
-					outstring(250,0,-100,false);
-				end else begin
-					outstring(250,0,(pricesum[brand[i]]-costsum[brand[i]])/pricesum[brand[i]]*100,false);
-				end;
+				//if(((pricesum[brand[i]]-costsum[brand[i]])/costsum[brand[i]]*100)<(-500))then begin
+				//	outstring(250,0,-100,false);
+				//end else begin
+					outstring(250,0,(pricesum[brand[i]]-costsum[brand[i]])/costsum[brand[i]]*100,false);
+				//end;
 				outstring(300,0,pricesum[brand[i]]-costsum[brand[i]],false);
 				outval(1,0,(pricesum[brand[i]]/totalsum)*100,m4val,true);
 			endformat;
