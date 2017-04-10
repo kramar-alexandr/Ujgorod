@@ -415,7 +415,7 @@ begin
 			outstring(90,0,-totalqty,true);
 			outstring(150,0,totalcost,false);
 			outstring(200,0,totalsum,false);
-			outval(250,0,(totalsum-totalcost)/totalsum*100,m4val,false);
+			outval(250,0,(totalsum-totalcost)/totalcost*100,m4val,false);
 			outstring(300,0,totalsum-totalcost,false);
 			outstring(1,0,"",true);
 		endformat;
