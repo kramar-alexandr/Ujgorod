@@ -1,6 +1,6 @@
 external procedure ExtractObj(string,var Integer,var string);
 external procedure GetBaseCurncy(Integer,var string);
-
+external function val AbsoluteVal(val);
 SetLangMode(LangUkrainian,"UKR",0);  
 
 global procedure StockReportRn(record RcVc RepSpec)
@@ -299,9 +299,12 @@ begin
 							if(IHr.Qty>0)then begin
 								tempsum = blankval;
 								if(IVr.CurncyCode==basecur)then begin
-									tempsum = IVrw.Sum/IVrw.Quant*IHr.Qty;
+									tempsum = -AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty);
 								end else begin
-									tempsum = IVrw.Sum/IVrw.Quant*IHr.Qty/IVr.FrRate*IVr.ToRateB1;
+									tempsum = -AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty/IVr.FrRate*IVr.ToRateB1);
+								end;
+								if(IHr.Invalid>0)then begin
+									tempsum = -tempsum;
 								end;
 								costsum[inbrand] = costsum[inbrand] - IHr.TotCostPrice;
 								pricesum[inbrand] = pricesum[inbrand] + tempsum;
@@ -310,9 +313,12 @@ begin
 							end else begin
 								tempsum = blankval;
 								if(IVr.CurncyCode==basecur)then begin
-									tempsum = -IVrw.Sum/IVrw.Quant*IHr.Qty;
+									tempsum = AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty);
 								end else begin
-									tempsum = -IVrw.Sum/IVrw.Quant*IHr.Qty/IVr.FrRate*IVr.ToRateB1;
+									tempsum = AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty/IVr.FrRate*IVr.ToRateB1);
+								end;
+								if(IHr.Invalid>0)then begin
+									tempsum = -tempsum;
 								end;
 								costsum[inbrand] = costsum[inbrand] + IHr.TotCostPrice;
 								pricesum[inbrand] = pricesum[inbrand] + tempsum;
@@ -331,8 +337,8 @@ begin
 		outstring(0,0,"Структура продаж Fashion House",false);
 	endformat;
 	startformat(15);
-		outstring(150,0,"станом на",false);
-		outstring(190,0,todate,false);
+		outstring(150,0,"за період",false);
+		outstring(190,0,frdate & " : " & todate,false);
 	endformat;
 	startformat(15);
 		outstring(150,0,"Склад: ",false);
@@ -380,7 +386,7 @@ begin
 					outstring(250,0,(pricesum[brand[i]]-costsum[brand[i]])/pricesum[brand[i]]*100,false);
 				end;
 				outstring(300,0,pricesum[brand[i]]-costsum[brand[i]],false);
-				outstring(1,0,(pricesum[brand[i]]/totalsum)*100,true);
+				outval(1,0,(pricesum[brand[i]]/totalsum)*100,m4val,true);
 			endformat;
 			totalgp = totalgp + pricesum[brand[i]]-costsum[brand[i]];
 		end;
@@ -393,7 +399,7 @@ begin
 			outstring(90,0,-totalqty,true);
 			outstring(150,0,totalcost,false);
 			outstring(200,0,totalsum,false);
-			outstring(250,0,(totalsum-totalcost)/totalsum*100,false);
+			outval(250,0,(totalsum-totalcost)/totalsum*100,m4val,false);
 			outstring(300,0,totalsum-totalcost,false);
 			outstring(1,0,"",true);
 		endformat;
