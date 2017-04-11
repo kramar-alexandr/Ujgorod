@@ -15,7 +15,7 @@ begin
   Report("Звіт з продажів (Web)",SalesRepWebRClass,SalesRepWebRn,0,modSL);//Edit-------------------Vitalii 16:21 08.12.2016
   Report("Звіт невідповідностей в акт/н. на повернення",RetIVCoincidenceRClass,RetIVCoincidenceRn,0,modSL); //Edit***************************Sasha2,17:51 22.02.2017
 	Report("Залишки по товарам на дату",StockReportRClass,StockReportRn,0,modIN);
-	Report("Структура продаж за період по брендам",SalesStockReportRClass,SalesStockReportRn,0,modSL);
+	Report("Структура продаж за період",SalesStockReportRClass,SalesStockReportRn,0,modSL);
 	//Report("!TestWeb",TestWebRClass,TestWebRn,0,modSL);
 	Setting("Налаштування Zebra",ZebraPrinterTClass,modIN); //Edit***************************Sasha2,14:17 20.07.2016
 
