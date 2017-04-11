@@ -388,7 +388,7 @@ begin
           OutString(20,0,IVrw.ArtCode,false);
           OutVal(124,0,quant,M4UVal,true);
           OutString(130,0,IVrw.Spec,false);
-          if (Blank(INr.Code)) then begin //Edit***************************Sasha2,16:06 05.08.2016 {
+          if (INr.Code!=IVrw.ArtCode) then begin //Edit***************************Sasha2,16:06 05.08.2016 {
             INr.Code = IVrw.ArtCode;
             ReadFirstMain(INr,1,true);
           end;
