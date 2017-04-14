@@ -1,6 +1,9 @@
 external procedure ExtractObj(string,var Integer,var string);
 external procedure GetBaseCurncy(Integer,var string);
 external function val AbsoluteVal(val);
+external function string 255 StrReplace(string,string,string);
+
+
 SetLangMode(LangUkrainian,"UKR",0);  
 
 global procedure StockReportRn(record RcVc RepSpec)
@@ -89,6 +92,9 @@ begin
 					if(nonblank(IHr.SerialNr))then begin
 						pos = 0;
 						sercount = 0;
+						
+						IHr.SerialNr = StrReplace(IHr.SerialNr,"..",".SO.");
+						
 						ExtractObj(IHr.SerialNr,pos,tstr);
 						while (nonblank(tstr)) begin
 							if(nonblank(tstr))then begin
