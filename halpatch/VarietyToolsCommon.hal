@@ -1061,3 +1061,28 @@ begin
 
 	return;
 end;
+
+global
+procedure ItemStatusWebRun()
+begin
+  string 255 url;
+  integer compnr;
+  record ProgramStatusBlock PSb;
+	record CompaniesBlock Cb;
+	row CompaniesBlock Cbrw;
+  record RcVc RepSpec;
+	integer wn;
+  
+  wn = curwindow;
+	deselectwindow(wn,true);
+	getwindowrecord(wn,RepSpec);
+	blockload(PSb);
+	blockload(Cb);
+  
+  compnr = currentcompany;
+	matrowget(Cb,compnr-1,Cbrw);
+	url = "http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/ItemStatusReport.html?item=" & RepSpec.f1;
+  OpenWebBrowser(url);
+
+	return;
+end;

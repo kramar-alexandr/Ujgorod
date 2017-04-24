@@ -4,6 +4,8 @@ external function Boolean LoggedInTest();
 external function string 255 ChangeCaseStr(string,integer);
 external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
 external function val AbsoluteVal(val);
+external function string 255 StrReplace(string,string,string);
+external procedure ExtractObj(string,var Integer,var string);
 
 webpublic
 global procedure WebMyLogIn()
@@ -248,9 +250,32 @@ begin
   return;
 end;
 
+webpublic
+global procedure WebLoadItems()
+begin
+  record INVc INr;
+	string 5 nl,delim;
+  boolean firstf;
+  
+  nl = chr(13) & chr(10);
+  delim = ",";
+  firstf = true;
+  
+  INr.Code = "";
+  while(loopmain(INr,1,true))begin
+    if (firstf) then begin
+      firstf = false;
+      WebOutString(INr.Code);
+    end else begin
+      WebOutString(nl & INr.Code);
+    end;
+  end;
+
+  return;
+end;
 
 webpublic global
-procedure WebTest()
+procedure WebSaleReport()
 begin
   record IVVc IVr;
   row IVVc IVrw;
@@ -271,9 +296,9 @@ begin
   boolean isLogedIn;
 
   if (CurrentUser!= "SA") and (CurrentUser!= "SA_") then begin
-	SetAreaZeroSize(log);
-	AddTextToArea(CurrentDate & " " & CurrentTime & " " & CurrentUser & " - SaleStat.html" & chr(13) & chr(10),log);
-	writeareatofile(log,"web.log",1);
+    SetAreaZeroSize(log);
+    AddTextToArea(CurrentDate & " " & CurrentTime & " " & CurrentUser & " - SaleStat.html" & chr(13) & chr(10),log);
+    writeareatofile(log,"web.log",1);
   end;
   deltaMin = 2;
   sentMD5 = WebGetArg("param");
@@ -359,6 +384,187 @@ begin
       end;
     end;
   end;
+  
+  return;
+end;
+
+webpublic global
+procedure WebItemStatusReport()
+begin
+  record ItemHistVc IHr;
+  record VARVc VARr;
+  record LocationVc Locr;
+  record SRPriceVc SRPricer;
+  record PLVc PLr;
+  row SRPriceVc SRPricerw;
+  string 255 item,serial,loc,artcode,color,size,collection;
+  string 5 nl,delim;
+  boolean TrHs,testf,firstf;
+  integer i,pos;
+  area log;
+  vector val ItemSerialLocQty,ItemSerialLocPrice;
+  vector string 255 PureSerial;
+  array string 255 aTags;
+  
+  if (CurrentUser!= "SA") and (CurrentUser!= "SA_") then begin
+    SetAreaZeroSize(log);
+    AddTextToArea(CurrentDate & " " & CurrentTime & " " & CurrentUser & " - SaleStat.html" & chr(13) & chr(10),log);
+    writeareatofile(log,"web.log",1);
+  end;
+
+  nl = chr(13) & chr(10);
+  delim = ",";
+  firstf = true;
+  item = WebGetArg("item");
+  IHr.ArtCode = item;
+  TrHs = true;
+  while (LoopKey("ActiveQty",IHr,1,TrHs)) begin
+    testf = true;
+    serial = "";
+    if (IHr.ArtCode!=item) then begin
+      TrHs = false;
+      testf = false;
+    end;
+    if (IHr.StockAffectf!=1) then begin
+      testf = false;
+    end;
+    if (testf) then begin
+      serial = StrReplace(IHr.SerialNr,"..", ".OS.");
+      serial = StrReplace(serial,"..", ".OS.");
+      if (right(serial,1) == ".") then begin
+        serial = serial & "OS";
+      end;
+      ItemSerialLocQty[serial & ";" & IHr.Location] = ItemSerialLocQty[serial & ";" & IHr.Location] + IHr.RemQty;
+      PureSerial[serial] = IHr.SerialNr;
+    end;
+  end;
+  resetloop(IHr);
+  IHr.ArtCode = item;
+  TrHs = true;
+  while (LoopKey("ArtCodeFD",IHr,1,TrHs)) begin
+    if (IHr.ArtCode!=item) then begin
+      TrHs = false;
+    end;
+    if (TrHs) then begin
+      serial = "";
+      SRPricer.SerNr = IHr.TransNr;
+      if (readfirstmain(SRPricer,1,true)) then begin
+        serial = StrReplace(IHr.SerialNr,"..", ".OS.");
+        serial = StrReplace(serial,"..", ".OS.");
+        if (right(serial,1) == ".") then begin
+          serial = serial & "OS";
+        end;
+        matrowget(SRPricer,IHr.Row,SRPricerw);
+        ItemSerialLocPrice[serial & ";" & SRPricer.Location] = SRPricerw.NewFIFO;
+      end;
+    end;
+  end;
+  
+  GetVectorTags(ItemSerialLocQty,aTags);
+  for (i=0;i<aTags.length;i=i+1) begin
+    if (ItemSerialLocQty[aTags[i]]!=0) then begin
+      serial = "";
+      loc = "";
+      artcode = "";
+      color = "";
+      size = "";
+      collection = "";
+      pos = 0;
+      ExtractObjWithSeparator(";",aTags[i],true,pos,serial);
+      ExtractObjWithSeparator(";",aTags[i],true,pos,loc);
+      Locr.Code = loc;
+      readfirstmain(Locr,1,true);
+      loc = Locr.Name;
+      pos = 0;
+      ExtractObjWithSeparator(".",serial,true,pos,artcode);
+      ExtractObjWithSeparator(".",serial,true,pos,color);
+      ExtractObjWithSeparator(".",serial,true,pos,size);
+      ExtractObjWithSeparator(".",serial,true,pos,collection);
+      if (color!="OS") then begin
+        VARr.Code = color;
+        ReadFirstMain(VARr,1,true);
+        color = VARr.Comment;
+      end else begin
+        color = ChangeCaseStr(USetStr(11172),2);
+      end;
+      if (size!="OS") then begin
+        VARr.Code = size;
+        ReadFirstMain(VARr,1,true);
+        size = VARr.Comment;
+      end else begin
+        size = ChangeCaseStr(USetStr(11172),2);
+      end;
+      
+      PLr.SerialNr = PureSerial[serial];
+      PLr.PLCode = "RRP";
+      readfirstkey("SerialNr",PLr,2,true);
+      
+      if (firstf) then begin
+        firstf = false;
+        WebOutString(loc & delim & color & delim & size & delim & collection & delim & ItemSerialLocQty[aTags[i]] & delim & PLr.ExVatPrice);
+      end else begin
+        WebOutString(nl & loc & delim & color & delim & size & delim & collection & delim & ItemSerialLocQty[aTags[i]] & delim & PLr.ExVatPrice);
+      end;
+    end;
+  end;
+  
+  return;
+end;
+
+webpublic global
+procedure WebItemInfo()
+begin
+  record INVc INr;
+  record DIVc DIr;
+  string 255 item,info,tstr;
+  string 5 nl,delim;
+  integer pos;
+  
+  nl = chr(13) & chr(10);
+  delim = ",";
+  
+  item = WebGetArg("item");
+  info = ChangeCaseStr(WebGetArg("info"),2);
+  switch (info) begin
+    case "exist":
+      INr.Code = item;
+      if (ReadFirstMain(INr,1,true)) then begin
+        WebOutString("true");
+      end;
+    case "name":
+      INr.Code = item;
+      ReadFirstMain(INr,1,true);
+      WebOutString(INr.Name);
+    case "brand":
+      INr.Code = item;
+      ReadFirstMain(INr,1,true);
+      pos = 0;
+      ExtractObj(INr.DispGroups,pos,tstr);
+      while (NonBlank(tstr)) begin
+        DIr.Code = tstr;
+        ReadFirstMain(DIr,1,true);
+        if (DIr.CType=="BRAND") then begin
+          WebOutString(DIr.Name);
+          pos = len(INr.DispGroups);
+        end;
+        ExtractObj(INr.DispGroups,pos,tstr);
+      end;
+    case "type":
+      INr.Code = item;
+      ReadFirstMain(INr,1,true);
+      pos = 0;
+      ExtractObj(INr.DispGroups,pos,tstr);
+      while (NonBlank(tstr)) begin
+        DIr.Code = tstr;
+        ReadFirstMain(DIr,1,true);
+        if (DIr.CType=="TYPE") then begin
+          WebOutString(DIr.Name);
+          pos = len(INr.DispGroups);
+        end;
+        ExtractObj(INr.DispGroups,pos,tstr);
+      end;
+  end;
+  
   
   return;
 end;
