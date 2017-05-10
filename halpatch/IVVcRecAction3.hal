@@ -775,7 +775,7 @@ LkInvoiceRowTypeNormal2:;
           res = -1; 
           goto L99;
        end;
-       if (IVp.OKFlag==1 and NonBlank(IVrw.ArtCode) and IVrw.Price==0) then begin
+       if (IVp.OKFlag==1 and NonBlank(IVrw.ArtCode) and IVrw.Quant>0 and IVrw.Price==0) then begin
           RecordCheckError(31011,"",i,"Price");      
           res = -1; 
           goto L99;
