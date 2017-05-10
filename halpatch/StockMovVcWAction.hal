@@ -575,20 +575,20 @@ BEGIN
   RETURN;
 END;
 
-global
+global updating
 function Boolean StockMovDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 BEGIN
   Boolean res;
 
   switch (fieldname) begin
-    case "SerialNr": res = StockMovDClassSerialNrEFAfter(wn,rownr,changed);
+    case "SerialNr": res = StockMovDClassSerialNrEFAfter(wn,rownr,changed); if(res and changed!=0)then begin windowdook(wn,0); end;// Edit ************************** Wednesday, 10 May 2017 10:17:45
     case "UnitZval": res = StockMovDClassUnitZvalEFAfter(wn,rownr,changed);
     case "UnitYval": res = StockMovDClassUnitYvalEFAfter(wn,rownr,changed);
     case "UnitXval": res = StockMovDClassUnitXvalEFAfter(wn,rownr,changed);
     case "TransDate": res = StockMovDClassTransDateEFAfter(wn,changed);
     case "SentTransDate": res = StockMovDClassSentTransDateEFAfter(wn,changed);
     case "CurncyCode": res = StockMovDClassCurncyCodeEFAfter(wn,changed);
-    case "ArtCode": res = StockMovDClassArtCodeEFAfter(wn,rownr,changed);
+    case "ArtCode": res = StockMovDClassArtCodeEFAfter(wn,rownr,changed); if(res and changed!=0)then begin windowdook(wn,0); end;// Edit ************************** Wednesday, 10 May 2017 10:17:46
     case "Quant": res = StockMovDClassQuantEFAfter(wn,rownr,changed);
     case "SentQuant": res = StockMovDClassSentQuantEFAfter(wn,rownr,changed);
     case "OldPrice": res = StockMovDClassOldPriceEFAfter(wn,rownr,changed);

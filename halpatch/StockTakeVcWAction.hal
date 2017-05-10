@@ -401,18 +401,18 @@ begin
   return;
 end;
 
-global
+global updating
 function Boolean StockTakeDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
   Boolean res;
 
   switch (fieldname) begin
     case "TransDate": res = StockTakeDClassTransDateEFAfter(wn,changed!=0);
-    case "SerialNr": res = StockTakeDClassSerialNrEFAfter(wn,rownr,changed);
+    case "SerialNr": res = StockTakeDClassSerialNrEFAfter(wn,rownr,changed);if(res and changed!=0)then begin windowdook(wn,0); end;// Edit ************************** Wednesday, 10 May 2017 10:17:43
     case "UnitZval": res = StockTakeDClassUnitZvalEFAfter(wn,fn,rownr,changed);
     case "UnitYval": res = StockTakeDClassUnitYvalEFAfter(wn,fn,rownr,changed);
     case "UnitXval": res = StockTakeDClassUnitXvalEFAfter(wn,fn,rownr,changed);
-    case "ArtCode": res = StockTakeDClassArtCodeEFAfter(wn,fn,rownr,changed);
+    case "ArtCode": res = StockTakeDClassArtCodeEFAfter(wn,fn,rownr,changed);if(res and changed!=0)then begin windowdook(wn,0); end;// Edit ************************** Wednesday, 10 May 2017 10:17:42
     case "FIFO": res = StockTakeDClassFIFOEFAfter(wn,fn,rownr,changed);
     case "FIFORowVal": res = StockTakeDClassFIFORowValEFAfter(wn,fn,rownr,changed);
   end;
