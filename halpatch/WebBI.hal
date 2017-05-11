@@ -6,6 +6,8 @@ external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmod
 external function val AbsoluteVal(val);
 external function string 255 StrReplace(string,string,string);
 external procedure ExtractObj(string,var Integer,var string);
+external procedure StockMovVc_PasteSerialNr(var record StockMovVc,Integer,var array string);
+external procedure StockMovSumUp(var record StockMovVc);
 
 webpublic
 global procedure WebMyLogIn()
@@ -397,7 +399,7 @@ begin
   record SRPriceVc SRPricer;
   record PLVc PLr;
   row SRPriceVc SRPricerw;
-  string 255 item,serial,loc,artcode,color,size,collection;
+  string 255 item,serial,loc,loccode,artcode,color,size,collection;
   string 5 nl,delim;
   boolean TrHs,testf,firstf;
   integer i,pos;
@@ -465,14 +467,15 @@ begin
     if (ItemSerialLocQty[aTags[i]]!=0) then begin
       serial = "";
       loc = "";
+      loccode = "";
       artcode = "";
       color = "";
       size = "";
       collection = "";
       pos = 0;
       ExtractObjWithSeparator(";",aTags[i],true,pos,serial);
-      ExtractObjWithSeparator(";",aTags[i],true,pos,loc);
-      Locr.Code = loc;
+      ExtractObjWithSeparator(";",aTags[i],true,pos,loccode);
+      Locr.Code = loccode;
       readfirstmain(Locr,1,true);
       loc = Locr.Name;
       pos = 0;
@@ -501,9 +504,9 @@ begin
       
       if (firstf) then begin
         firstf = false;
-        WebOutString(loc & delim & color & delim & size & delim & collection & delim & ItemSerialLocQty[aTags[i]] & delim & PLr.ExVatPrice);
+        WebOutString(serial & delim & loc & delim & loccode & delim & color & delim & size & delim & collection & delim & ItemSerialLocQty[aTags[i]] & delim & PLr.ExVatPrice);
       end else begin
-        WebOutString(nl & loc & delim & color & delim & size & delim & collection & delim & ItemSerialLocQty[aTags[i]] & delim & PLr.ExVatPrice);
+        WebOutString(nl & serial & delim & loc & delim & loccode & delim & color & delim & size & delim & collection & delim & ItemSerialLocQty[aTags[i]] & delim & PLr.ExVatPrice);
       end;
     end;
   end;
@@ -566,5 +569,62 @@ begin
   end;
   
   
+  return;
+end;
+
+webpublic
+global 
+updating procedure WebSaveStockMovVc()
+begin
+  area aPost;
+  integer i,j,pos,qty,smrwcnt;
+  longint linesCnt;
+  string 255 line,tstr,serial;
+  record StockMovVc SMr;
+  row StockMovVc SMrw;
+  array string 255 aWarning;
+  string 5 nl;
+  
+  nl = chr(13) & chr(10);
+  if (LoggedInTest()) then begin
+    RecordNew(SMr);  
+    SMr.FrLocation = WebGetArg("param");
+    SMr.ToLocation = WebGetArg("param2");
+    SMr.TransDate = CurrentDate;
+    SMr.SerNr = NextSerNr("StockMovVc",SMr.TransDate,-1,false,"");
+    webgetpostdata(aPost);
+    linesCnt = CountLinesInArea(aPost);
+    for (i=0;i<linesCnt;i=i+1) begin
+      line = GetLineFromArea(aPost,i);
+      pos = 0;
+      ExtractObjWithSeparator(";",line,true,pos,tstr);
+        tstr = StrReplace(tstr,chr(0),"");  tstr = StrReplace(tstr,chr(10),""); tstr = StrReplace(tstr,chr(13),"");
+        serial = tstr;
+      ExtractObjWithSeparator(";",line,true,pos,tstr);
+        tstr = StrReplace(tstr,chr(0),"");  tstr = StrReplace(tstr,chr(10),""); tstr = StrReplace(tstr,chr(13),"");
+        qty = StringToInt(tstr);
+      ClearRow(SMr,SMrw,1);
+      SMrw.SerialNr = serial;
+      MatRowPut(SMr,smrwcnt,SMrw);
+      StockMovVc_PasteSerialNr(SMr,smrwcnt,aWarning);
+      MatRowGet(SMr,smrwcnt,SMrw);
+      SMrw.OrdQuant = qty;
+      SMrw.Quant = qty;
+      MatRowPut(SMr,smrwcnt,SMrw);
+      smrwcnt = smrwcnt + 1;
+    end;
+    StockMovSumUp(SMr);
+    RecordInsert(SMr,true);
+    if (RecordInsert(SMr,true)) then begin
+      WebOutString("ok" & nl & SMr.SerNr);
+      for (j=0;j<aWarning.length;j=j+1) begin
+        WebOutString(aWarning[j] & nl);
+      end;
+    end else begin
+      WebOutString("nok");
+    end;
+  end else begin
+    WebOutString("nli");
+  end;
   return;
 end;
