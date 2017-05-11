@@ -492,7 +492,8 @@ BEGIN
   record CountryVc Countryr;
   LongInt dummyl;
   record IVOfficialSerBlock IOSTr;
-
+	boolean shlop;
+	
   res = 0;
   insertmode = 1;//Rs_insert
   updatemode = 2;//Rs_update
@@ -506,7 +507,46 @@ BEGIN
       SMp.SerNr = SM2p.SerNr;
     end;
   end;      
-
+	// Edit Start ---------------------------------------------- Edit Start
+	//Thursday, 11 May 2017 12:07:58
+	
+	shlop = false;
+	if (stat==insertmode) then begin
+    shlop = true;
+  end; 
+  if (stat==updatemode) then begin
+  	if(SMp.OKFlag==0 and SMp.SentOKFlag==0)then begin
+			shlop = true;
+    end;
+  end;      
+	
+	if(shlop)then begin
+		rwcnt = matrowcnt(SMp);
+		For(i=0;i<rwcnt;i=i+1) begin
+			matrowget(SMp,i,StockMovrw);
+			if(nonblank(StockMovrw.ArtCode) and nonblank(StockMovrw.SerialNr) and StockMovrw.Quant>blankval)then begin
+				For(j=i;j<rwcnt;j=j+1) begin
+					if(i!=j)then begin
+						matrowget(SMp,j,StockMov2rw);
+						if(StockMovrw.ArtCode==StockMov2rw.ArtCode and StockMovrw.SerialNr==StockMov2rw.SerialNr and StockMov2rw.Quant>blankval)then begin
+							StockMovrw.OrdQuant = StockMovrw.OrdQuant + StockMov2rw.OrdQuant;
+							StockMovrw.SentQuant = StockMovrw.SentQuant + StockMov2rw.SentQuant;
+							StockMovrw.Quant = StockMovrw.Quant + StockMov2rw.Quant;
+							if(StockMovrw.SentQuant==0)then begin
+								StockMovrw.SentQuant = blankval;
+							end;
+							matrowput(SMp,i,StockMovrw);
+							matrowdelete(SMp,j);
+							rwcnt = rwcnt - 1;
+						end;
+					end;
+				end; 
+			end;
+		end; 
+	end;
+	
+	// Edit End ---------------------------------------------- Edit End
+	
   if (SMp.OKFlag==0) then begin
     if (stat==updatemode) then begin
       if (SM2p.OKFlag==1) then begin unokf = true; end;
