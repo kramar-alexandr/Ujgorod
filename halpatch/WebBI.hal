@@ -282,6 +282,8 @@ begin
   record IVVc IVr;
   row IVVc IVrw;
   record SysFormatBlock SysFormatRec;
+  record CUVc CUr;
+  record CCatVc CCr;
   integer i,rwcnt,pos;
   boolean TrHs,testf,testf1,firstf;
   val fr,tb1,tb2,br1,br2,
@@ -348,38 +350,44 @@ begin
       if (IVr.OKFlag==0) then begin testf = false; end;
       if (IVr.OKFlag==0) then begin testf = false; end;
       if (testf) then begin
-        fr = IVr.FrRate;
-        tb1 = IVr.ToRateB1;
-        tb2 = IVr.ToRateB2;
-        br1 = IVr.BaseRate1;
-        br2 = IVr.BaseRate2;
-        cred = 1;		
-        if(IVr.InvType==kInvoiceTypeCredit)then begin
-          cred = -1;			
-        end;	
-        rwcnt = MatRowCnt(IVr);
-        for(i=0;i<rwcnt;i=i+1) begin
-          testf1 = true;
-          MatRowGet(IVr,i,IVrw);
-          if (IVrw.stp!=kInvoiceRowTypeNormal) then begin testf1 = false; end;
-          if (IVr.Invalid<>0) then begin testf = false; end;
-          if (blank(IVrw.ArtCode)) then begin testf1 = false; end;
-          if (blank(IVrw.Quant)) then begin testf1 = false; end;
-          if (IVrw.Quant==0) then begin testf1 = false; end;
-          if (testf1) then begin
-            price = MulRateToBase1(IVr.CurncyCode,IVrw.Price,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
-            sum = MulRateToBase1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff)*cred;
-            cost = IVrw.FIFORowVal;
-            profit = (AbsoluteVal(sum) - AbsoluteVal(cost))*cred;
-            if (cost==0) or (cost==blankval) then begin
-              cost = IVrw.BasePrice*IVrw.Quant;
-            end;
-            //IVrw.ArtCode
-            if (firstf) then begin
-              firstf = false;
-              WebOutString(IVr.InvDate & delim & IVrw.Spec & delim & IVrw.SerialNr & delim & ValToString(IVrw.Quant*cred,M4Val,SysFormatRec.thousSep,SysFormatRec.decimalPt,1) & delim & price & delim & sum & delim & cost & delim & profit);
-            end else begin
-              WebOutString(nl & IVr.InvDate & delim & IVrw.Spec & delim & IVrw.SerialNr & delim & ValToString(IVrw.Quant,M4Val*cred,SysFormatRec.thousSep,SysFormatRec.decimalPt,1) & delim & price & delim & sum & delim & cost & delim & profit);
+        CUr.Code = IVr.CustCode;
+        readfirstmain(CUr,1,true);
+        CCr.Code = CUr.CustCat;
+        readfirstmain(CCr,1,true);
+        if (left(CCr.Comment,12)!=USetStr(8721)) then begin
+          fr = IVr.FrRate;
+          tb1 = IVr.ToRateB1;
+          tb2 = IVr.ToRateB2;
+          br1 = IVr.BaseRate1;
+          br2 = IVr.BaseRate2;
+          cred = 1;		
+          if(IVr.InvType==kInvoiceTypeCredit)then begin
+            cred = -1;			
+          end;	
+          rwcnt = MatRowCnt(IVr);
+          for(i=0;i<rwcnt;i=i+1) begin
+            testf1 = true;
+            MatRowGet(IVr,i,IVrw);
+            if (IVrw.stp!=kInvoiceRowTypeNormal) then begin testf1 = false; end;
+            if (IVr.Invalid<>0) then begin testf = false; end;
+            if (blank(IVrw.ArtCode)) then begin testf1 = false; end;
+            if (blank(IVrw.Quant)) then begin testf1 = false; end;
+            if (IVrw.Quant==0) then begin testf1 = false; end;
+            if (testf1) then begin
+              price = MulRateToBase1(IVr.CurncyCode,IVrw.Price,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
+              sum = MulRateToBase1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff)*cred;
+              cost = IVrw.FIFORowVal;
+              profit = (AbsoluteVal(sum) - AbsoluteVal(cost))*cred;
+              if (cost==0) or (cost==blankval) then begin
+                cost = IVrw.BasePrice*IVrw.Quant;
+              end;
+              //IVrw.ArtCode
+              if (firstf) then begin
+                firstf = false;
+                WebOutString(IVr.InvDate & delim & IVrw.Spec & delim & IVrw.SerialNr & delim & ValToString(IVrw.Quant*cred,M4Val,SysFormatRec.thousSep,SysFormatRec.decimalPt,1) & delim & price & delim & sum & delim & cost & delim & profit);
+              end else begin
+                WebOutString(nl & IVr.InvDate & delim & IVrw.Spec & delim & IVrw.SerialNr & delim & ValToString(IVrw.Quant,M4Val*cred,SysFormatRec.thousSep,SysFormatRec.decimalPt,1) & delim & price & delim & sum & delim & cost & delim & profit);
+              end;
             end;
           end;
         end;
