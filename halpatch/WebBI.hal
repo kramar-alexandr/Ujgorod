@@ -628,3 +628,30 @@ begin
   end;
   return;
 end;
+
+webpublic
+global procedure WebFindItem()
+begin
+  string 255 item,itemcode;
+  record INVc INr;
+  record BarcodeVc Barcoder;
+  
+  item = WebGetArg("item");
+  INr.Code = item;
+  if (readfirstmain(INr,1,true)) then begin
+  	itemcode = INr.Code;
+  end else begin
+  	Barcoder.Barcode = item;
+  	if (readfirstmain(Barcoder,1,true)) then begin
+  		itemcode = Barcoder.Itemcode;
+  	end else begin
+  		Barcoder.SerialNr = item;
+  		if (readfirstkey("SerialNr",Barcoder,1,true)) then begin
+  			itemcode = Barcoder.Itemcode;
+			end;
+  	end;
+  end;
+  WebOutString(itemcode);
+  
+  return;
+end;
