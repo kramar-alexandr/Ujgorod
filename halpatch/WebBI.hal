@@ -377,10 +377,10 @@ begin
               price = MulRateToBase1(IVr.CurncyCode,IVrw.Price,fr,tb1,tb2,br1,br2,DefaultCurRoundOff);
               sum = MulRateToBase1(IVr.CurncyCode,IVrw.Sum,fr,tb1,tb2,br1,br2,DefaultCurRoundOff)*cred;
               cost = IVrw.FIFORowVal;
-              profit = (AbsoluteVal(sum) - AbsoluteVal(cost))*cred;
               if (cost==0) or (cost==blankval) then begin
                 cost = IVrw.BasePrice*IVrw.Quant;
               end;
+              profit = (sum - cost)*cred;
               //IVrw.ArtCode
               if (firstf) then begin
                 firstf = false;
