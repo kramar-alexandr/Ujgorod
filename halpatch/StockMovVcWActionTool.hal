@@ -31,7 +31,7 @@ BEGIN
   row StockMovVc StockMovrw;
   string 60 sz,msk,mskrep;
   string 200 varsubset;
-  Boolean itemfound;
+  Boolean itemfound,chsum;// Edit ************************** Monday, 15 May 2017 10:19:15
   string 100 serial,curClass;// Edit ************************** Monday, 18 July 2016 17:18:28
   record DIVc DIr;
   integer pos;
@@ -64,6 +64,11 @@ BEGIN
       StockMovrw.UnitXval = INr.Width;
       StockMovrw.UnitYval = INr.Height;
       StockMovrw.UnitZval = INr.Depth;
+      if(StockMovrw.Quant==0 and StockMovrw.OrdQuant==0)then begin
+				StockMovrw.Quant = 1;
+				StockMovrw.OrdQuant = 1;
+				chsum = true;
+			end;
       //Edit-------------------Vitalii 11:47 04.10.2016
       if (NonBlank(INr.DispGroups)) then begin
         pos = 0;
@@ -78,7 +83,16 @@ BEGIN
         end;
       end;
       MatRowPut(StockMovp,rownr,StockMovrw);
-      AddToStrArray(INr.WarnText1,aWarning);
+// Edit Start ---------------------------------------------- Edit Start
+	//Monday, 15 May 2017 10:19:51
+	
+      if (chsum) then begin
+				StockMovSumUp(StockMovp);
+			end;
+
+
+	// Edit End ---------------------------------------------- Edit End
+	      AddToStrArray(INr.WarnText1,aWarning);
       if (INr.ItemType!=kItemTypeStocked) then begin
         AddToStrArray(USetStr(1301),aWarning);
       end;      
@@ -425,6 +439,17 @@ begin
   if (StMrw.Quant!=oldquant) then begin
     chsum = true;
   end;
+  // Edit Start ---------------------------------------------- Edit Start
+	//Monday, 15 May 2017 10:17:29
+	
+  if(StMrw.Quant==0 or StMrw.OrdQuant==0)then begin
+  	StMrw.Quant = 1;
+  	StMrw.OrdQuant = 1;
+  	chsum = true;
+  end;
+  
+	// Edit End ---------------------------------------------- Edit End
+	
   MatRowPut(StockMovr,rownr,StMrw);
   if (chsum) then begin
     StockMovSumUp(StockMovr);

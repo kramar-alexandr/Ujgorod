@@ -1242,6 +1242,20 @@ BEGIN
   end;
   tolocation = SMp.ToLocation;
   LocToRec.Code = tolocation;
+  // Edit Start ---------------------------------------------- Edit Start
+	//Monday, 15 May 2017 10:27:54
+	
+  if (Blank(tolocation)) then begin
+    error = 31012;
+    errorstr = SMp.ToLocation;
+    rownr = -1;
+    fieldstr = "ToLocation";      
+    res = 31012; 
+    goto LCheckStockMovRecord;
+  end;
+  
+	// Edit End ---------------------------------------------- Edit End
+	
   if (ReadFirstMain(LocToRec,1,true)==false) then begin
     error = 1120;
     errorstr = SMp.ToLocation;
