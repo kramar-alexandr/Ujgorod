@@ -629,7 +629,7 @@ begin
       Actr.TransDate = CurrentDate;
       Actr.SerNr = NextSerNr("ActVc",Actr.TransDate,-1,false,"");
       Actr.Comment = USetStr(13231) & " " & LowerCase(USetStr(13103)) & " " & SMr.SerNr;
-      Actr.MainPersons = "SKLAD";
+      Actr.MainPersons = "SA_";
       Actr.FromSerNr = SMr.SerNr;
       Actr.FromFileName = "StockMovVc";
       Actr.AlarmType = kAlarmTypeMessage;
@@ -690,7 +690,7 @@ begin
   TrHs = true;
   while (loopkey("ActType",Actr,1,TrHs)) begin
     if (Actr.ActType!="SIGNA") then begin TrHs = false; end;
-    if ((TrHs) and (Actr.FromFileName=="StockMovVc") and (Actr.MainPersons=="SKLAD") and (Actr.SMSignal==0)) then begin
+    if ((TrHs) and (Actr.FromFileName=="StockMovVc") and (Actr.MainPersons=="SA_") and (Actr.SMSignal==0)) then begin
       foundf = true;
     end;
   end;

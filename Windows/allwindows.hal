@@ -4087,7 +4087,7 @@ add when working
 */
 
 LMasterWClass7_SpecMenu:;
-  if (Userr.Code=="SKLAD") then begin
+  if (Userr.Code=="SA_") then begin
     compnr = currentcompany;
     blockload(PSb);
     blockload(Cb);
