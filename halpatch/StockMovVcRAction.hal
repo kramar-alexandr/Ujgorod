@@ -1909,6 +1909,7 @@ BEGIN
   string 255 errorstr,fieldstr;
   Integer rownr;
   Boolean UnOKedCheckSerialf;
+  record ActVc Actr;
 
   res = 0;
   oldnr = SMp.SerNr;
@@ -1918,6 +1919,16 @@ BEGIN
     res = -1;
     RecordCheckError(error,errorstr,rownr,fieldstr);
     goto LStockMovVcRecordCheck;
+  end;
+  if (SMp.OKFlag!=0) and (SM2p.OKFlag==0) then begin
+    Actr.FromFileName = "StockMovVc";
+    Actr.FromSerNr = SMp.SerNr;
+    if (readfirstkey("FromFileName",Actr,2,true)) then begin
+      SMp.Signal = 1;
+      Actr.OKFlag = 1;
+      Actr.SMSignal = SMp.Signal;
+      recordstore(Actr,true);
+    end;
   end;
 LStockMovVcRecordCheck:;
   if (res!=0) then begin 

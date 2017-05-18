@@ -63,6 +63,7 @@ begin
 	SString(31010,"Товара возвращается больше допустимого");
 	SString(31011,"Значення не може бути нульовим");
 	SString(31012,"Визначте склад призначення");
+  SString(31013,"Переміщення не закрите");
 
 
   StrSetBegin(3); /* Try to keep them in alphabetical order */

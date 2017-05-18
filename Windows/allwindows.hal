@@ -15,7 +15,7 @@ external procedure GTransEClass_Tool(Integer,var real,var real);
 external procedure GTrans2EClass_Tool(Integer,var real,var real,var real);
 external procedure GBaseEClass_Tool(Integer,var real,var real);
 external procedure TransGenVClass_Tool(Integer,var real,var real);
-external procedure GetCurUser(var record UserVc);
+remote procedure GetCurUser(var record UserVc);
 external procedure JobRClass_UKR();
 external function string 60 UserDefined(string,string);
 external outer function string 255 MasterBannerURL();
@@ -2195,6 +2195,7 @@ begin
   EditField(h,v,80, "Номер",Normal,SerNr,false,TSerSClass);
   CheckBox(h2,v,0,"Замовлено",Reserved);
   EditField(h3,v,80,"Причина",Normal,Reason,false,StandProblemsSClass);
+  CheckBox(h4,v,0,"Ознайомлені",Signal);
   EditField(h,v+=vs,80,"Дата замовлення",Normal,OrdTransDate,false,PasteCurDate);
   if (HasMultiLocations) then begin
     if (IsEnterprise) then begin
@@ -3839,5 +3840,569 @@ begin
   EditField(h,v+=20,50,"WOrd",Normal,WOrd,false,0);
   EditField(h,v+=20,50,"InWSheet",Normal,InWSheet,false,0);
   EditField(h,v+=20,50,"StockRsrvQty",Normal,StockRsrvQty,false,0);
+  EndWindow;
+end;
+
+window MasterWClass:7
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real es,h,h2,hfirst,hs,v,v1,v2,voff,vs,ggn,hcount;
+  record UserVc Userr;
+  string 255 tstr;
+  record ModuleBlock Modb;
+  integer compnr;
+  record ProgramStatusBlock PSb;
+	record CompaniesBlock Cb;
+	row CompaniesBlock Cbrw;
+  
+  BlockLoad(Modb);  
+  GetCurUser(Userr);
+
+  tstr = "Головне вікно";
+  if (HasEMail or HasExternalEMail) then begin
+    ggn = 5; 
+  end else begin
+    ggn = 4; 
+  end;
+  WindowBegin(tstr,MasterWClass,CGother,RcType); //!!
+  DynamicWindow;
+  UseView(RcVc);
+  if (GuiType==kGuiMetro) then begin
+    GroupedGridView;
+  end;
+  if (StandardHansa and HasInAppsAvailable) then begin
+    if (WindowStyle("MasterWClass")==kWindowStyleWindows8Desktop) then begin
+      v1 = 87;
+    end else begin
+    v1 = 65;
+    end;
+  end else begin
+    v1 = 0;
+  end;
+// Since this had C code adding buttons, I couldn't get this to work in any other way than adding it to the same place in C code.
+  if (WindowStyle("MasterWClass")==kWindowStyleWindows8Desktop) then begin
+    SetWRect(20,65,780,594+v1);
+    ArchiveList(-354,32,-16,-120);
+    
+    RecordList2(-366,-102,-16,-1,"KPIDefVc");
+    v = 5;
+    BlackFrame(-354,v+=5,-1,v+=20,"Ярлики",kFrameShadeNone);
+    RlColKey(4,4,"КПЕ",OwnTitle,false,Sign); // should have "sorting"
+    CalculatedColumn(-215,80,"Поперед.","KPIRowPrevText",true);
+    CalculatedColumn(-130,200,"Поточн.","KPIRowCurText",true);
+    CalculatedColumnTL(-45,200,"Тренд","KPIRowTrend",M4Image,true);
+    HalPushButtonWithIcon(-15,-96-23,-3,-96+12,1083,"RecalculateKPIsClientNoArg","");
+    h = 20;
+    v = 5;
+    es = 87;
+    vs = 3;
+    hfirst = h;
+    BlackFrame(h,v+=5,200,v+=20,"Головне меню",kFrameShadeNone);
+    AddBic(503,504,h,v,ToolCalendar,0,"Календар");
+    AddBic(501,502,h+=es,v,ToolMail,0,"Пошта"); 
+    AddBic(623,624,h+=es,v,ToolTodo,0,"Задачі");
+    AddBic(21423,21424,h+=es,v,ToolConferences,0,"Конференції");
+    h = hfirst; v = v + es + vs;
+    AddBic(635,735,h,v,ToolResources,0,"Ресурси");
+    AddBic(739,739,h+=es,v,ToolForms,0,"SmartApps");
+    if (UserCanAction("ViewDashboard",true)) then begin
+      if (Modb.Dashboard) then begin
+        AddBic(5092,5092,h+=es,v,ToolDashboard,0,"BI");
+      end; 
+    end;
+    h = hfirst; v = v + es + vs;
+    BlackFrame(h,v+=20,200,v+=20,"Модуль: $",kFrameShadeNone); 
+    AddBic(701+0,700,h,v,ToolRegs,0,"Регістри");
+    AddBic(737,738,h+=es,v,ToolSetup,0,"Настройки");
+    AddBic(731,734,h+=es,v,ToolReport,0,"Звіти");
+    AddBic(625,626,h+=es,v,ToolRoutines,0,"Рутини");  
+//    AddBic(718,750,h+=es,v,ToolDocument,0,"Forms");
+    h = hfirst;  v = v + es + vs;
+    AddBic(718,750,h,v,ToolDocument,0,"Форми");
+    AddBic(637,638,h+=es,v,ToolModule,0,"Модуль");
+    AddBic(632,730,h+=es,v,ToolOpen,0,  "Компанії");
+    if (nonblank(USetStr(915)) or WhiteLabel==false) then begin
+      BottomBar;
+      WebPage(-365,-94,-1,-1,MasterBannerURL,"$MASTERBANNER"); 
+    end;
+    goto LMasterWClass7_SpecMenu;
+  end;
+// Since this had C code adding buttons, I couldn't get this to work in any other way than adding it to the same place in C code.
+  if (WindowStyle("MasterWClass")==kWindowStyleRedmond) then begin
+    es = 6; hs = 40;
+    SetWRect(20,65,630+hs,479+11*4+15+v1);
+    ScrollBar(-24,16+8+1,-8,-19);
+    h = 48; v=40; h2 = 80; hfirst = h;
+    if (WhiteLabel==false) then begin
+      WebPage(342,0,-1,94,MasterBannerURL,"$MASTERBANNER");
+    end;
+    if (HasKPIs) then begin
+    RecordList2(343,-82,-16,-1,"KPIDefVc");
+    RlColKey(4,4,"КПЕ",OwnTitle,false,Sign); // should have "sorting"
+      CalculatedColumn(-215,80,"Попер.","KPIRowPrevText",true);
+      CalculatedColumn(-130,200,"Поточ.","KPIRowCurText",true);
+      CalculatedColumnTL(-45,200,"Тренд","KPIRowTrend",M4Image,true); 
+    end;
+  end else begin
+    es = 6; hs = 40;
+    if (GuiType==kGuiCocoa or GuiType==kGuiMetro) then begin
+      SetWRect(20,65,630+hs,479+11*4+15+v1);
+      if (GuiType==kGuiMetro) then begin
+        GridViewGroup(ggn,"Ярлики",kGridViewGroupTypeArchive);
+        ggn = ggn - 1;
+      end;
+      if (WhiteLabel) then begin
+        PersonalDesktopHeader(341,1,-1,24);
+        ArchiveList(342,39,-16,-114);
+      end else begin
+        PersonalDesktopHeader(341,95,-1,118);
+        if (StandardHansa==false) then begin
+        ArchiveList(342,133,-16,-114);
+        end else begin
+          ArchiveList(342,133,-16,-1);
+        end;
+      end;
+      if (StandardHansa==false) then begin
+        if (GuiType==kGuiMetro) then begin
+          GridViewGroup(ggn,"Продуктивність",kGridViewGroupTypeKPI);
+      end;
+        RecordList2(341,-96,-17,-1,"KPIDefVc");
+      RlColKey(4,4,"KPI",OwnTitle,false,Sign); // should have "sorting"
+        CalculatedColumn(-215,80,"Попер.","KPIRowPrevText",true);
+        CalculatedColumn(-130,200,"Поточ.","KPIRowCurText",true);
+        CalculatedColumnTL(-45,200,"Тренд","KPIRowTrend",M4Image,true); 
+//        HalPushButtonWithIcon(-16,-106-20,-1,-106+10,607,"RecalculateKPIsClientNoArg","");
+      end;
+
+    end else begin
+      if (WindowsMode!=0) then begin
+        SetWRect(20,65,630+hs,479+11*4+v1);
+        ScrollBar(-25,16+8+2,-9,-20);
+      end else begin
+        SetWRect(20,65,630+hs,479+11*3+v1);
+        ScrollBar(-25,16+8+2,-9,-20);
+      end;
+    end;
+    h = 48; v=40; h2 = 80; hfirst = h;
+    if (WhiteLabel==false) then begin
+      if (IsWebClient) then begin
+        WebPage(-365,-128,-1,-35,MasterBannerURL,"$MASTERBANNER");  
+      end else begin
+      WebPage(342,0,-1,94,MasterBannerURL,"$MASTERBANNER");
+      end;
+    end;
+    if (GuiType!=kGuiCocoa) then begin
+      StaticText(340+hs,19 + 70,"Особиста робоча панель",false);
+    end;
+  end;
+  
+  ggn = 0;
+  if (GuiType==kGuiMetro) then begin //temporarily removed from Windows 8 Standard Accounts  , until calendar implemented
+    if (HasEMail or HasExternalEMail) then begin
+      GridViewGroup(ggn,"Особисті",kGridViewGroupTypeNormal); 
+      ggn = ggn + 1;
+    end;
+  end;
+  if (GuiType==kGuiCocoa) then begin
+    BlackFrame(0,v-40,342,v+35+es*2+8,"Особисті",kFrameShadeLight);
+  end else begin
+    BlackFrame(15,v-30+4,312,v+35+es*2+8,"Особисті",kFrameShadeNone);
+  end;
+  v = v+es;
+  
+  voff = 0;
+  
+  if (GuiType==kGuiMetro) then begin //temporarily removed from Windows 8 Standard Accounts  , until calendar implemented
+    AddBic(503,504,h,v+voff,ToolCalendar,0,"Календар");
+    AddBic(623,624,h+=es,v,ToolTodo,0,"Задачі");
+    if (HasEMail or HasExternalEMail) then begin
+      AddBic(501,502,h,v+voff,ToolMail,0,"Пошта");
+//      AddBic(21423,21424,h+=h2,v+voff,ToolConferences,0,"Conferences");
+    end;
+    if (AddBicToMasterWindow(ToolPipeline,h,v,es,vs,hfirst,hcount)) then begin
+      AddBic(1100,1101,h+=h2,v,ToolPipeline,0,"Огляд робочого процесу");  
+    end;
+  end else begin
+  AddBic(503,504,h,v+voff,ToolCalendar,0,"Календар");
+  AddBic(501,502,h+=h2,v+voff,ToolMail,0,"Пошта");
+//  AddBic(29017,29018,h+=h2,v+voff,ToolArchive,0,"Desktop");
+  AddBic(623,624,h+=h2,v+voff,ToolTodo,0,"Задачі");
+  AddBic(21423,21424,h+=h2,v+voff,ToolConferences,0,"Конференції");
+  end;
+  if (StandardHansa and HasInAppsAvailable) then begin
+    h = hfirst; v=v+70;
+    AddBic(639,640,h,v,ToolInAppPurchase,0,"Магазин")
+  end;
+  h = hfirst; v=v+78+2*es;
+  if (StandardHansa==false) then begin
+    AddBic(635,735,h,v+voff,ToolResources,0,"Ресурси");  
+    if (GuiType!=kGuiMetro or HasMetroTestFeatures) then begin
+      AddBic(739,739,h+=h2,v+voff,ToolForms,0,"SmartApps");  
+    end;
+       if (UserCanAction("ViewDashboard",true)) then begin
+      if (Modb.Dashboard) then begin
+        AddBic(5092,5092,h+=h2,v+voff,ToolDashboard,0,"BI");
+      end;
+    end;
+  end;
+
+  if (GuiType==kGuiMetro) then begin
+    GridViewGroup(ggn,"Компанія",kGridViewGroupTypeNormal);
+    ggn = ggn + 1;
+    BlackFrame(15,v-30+4,312,v+35+es*2+8,"Компанія",kFrameShadeNone);  
+    if (HasEMail or HasExternalEMail) then begin
+      AddBic(21423,21424,h+=h2,v+voff,ToolConferences,0,"Конференції");  
+  end;
+    AddBic(637,638,h+=h2,v+voff,ToolModule,0,  "Модуль:$");  
+  end;
+  v = v+es;
+  h = hfirst; v=v+78+2*es;
+
+  if (GuiType==kGuiMetro) then begin
+    GridViewGroup(ggn,"Функції",kGridViewGroupTypeNormal);
+//    GridViewGroup(ggn,"Routines:$",kGridViewGroupTypeNormal);
+    ggn = ggn + 1;
+  end;
+  BlackFrame(0,v-50,312,v+35,"Навігація:$",kFrameShadeLight);  
+  AddBic(701+0,700,h,v,ToolRegs,0,"Реєстри");  
+  AddBic(737,738,h+=h2,v,ToolSetup,0,"Настройки");  
+  AddBic(731,734,h+=h2,v,ToolReport,0,"Звіти");  
+  AddBic(625,626,h+=h2,v,ToolRoutines,0,"Функції");  
+
+  h = hfirst; v=v+78+2*es;
+  AddBic(718,750,h,v,ToolDocument,0,"Форми");  
+  if (GuiType==kGuiMetro) then begin
+  end else begin
+    AddBic(637,638,h+=h2,v,ToolModule,0,  "Модулі");  
+  end;
+  AddBic(632,730,h+=h2,v,ToolOpen,0,  "Компанії");  
+  
+/*  
+add when working
+//  if (TestModule("")) then begin
+    h = hfirst; v=v+78+2*es;  
+    AddBic(701+0,700,h,v,ToolPipeline,0,"Projects");  
+    AddBic(623,624,h+=h2,v+voff,ToolTodo,0,"Issues");  
+//  end;
+*/
+
+LMasterWClass7_SpecMenu:;
+  if (Userr.Code=="SKLAD") then begin
+    compnr = currentcompany;
+    blockload(PSb);
+    blockload(Cb);
+    matrowget(Cb,compnr-1,Cbrw);
+    WebPage(0,0,0,0,"http://" & Cbrw.TCPIP & ":" & PSb.httpPort & "/signal.html","");
+  end;
+  if (HasMetroTestFeatures) then begin
+    SpecMenuGroup("Додати ярлик",kSpecMenuGroupTypeMenuInBottomBarLeft,4306);
+  end;
+  if (GuiType!=kGuiCocoa) then begin
+    SpecMenuItem("Приєднати файл",'a',mOpsMenuAttachFile);
+    SpecMenuItem("Зберегти файл",' ',mOpsMenuDownloadFile);
+    SpecMenuItem("Відкрити запис",' ',mOpsMenuOpenRecord);
+    SpecMenuItem("Редагувати текст посилання",' ',mOpsMenuEditLinkComment);
+    if (StandardHansa==false) then begin
+      SpecMenuItem("Редагувати Web посилання",' ',mEditWebLink);
+    end;
+//    SpecialMenu("Показати лінки",' ',5,"ShowToLinksMasterWsm"); //can we connect Master Control to smthing ? 
+    SpecialMenu("(-",' ',6,"");
+    SpecialMenu("Створити email",' ',10,"MailFromArchiveWsm");
+    SpecialMenu("Створити нотатку",' ',7,"NoteFromMasterWsm");
+    SpecialMenu("Створити архів",' ',8,"ArchiveFromMasterWsm");
+    if (StandardHansa==false) then begin
+    SpecialMenu("Створити web nav посилання",' ',11,"TWebNavLinkFromArchiveWsm");
+    end;
+  end;
+  SpecialMenu("Змінити пароль",' ',9,"ChangePasswdMasterWsm");
+  if (nonblank(Userr.MinPLCode)) then begin                         
+  SpecialMenu("Змінити пароль на знижку",' ',9,"ChangeDiscPasswdMasterWsm");
+  end;
+  SpecialMenu("(-",' ',10,"");
+  if (StandardHansa==false) then begin
+  SpecialMenu("Доступність для зовнішнього чату",' ',11,"ExtChatMasterWsm"); // This should be somewhere else...
+//  SpecialMenu("Shares",' ',12,"SharesInfoWsm"); // This should be somewhere else...
+  SpecMenuItem("Синхр.",' ',mOpsMenuSync);
+  end;
+  if (UserCanAction("AllowNoClockInOut",true)) then begin
+    if (StandardHansa==false) then begin
+    SpecialMenu("Розпоч. роботу",' ',14,"ClockInMasterWsm");
+    SpecialMenu("Заверш. роботу",' ',15,"ClockOutMasterWsm"); 
+    end;
+  end;
+  SpecialMenu("Відкрити фільтр імпорту чату",' ',16,"OpenChatFilterWsm");
+  SpecialMenu("Відкрити фон",' ',9,"OpenBackgroundMasterWsm");
+
+  EndWindow;
+end;
+window ActDClass:13
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real fs,h,h2,h3,h4,v,vm,vs;
+  string 255 label;
+  record LocalMachineBlock LMb;
+  record CompaniesBlock Cb;
+  Integer wn,tilenr;
+  record ActVc Actr;
+  Boolean showapprovaltile;
+  
+  WindowBegin("Діяльність",ActDClass,CGview,ActView);
+
+    BlockLoad(LMb);
+    BlockLoad(Cb);
+    SetWRect(64,80,760,500);
+    BrowseButtons(false);
+    Sizeable(-1,-1,0,0);
+    UseView(ActVc);
+    ActiveFieldOnNew("Comment");    
+    FormName(ActDocForm);
+    
+    showapprovaltile = false;
+    if (StandardHansa==false and LMb.ApprovalTypeActDClass!=0) then begin
+      DynamicWindow;
+      wn = CurWindow;
+      if (wn>0) then begin
+        if (GetWindowClass(wn)=="ActDClass") then begin
+          GetWindowRecord(wn,Actr);
+          showapprovaltile = Actr.TodoFlag==kTodoFlagApproval;
+        end;
+      end;
+    end;
+    if (MatRowCnt(Cb)>1) then begin
+    ToolBar;
+    DropDownMenu(300,6,420,"$company",kSetUsersCompanies);
+    EndToolBar;
+    end;
+    
+    v = 6; vs = 20; h = 100; h2 = 275; h3 = 420; h4 = 450; fs = 100;
+    CommunicateButton;
+    Tile(0,130,false,"",Comment);
+    EditField(h,vm=6,-40,"Текст",Normal,Comment,false,0);
+    EditField(h,v+=vs,80,"Тип",Normal,ActType,false,ActTypeSClass);//ActType2SClass
+    EditField(h,v+=vs,80,"Стан",Normal,ActState,false,ActStateSClass);  
+    EnterSkip(StartTime);
+    EditField(h,v+=vs,80,"Мова",Normal,LangCode,false,LangSClass);
+    EditField(h,v+=vs,80,"Пріоритет",Normal,PrioLevel,false,0);
+    EditField(h2,v=vm+vs,-40,"",Normal,ActTypeComment,false,0);
+    EditField(h2,v+=vs,140,"Особи",Normal,MainPersons,false,UserSClass);
+    EditField(h4,v,-40,"Копія",Normal,CCPersons,false,UserSClass);
+    EditField(h2,v+=vs,80,"Керівник",Normal,Supervisor,false,UserSClass);
+    EditField(h4,v,-40,"Перенапр.затв.",Normal,ApprovalFwdPersons,false,UserSClass);
+    EditField(h4,v+=vs,60,"Результат",Normal,ActResult,false,ActTypeSClass);
+    tilenr = 1;
+    if (showapprovaltile) then begin
+      TileButton(tilenr,"Затверждення"); tilenr = tilenr + 1;
+    end;
+    TileButton(tilenr,"Час"); tilenr = tilenr + 1;
+    TileButton(tilenr,"Клієнт"); tilenr = tilenr + 1;
+    TileButton(tilenr,"Текст"); tilenr = tilenr + 1;
+    TileButton(tilenr,"Під -завдання"); tilenr = tilenr + 1;
+    TileButton(tilenr,"Нагадування"); tilenr = tilenr + 1;
+    if (StandardHansa==false) then begin
+      TileButton(tilenr,"Ресурси"); tilenr = tilenr + 1;
+      TileButton(tilenr,"Послуг."); tilenr = tilenr + 1;
+      TileButton(tilenr,"Визначено кор-чем"); tilenr = tilenr + 1;
+      TileButton(tilenr,"Визначено кор-чем"); tilenr = tilenr + 1;  
+    end;
+    CheckBox(-170,v,0,"Приватне",PrivateFlag); //##cc
+    CheckBox(-100,v,0,"Завершене",OKFlag); //##cc
+    tilenr = 1;
+    if (showapprovaltile) then begin
+      Tile(tilenr,100,false,"",-); tilenr = tilenr + 1;
+      ButtonFrame(h=100,v=18,440,2,"Затвердження");
+      HalPushButton(h+=5,v+=5,h+100,v+20,"ActDClassApproveActivity","Затверджено");
+      HalPushButton(h+=110,v,h+100,v+20,"ActDClassForwardActivity","Перенаправити");
+      HalPushButton(h+=110,v,h+100,v+20,"ActDClassRejectActivity","Відхилити");
+      HalPushButton(h+=110,v,h+100,v+20,"ActDClassSendFYI","Відправити для інф.");
+      HalPushButton(h=105,v+=40,h+100,v+20,"ActDClassOpenApprovalRecord","Відкрити запист");
+      HalPushButton(h+=110,v,h+120,v+20,"ActDClassOpenApprovalAttach","Відкрити вкладені файли");
+    end;
+    Tile(tilenr,90,false,"1",StartTime); tilenr = tilenr + 1;
+    h = 100; h2 = 275;
+    EditField(h,v=6,60,"Час початку",Normal,StartTime,false,PasteCurTime);
+    EditField(h,v+=vs,60,"Час завершення",Normal,EndTime,false,PasteCurTime);
+    EditField(h,v+=vs,60,"Заплан. час",ViewOnly,PlannedTime,false,0);  
+//    EditField(h,v+=vs,60,"On Account A/C",ViewOnly,RecurringActSerNr,false,0);
+    EditField(h,v+=vs,60,"Вартість (Час)",Normal,CostTime,false,0);
+    if (StandardHansa==false) then begin
+      EditField(h,v+=vs,60,"Валюта",Normal,CurncyCode,false,CurncyCodeSClass);
+    end;
+//    EditField(h,v+=vs,60,"New Dur.",Normal,TestDuration,false,0);
+    EditField(h2,v=6 ,80,"Дата початку",Normal,TransDate,false,PasteCurDate);
+    EditField(h2,v+=vs,80,"Дата закінчення",Normal,EndDate,false,PasteCurDate);
+    EditField(h2,v+=vs,80,"Заплан. дата",ViewOnly,PlannedDate,false,0);  
+    if (StandardHansa==false) then begin
+    EditField(h2,v+=vs,80,"Клас часу",Normal,TimeClass,false,TimeClassSClass);
+      EditField(h2,v+=vs,80,"Вартість",Normal,Value,true,0);
+    end;
+    v = 18;
+    ButtonFrame(h3=h2+120,vm=v,120,7,"Тип завдання");
+    RadioButton(h3,v,kTodoFlagCalendar,0,"Календар",TodoFlag);
+    RadioButton(h3,v+=16,kTodoFlagTodo,0,"Заплановане",TodoFlag);
+    RadioButton(h3,v+=16,kTodoFlagTimedTodo,0,"Запл. на певн. час",TodoFlag);
+    if (StandardHansa==false) then begin
+    RadioButton(h3,v+=16,kTodoFlagWorkHours,0,"Робочі години",TodoFlag);
+    end;
+    RadioButton(h3,v+=16,kTodoFlagApproval,0,"Схвалення",TodoFlag);  
+    RadioButton(h3,v+=16,kTodoFlagProject,0,"Проект",TodoFlag);  
+    RadioButton(h3,v+=16,kTodoFlagOther,0,"Інше",TodoFlag);
+    EndFrame;
+  //  RadioButton(h3,v+=16,kTodoFlagBanner,0,"Banner",TodoFlag); // When will we do something behind this radio button?
+    h3 = h3+160;
+    ButtonFrame(h3,v=vm,120,3,"Календар");
+    RadioButton(h3,v,kCalTimeFlagTime,0,"Час",CalTimeFlag);
+    RadioButton(h3,v+=16,kCalTimeFlagProfile,0,"Профіль",CalTimeFlag);
+    RadioButton(h3,v+=16,kCalTimeFlagNoshow,0,"Не показувати",CalTimeFlag);
+    EnterSkip(PRCode);
+    Tile(tilenr,70,false,"2",PRCode); tilenr = tilenr + 1;
+    vm = 6;
+    v = 6;
+    if (HasProjects) then begin
+      EditField(h,v,80,"Проект",Normal,PRCode,false,PRSClass);
+      v = v+vs;
+    end;
+    EditField(h,v,80,"Клієнт",Normal,CUCode,false,AllCUSClass);
+    if (StandardHansa==false) then begin
+      EditField(h,v+=vs,80,"Товар накл.",Normal,ItemCode,false,INSClass);
+    end;
+    EnterSkip(Math);
+    EditField(h2,v=vm,-40,"Назва",Normal,CUName,false,0);
+    EditField(h2,v+=vs,-40,"Телефон",Normal,Phone,false,0);
+    EditField(h2,v+=vs,-40,"Контакт",Normal,Contact,false,ContactSClass);
+    EnterSkip(Math);
+    Tile(tilenr,100,true,"3",Math); tilenr = tilenr + 1;
+    MatrixBegin(4,v=24,-32,-30,ActRowType,199);
+    MatCol(1,32,"Код",0,TextCode,false,TextTypeSClass);
+    MatCol(1,84,"Текст",0,Text,false,0);
+  //  MatColMLT(1,84,"Text",0,Text,false,0);
+    EndMatrix;
+    if (GuiType!=kGuiiPhone and GuiType!=kGuiAndroid) then begin
+      HalPushButton(-140,-30,-40,-10,"ActDEndActivity","ActDEndActivity");
+    end else begin
+      HalPushButton(600,500,700,520,"ActDEndActivity","ActDEndActivity");
+    end;
+    Tile(tilenr,200,true,"4",Comment); tilenr = tilenr + 1; 
+    v = 10;
+    HalPushButton(h,v,h+100,v+20,"ActDClassCreateSubTask","Нове під-завдання");
+    HalPushButton(h2,v,h2+100,v+20,"ActDClassDeleteSubTask","Знищити під-завдання");
+    v = v + vs;
+    RecordList2(10,v+=vs,-30,-39,"ActVc");
+    RlColKey(4,4,"Завдання",Comment,false,ActComment);
+    RlColKey(-50,-50,"Усі",Comment,false,Comment);
+    Tile(tilenr,140,false,"5",-); tilenr = tilenr + 1;
+    h3 = 40;
+    ButtonFrame(h3,v=18,130,5,"Нагадування:");
+    RadioButton(h3,v,kAlarmTypeNone,0,"Немає",AlarmType);
+    RadioButton(h3,v+=16,kAlarmTypeMessage,0,"Повідомлення",AlarmType);  
+    RadioButton(h3,v+=16,kAlarmTypeSMS,0,"SMS",AlarmType);  
+    RadioButton(h3,v+=16,kAlarmTypeEMail,0,"Ел. пошта",AlarmType);  
+    RadioButton(h3,v+=16,kAlarmTypeNotification,0,"Оповіщення",AlarmType);  
+    ButtonFrame(h3+=160,v=18,130,7,"Нагадати:");
+    RadioButton(h3,v,0,0,"Хвилинин до",AlarmWhen);
+    RadioButton(h3,v+=16,1,0,"Годин до",AlarmWhen);
+    RadioButton(h3,v+=16,2,0,"Днів до",AlarmWhen);
+    RadioButton(h3,v+=16,3,0,"Хвилинин після",AlarmWhen);
+    RadioButton(h3,v+=16,4,0,"Годин після",AlarmWhen);
+    RadioButton(h3,v+=16,5,0,"Днів після",AlarmWhen);
+    EditField(h3+75,v+=17,50,"Одиниць",Normal,AlarmUnits,false,0);
+    ButtonFrame(h4=h3+160,v=18,130,4,"Символ");
+    RadioButton(h4,v,kActivitySymbolCall,0,"Виклик",SymbNr);
+    RadioButton(h4,v+=16,kActivitySymbolMeeting,0,"Зустріч",SymbNr);
+    RadioButton(h4,v+=16,kActivitySymbolDeskwork,0,"Робота в офісі",SymbNr);
+    RadioButton(h4,v+=16,kActivitySymbolOther,0,"Інше",SymbNr);
+    if (StandardHansa==false) then begin
+      Tile(tilenr,30,false,"6",Resources); tilenr = tilenr + 1;
+    EditField(h,v=6,300,"Ресурси",Normal,Resources,false,ResSClass);
+    EditField(h+400,v, fs,"Актив",Normal,InventoryNr,false,AT2UnitSClass);
+      Tile(tilenr,70,false,"7",SVOSerNr); tilenr = tilenr + 1;
+    EditField(h,v=6, fs,"Сер. №",Normal,SerialNr,false,SVOSerSClass);
+    EditField(h+200,v,fs,"Товар",Normal,ArtCode,false,INSClass);
+      EditField(h+400,v,fs,"Товар у рах-ку",Normal,ItemCode,false,INSClass);  
+      EditField(h,v+=vs, fs,"Замовлення на обсл.",Normal,SVOSerNr,false,SVOSClass);  
+      EditField(h+200,v, fs,"Опер. вироб-ва",Normal,ProdOpSerNr,false,0);  
+    EditField(h+400,v, fs,"Виробництво",Normal,ProdSerNr,false,0);
+/*
+      EditField(h,v+=vs, fs,"From",ViewOnly,FromFileName,false,0);  
+      EditField(h+200,v, fs,"From No.",ViewOnly,FromSerNr,false,0);  
+      EditField(h+400,v, fs,"From Company",ViewOnly,FromCompanyNr,false,0);  
+*/
+//      EditField(h+400,v, fs,"Resort Event",ViewOnly,RsrtEventSerNr,false,0);//not finished
+      Tile(tilenr,240,false,"8",-); tilenr = tilenr + 1;  
+      EditField(h,v=6,300,"Черги",Normal,PBXQueues,false,PBXQueueSClass);
+      CheckBox(h,v+=vs,0,"Переміщення: Ознайомлені",SMSignal);//Edit-------------------Vitalii 18:19 17.05.2017
+      Tile(tilenr,240,false,"8",-); tilenr = tilenr + 1;
+    fs = 80;
+    h = 180;
+    label = UserDefined("ActVc","UserStr1");
+    if (nonblank(label)) then begin
+      EditField(h,v=6 ,-20,label,Normal,UserStr1,false,0);
+    end;
+    label = UserDefined("ActVc","UserStr2");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,-20,label,Normal,UserStr2,false,0);
+    end;
+    label = UserDefined("ActVc","UserStr3");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,-20,label,Normal,UserStr3,false,0);
+    end;
+    label = UserDefined("ActVc","UserStr4");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,-20,label,Normal,UserStr4,false,0);
+    end;
+    label = UserDefined("ActVc","UserStr5");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,-20,label,Normal,UserStr5,false,0);
+    end;
+    label = UserDefined("ActVc","UserVal1");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,50,label,Normal,UserVal1,true,0);
+    end;
+    label = UserDefined("ActVc","UserVal2");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,50,label,Normal,UserVal2,true,0);
+    end;
+    label = UserDefined("ActVc","UserVal3");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,50,label,Normal,UserVal3,true,0);
+    end;
+    label = UserDefined("ActVc","UserDate1");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,80,label,Normal,UserDate1,true,PasteCurDate);
+    end;
+    label = UserDefined("ActVc","UserDate2");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,80,label,Normal,UserDate2,true,PasteCurDate);
+    end;
+    label = UserDefined("ActVc","UserDate3");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,80,label,Normal,UserDate3,true,PasteCurDate);
+    end;
+    end;
+    if (UserCanAction("EnabINF",false)) then begin
+      SpecialMenu("Інформація про ключ",' ',5,"EnablerInfoDsm");
+    end;
+    if (UserCanReport("CustPSRn","",true)) then begin 
+    SpecialMenu("Статус клієнта",'e',6,"CUStatusActDsm");
+    end;
+      SpecialMenu("Відправити запрошення",' ',7,"SendInvitationDsm2");
+    SpecialMenu("Відкрити запис операції",'t',0,"OpenTRFromAct");
+    SpecialMenu("Відкрити гол. завдання",'o',4,"OpenMainTaskActDsm");
+    if (GuiType==kGuiCocoa) then begin
+      SpecialMenu("Скопіювати до iCal",' ',7,"CopyToLocalCalendarDsm");
+    end;    
+    if (GuiType==kGuiiPhone) then begin
+      SpecialMenu("Підпис",' ',8,"SignActDsm");
+    end;
+    SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);
+    SpecialMenu("Створити E-mail",'m',1,"MailFromActDsm");
+    SpecialMenu("Створити лист",'l',2,"LetFromActDsm");
+    SpecialMenu("Створити лист з цитатою",' ',2,"LetWithQuoteFromActDsm");  
+    SpecialMenu("Створити активність наступного кроку",'n',9,"ActDClassCreateNextStep");
+    SpecialMenu("Створити замовлення",'G',3,"ORFromActDsm");
+    SpecialMenu("Створити комерц. пропозицію",' ',4,"QTFromActDsm");
+    SpecialMenu("Створити підзавдання",'T',9,"ActDClassCreateSubTask");
+    if (StandardHansa==false) then begin
+      SpecialMenu("Створити дорожній лист",' ',8,"WayListFromActDsm");  
+    end;
   EndWindow;
 end;

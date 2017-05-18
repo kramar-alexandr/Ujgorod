@@ -584,13 +584,14 @@ webpublic
 global 
 updating procedure WebSaveStockMovVc()
 begin
-  area aPost;
-  integer i,j,pos,qty,smrwcnt;
-  longint linesCnt;
-  string 255 line,tstr,serial;
   record StockMovVc SMr;
   row StockMovVc SMrw;
+  record ActVc Actr;
+  area aPost;
+  integer i,j,pos,qty,smrwcnt;
+  string 255 line,tstr,serial;
   array string 255 aWarning;
+  longint linesCnt;
   string 5 nl;
   
   nl = chr(13) & chr(10);
@@ -624,6 +625,21 @@ begin
     StockMovSumUp(SMr);
     RecordInsert(SMr,true);
     if (RecordInsert(SMr,true)) then begin
+      RecordNew(Actr);
+      Actr.TransDate = CurrentDate;
+      Actr.SerNr = NextSerNr("ActVc",Actr.TransDate,-1,false,"");
+      Actr.Comment = USetStr(13231) & " " & LowerCase(USetStr(13103)) & " " & SMr.SerNr;
+      Actr.MainPersons = "SKLAD";
+      Actr.FromSerNr = SMr.SerNr;
+      Actr.FromFileName = "StockMovVc";
+      Actr.AlarmType = kAlarmTypeMessage;
+      Actr.TodoFlag = kTodoFlagTodo;
+      Actr.ActType = "SIGNA";
+      Actr.SMSignal = 0;
+      if (RecordStore(Actr,true)) then begin
+        CreateRecordLink(Actr,CurrentCompany,SMr,CurrentCompany);  
+        CreateRecordLink(SMr,CurrentCompany,Actr,CurrentCompany); 
+      end;
       WebOutString("ok" & nl & SMr.SerNr);
       for (j=0;j<aWarning.length;j=j+1) begin
         WebOutString(aWarning[j] & nl);
@@ -662,4 +678,26 @@ begin
   WebOutString(itemcode);
   
   return;
+end;
+
+webpublic
+global procedure WebFindSignalActVc()
+begin
+  record ActVc Actr;
+  boolean foundf,TrHs;
+  
+  Actr.ActType = "SIGNA";
+  TrHs = true;
+  while (loopkey("ActType",Actr,1,TrHs)) begin
+    if (Actr.ActType!="SIGNA") then begin TrHs = false; end;
+    if ((TrHs) and (Actr.FromFileName=="StockMovVc") and (Actr.MainPersons=="SKLAD") and (Actr.SMSignal==0)) then begin
+      foundf = true;
+    end;
+  end;
+  if (foundf) then begin
+    WebOutString("true");
+  end else begin
+    WebOutString("false");
+  end;
+
 end;

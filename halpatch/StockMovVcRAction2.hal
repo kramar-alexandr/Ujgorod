@@ -623,6 +623,7 @@ global
 updating function LongInt StockMovVcRecordRemove(var record StockMovVc StockMovr,record StockMovVc StockMov2r,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;
+  record ActVc Actr;
 
   if (StockMovr.IntORNo!=-1) then begin
     if (UpdateIntOrderFromStockMov(StockMov2r,StockMovr,false)) then begin end;
@@ -635,6 +636,12 @@ BEGIN
   
   if (nonblank(StockMovr.OfficialSerNr)) then begin 
     DeleteOffSerNr(StockMovr.SerNr,"StockMovVc");
+  end;
+  
+  Actr.FromFileName = "StockMovVc";
+  Actr.FromSerNr = StockMovr.SerNr;
+  if (readfirstkey("FromFileName",Actr,2,true)) then begin
+    RecordDelete(Actr);
   end;
   
   StockMovVcRecordRemove = res;
@@ -658,6 +665,7 @@ updating function LongInt StockMovVcRecordUpdate(var record StockMovVc StockMovr
 BEGIN
   LongInt res;
   Boolean ihef;
+  record ActVc Actr;
 
   ihef = ItemHistExists("StockMovVc",StockMovr.SerNr);
   if ((StockMovr.SentOKFlag==0)) then begin
@@ -696,6 +704,15 @@ BEGIN
   end else begin
     if (StockMovr.OKFlag!=0) and (StockMov2r.OKFlag==0) and (StockMov2r.SentOKFlag==0) then begin
       AddPortugueseSAFTHashToStockMov(StockMovr);
+    end;
+  end;
+  //Edit-------------------Vitalii 16:29 17.05.2017
+  if (StockMovr.Signal!=StockMov2r.Signal) then begin
+    Actr.FromFileName = "StockMovVc";
+    Actr.FromSerNr = StockMovr.SerNr;
+    if (readfirstkey("FromFileName",Actr,2,true)) then begin
+      Actr.SMSignal = StockMovr.Signal;
+      recordstore(Actr,true);
     end;
   end;
   StockMovVcRecordUpdate = res;

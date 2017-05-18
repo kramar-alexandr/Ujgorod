@@ -249,8 +249,13 @@ begin
 	EndRecordAdd;
 
   RecordAddBegin(StockMovVc,"MyStockMovVc1"); 
+    RecordField(Signal,M4Int,0,0);
 		ArrayField(Brand,M4UStr,200,DIVc); //Edit-------------------Vitalii 11:43 04.10.2016
 	EndRecordAdd;
+  
+  RecordAddBegin(ActVc,"MyActVc3");//Edit-------------------Vitalii 16:25 17.05.2017
+    RecordField(SMSignal,M4Int,0,0);
+  EndRecordAdd;
 				
 return;
 end;
