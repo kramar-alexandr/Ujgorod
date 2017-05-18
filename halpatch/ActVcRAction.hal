@@ -959,7 +959,7 @@ L44:;
       end;
     end;
   end;  
-  if ((Actr.FromFileName=="StockMovVc") and (Actr.MainPersons=="SA_") and (Actr.ActType=="SIGNA")) then begin
+  if ((Actr.FromFileName=="StockMovVc") and (Actr.MainPersons=="SKLAD") and (Actr.ActType=="SIGNA")) then begin
     if (stat==Rs_update) then begin
       if ((Actr.OKFlag!=0) and (Act2r.OKFlag==0)) then begin
         StockMovr.SerNr = Actr.FromSerNr;
@@ -1190,7 +1190,7 @@ BEGIN
       goto LActVcRecordRemoveTest;
     end;
   end;
-  if ((res>0) and (Actr.FromFileName=="StockMovVc") and (Actr.MainPersons=="SA_") and (Actr.ActType=="SIGNA")) then begin
+  if ((res>0) and (Actr.FromFileName=="StockMovVc") and (Actr.MainPersons=="SKLAD") and (Actr.ActType=="SIGNA")) then begin
     MessageBox(1560,"");
     res = 0;
     goto LActVcRecordRemoveTest;
