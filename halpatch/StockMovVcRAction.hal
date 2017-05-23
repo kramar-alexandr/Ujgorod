@@ -511,11 +511,11 @@ BEGIN
 	//Thursday, 11 May 2017 12:07:58
 	
 	shlop = false;
-	if (stat==insertmode) then begin
+	if (stat==insertmode and SMp.OrdFlag==1) then begin
     shlop = true;
   end; 
   if (stat==updatemode) then begin
-  	if(SMp.OKFlag==0 and SMp.SentOKFlag==0)then begin
+  	if(SMp.OKFlag==0 and SMp.SentOKFlag==0 and (SMp.OrdFlag==1 and SM2p.OrdFlag==0))then begin
 			shlop = true;
     end;
   end;      
@@ -537,6 +537,7 @@ BEGIN
 							end;
 							matrowput(SMp,i,StockMovrw);
 							matrowdelete(SMp,j);
+							j = j - 1;
 							rwcnt = rwcnt - 1;
 						end;
 					end;
