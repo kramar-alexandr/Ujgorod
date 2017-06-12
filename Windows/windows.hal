@@ -516,6 +516,7 @@ begin
   v = 16; vs = 25; h = 120; h2 = 250;
   PeriodField(h,v,"Період");
   EditField(h,v+=20,70,"Склад",Normal,f1,false,LocationSClass);
+  EditField(h,v+=20,70,"Умови Сплати",Normal,f2,false,PDSClass);
   ButtonFrame(h,v+=44,160,2,"Сортування");
   RadioButton(h,v,0,0,"Бренд",flags[0]);
   RadioButton(h,v+=16,1,0,"Тип",flags[0]); 

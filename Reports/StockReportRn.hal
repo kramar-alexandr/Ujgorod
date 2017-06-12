@@ -249,7 +249,7 @@ begin
 	vector val colqty,colsum,totcolsum,totcolqty,costsum,pricesum;
 	vector boolean colvec,brandvec;
 	string 100 location,tstr,inbrand,incol,sorttype;
-	boolean testf,TrHs,intestf;
+	boolean testf,TrHs,intestf,pdflag;
 	integer k,pos,i,c,j,mtrw;
 	val rowsum,rowqty;
 	record IVVc IVr;
@@ -316,39 +316,45 @@ begin
 				if(testf)then begin
 					IVr.SerNr = IHr.TransNr;
 					if(readfirstmain(IVr,1,true))then begin
-						mtrw = matrowcnt(IVr);
-						if(IHr.Row<mtrw)then begin
-							matrowget(IVr,IHr.Row,IVrw);
-							colqty[inbrand] = colqty[inbrand] + IHr.Qty;
-							totalqty = totalqty + IHr.Qty;
-							if(IHr.Qty>0)then begin
-								tempsum = blankval;
-								if(IVr.CurncyCode==basecur)then begin
-									tempsum = -AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty);
+						pdflag = true;
+						if(nonblank(RepSpec.f2) and RepSpec.f2!=IVr.PayDeal)then begin pdflag = false; end;
+						
+						
+						if(pdflag)then begin
+							mtrw = matrowcnt(IVr);
+							if(IHr.Row<mtrw)then begin
+								matrowget(IVr,IHr.Row,IVrw);
+								colqty[inbrand] = colqty[inbrand] + IHr.Qty;
+								totalqty = totalqty + IHr.Qty;
+								if(IHr.Qty>0)then begin
+									tempsum = blankval;
+									if(IVr.CurncyCode==basecur)then begin
+										tempsum = -AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty);
+									end else begin
+										tempsum = -AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty/IVr.FrRate*IVr.ToRateB1);
+									end;
+									if(IHr.Invalid>0)then begin
+										tempsum = -tempsum;
+									end;
+									costsum[inbrand] = costsum[inbrand] - IHr.TotCostPrice;
+									pricesum[inbrand] = pricesum[inbrand] + tempsum;
+									totalsum = totalsum + tempsum;
+									totalcost = totalcost - IHr.TotCostPrice;
 								end else begin
-									tempsum = -AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty/IVr.FrRate*IVr.ToRateB1);
+									tempsum = blankval;
+									if(IVr.CurncyCode==basecur)then begin
+										tempsum = AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty);
+									end else begin
+										tempsum = AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty/IVr.FrRate*IVr.ToRateB1);
+									end;
+									if(IHr.Invalid>0)then begin
+										tempsum = -tempsum;
+									end;
+									costsum[inbrand] = costsum[inbrand] + IHr.TotCostPrice;
+									pricesum[inbrand] = pricesum[inbrand] + tempsum;
+									totalsum = totalsum + tempsum;
+									totalcost = totalcost + IHr.TotCostPrice;
 								end;
-								if(IHr.Invalid>0)then begin
-									tempsum = -tempsum;
-								end;
-								costsum[inbrand] = costsum[inbrand] - IHr.TotCostPrice;
-								pricesum[inbrand] = pricesum[inbrand] + tempsum;
-								totalsum = totalsum + tempsum;
-								totalcost = totalcost - IHr.TotCostPrice;
-							end else begin
-								tempsum = blankval;
-								if(IVr.CurncyCode==basecur)then begin
-									tempsum = AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty);
-								end else begin
-									tempsum = AbsoluteVal(IVrw.Sum/IVrw.Quant*IHr.Qty/IVr.FrRate*IVr.ToRateB1);
-								end;
-								if(IHr.Invalid>0)then begin
-									tempsum = -tempsum;
-								end;
-								costsum[inbrand] = costsum[inbrand] + IHr.TotCostPrice;
-								pricesum[inbrand] = pricesum[inbrand] + tempsum;
-								totalsum = totalsum + tempsum;
-								totalcost = totalcost + IHr.TotCostPrice;
 							end;
 						end;
 					end;
@@ -377,6 +383,17 @@ begin
 	startformat(15);
 		outstring(150,0,"валюта - евро",false);
 	endformat;
+	
+	startformat(15);
+		outstring(150,0,"Умови сплати: ",false);
+		if(blank(RepSpec.f2))then begin
+			outstring(210,0,"Всі",false);
+		end else begin
+			outstring(210,0,RepSpec.f2,false);
+		end;
+		
+	endformat;
+	
 	startformat(15);
 		outstring(0,0,"Назва бренду",false);
 		outstring(90,0,"К-сть",true);
