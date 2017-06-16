@@ -149,16 +149,17 @@ begin
     addtexttoarea("A10,25,0,4,1,1,N,V00" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     addtexttoarea("A10,60,0,4,1,1,N,V01" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     addtexttoarea("A10,95,0,3,1,1,N,V02" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
-    addtexttoarea("LO10,145,150,2" & chr(13) & chr(10),aLabel); //Line draw black
-    addtexttoarea("B170,120,0,1,2,2,50,B,V03" & chr(13) & chr(10),aLabel); // print standard bar codes
+    //addtexttoarea("LO10,145,150,2" & chr(13) & chr(10),aLabel); //Line draw black
+    addtexttoarea("B430,20,1,1,2,2,50,B,V03" & chr(13) & chr(10),aLabel); // print standard bar codes
     if (RepSpec.flags[10]==0) then begin
-      addtexttoarea("A10,200,0,4,1,1,N,V04" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+      addtexttoarea("A50,145,0,4,1,1,N,V04" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
       //addtexttoarea("LS80,230,4,200,190" & chr(13) & chr(10),aLabel); //Line draw diagonal
+      addtexttoarea("A50,205,0,4,1,1,N,V05" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     end else begin
-      addtexttoarea("A10,225,0,3,2,2,N,V04" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+      addtexttoarea("A130,165,0,3,2,2,N,V04" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+      addtexttoarea("A75,225,0,3,2,2,N,V05" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     end;
-    addtexttoarea("A10,235,0,4,1,1,N,V05" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
-    addtexttoarea("A100,275,0,3,2,2,N,V06" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
+    addtexttoarea("A85,245,0,3,2,2,N,V06" & chr(13) & chr(10),aLabel); // Prints an ASCII text string
     addtexttoarea("PAV07" & chr(13) & chr(10),aLabel); // to automatically print the form
     addtexttoarea("FE" & chr(13) & chr(10),aLabel); // command is used to end a form store sequence.
     addtexttoarea(chr(13) & chr(10),aLabel);
@@ -175,20 +176,20 @@ begin
         while (loops>0) begin
           addtexttoarea("FR\"1\"" & chr(13) & chr(10),aLabel);
           addtexttoarea("?" & chr(13) & chr(10),aLabel);
-          addtexttoarea("Тoвaр:" & newPUrw.Spec & chr(13) & chr(10),aLabel);
-          addtexttoarea("Торгова марка:" & newPUrw.POReconComment & chr(13) & chr(10),aLabel);
+          addtexttoarea(newPUrw.Spec & chr(13) & chr(10),aLabel);
+          addtexttoarea(newPUrw.POReconComment & chr(13) & chr(10),aLabel);
           addtexttoarea("Мод.:" & newPUrw.SerialNr & chr(13) & chr(10),aLabel);
           addtexttoarea(newPUrw.BarCode & chr(13) & chr(10),aLabel); 
   				if (RepSpec.flags[10]==0) then begin
             tempLong = newPUrw.UPrice;//val to long integer  
-            addtexttoarea("Ціна:" & tempLong & " грн." & chr(13) & chr(10),aLabel);
+            addtexttoarea("Ціна: " & tempLong & " грн." & chr(13) & chr(10),aLabel);
     				addtexttoarea("Ціна зі знижкою:" & chr(13) & chr(10),aLabel);
     				tempLong = newPUrw.InPrice;
             addtexttoarea(tempLong & " грн." & chr(13) & chr(10),aLabel);
           end else begin
             tempLong = newPUrw.InPrice;//val to long integer  
-            addtexttoarea("Ціна: " & newPUrw.InPrice & chr(13) & chr(10),aLabel);
-    				addtexttoarea("" & chr(13) & chr(10),aLabel);
+            addtexttoarea("Ціна:" & chr(13) & chr(10),aLabel);
+    				addtexttoarea(tempLong & " грн." & chr(13) & chr(10),aLabel);
             addtexttoarea("" & chr(13) & chr(10),aLabel);
           end; 
           addtexttoarea("1" & chr(13) & chr(10),aLabel);
