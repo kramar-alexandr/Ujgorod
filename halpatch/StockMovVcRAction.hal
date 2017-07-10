@@ -2237,3 +2237,4 @@ begin
   StockMovVcRecordProtectFields = res;
   return;
 end;
+//Edit-------------------Vitalii 15:47 10.07.2017
