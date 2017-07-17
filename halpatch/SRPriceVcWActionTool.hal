@@ -78,6 +78,8 @@ begin
   Boolean TrHs,testf;
   Integer keycnt;
   string 20 keyname;
+  val maxprice;
+  record INVc INr;
   
     if (SRr.PUNr>-1) then begin
       lastcostprice = SRrw.LastCostPrice;
@@ -100,9 +102,40 @@ begin
         IHr.TransDate = CurrentDate;
         keyname = "FNArtCode";
       end;
+      
+      IHr.ArtCode = artCode;
+      keyname = "ActiveQty";
+      maxprice = blankval;
+      
+      INr.Code = artCode;
+      readfirstmain(INr,1,true);
+      cur = INr.LastPurchCurncyCode;
       TrHs = true;
       RESETLOOP(IHr);
-      while (LoopBackKey(keyname,IHr,3,TrHs)) begin
+      
+      while (LoopBackKey(keyname,IHr,1,TrHs)) begin// Edit ************************** Monday, 17 July 2017 10:33:28
+        testf = true;
+        if (IHr.ArtCode!=artCode) then begin TrHs = false; testf = false; end;
+
+        if (testf) then begin
+          lastcostprice = IHr.TotCostPrice/IHr.Qty;
+          if(maxprice<lastcostprice)then begin
+          	maxprice = lastcostprice;
+          	
+          end;
+          //PUr.SerNr = IHr.TransNr;
+          /*if (ReadFirstMain(PUr,1,true)) then begin
+            cur = PUr.CurncyCode;
+          end;*/
+          
+          
+          
+          //TrHs = false;
+        end;
+      end;
+      lastcostprice = maxprice;
+      
+      /*while (LoopBackKey(keyname,IHr,3,TrHs)) begin// Edit ************************** Monday, 17 July 2017 10:33:29
         testf = true;
         if (IHr.FileName!="PUVc" or IHr.ArtCode!=artCode) then begin TrHs = false; testf = false; end;
         if (NonBlank(serial) and IHr.SerialNr!= serial) then begin TrHs = false; testf = false; end;
@@ -115,7 +148,7 @@ begin
           end;
           TrHs = false;
         end;
-      end;
+      end;*/
     end;
     
     
