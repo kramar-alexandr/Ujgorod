@@ -2284,16 +2284,16 @@ begin
     EnterSkip(ArtCode);//Edit-------------------Vitalii 17:50 03.10.2016
     Flip(flipnr);  flipnr = flipnr + 1;
     if (HasVarieties) then begin
-  MatCol(1,86,"Зам. к-ть",0,OrdQuant,true,MATVARINSClass);
+  MatCol(1,150,"Зам. к-ть",0,OrdQuant,true,MATVARINSClass);
     end else begin
       if (HasThrouLocation) then begin
       MatCol(1,86,"Необх.кільк.",0,OrdQuant,true,0); //!!PRODTRANSLATE
     end;
     end;
     if (HasThrouLocation) then begin
-  MatCol(1,148,"Відп. к-ть",0,SentQuant,true,0);
+  MatCol(1,190,"Відп. к-ть",0,SentQuant,true,0);
     end;
-  MatCol(1,210,"Отр. к-ть",0,Quant,true,0);
+  MatCol(1,230,"Отр. к-ть",0,Quant,true,0);
   MatCol(1,272,"Опис",0,Spec,false,0);
   MatCol(1,-320,"Бренд",0,Brand,false,DISClass);//Edit-------------------Vitalii 12:06 04.10.2016
   end;

@@ -93,7 +93,7 @@ begin
   return;
 end;
 
-function Boolean StockMovDClassArtCodeEFAfter(Integer wn,Integer rownr,Integer changed)
+updating function Boolean StockMovDClassArtCodeEFAfter(Integer wn,Integer rownr,Integer changed)
 BEGIN
   record StockMovVc StockMovr;
   row StockMovVc StockMovrw;
@@ -105,6 +105,9 @@ BEGIN
     GetWindowRecord(wn,StockMovr);
     if (StockMovVc_PasteArtCode(StockMovr,rownr,changed,aWarning)) then begin
       PutWindowRecord(wn,StockMovr);
+    end;
+    if(right((rownr & ""),1)=="0" or right((rownr & ""),1)=="5")then begin// Edit ************************** Thursday, 2 November 2017 16:01:10
+    	if(changed!=0)then begin windowdook(wn,0); end;// Edit ************************** Wednesday, 10 May 2017 10:17:46
     end;
     //DisplayStrArray(aWarning);
     //if (StockMovDClassSwitchRow(wn,rownr)) then begin end;
@@ -587,7 +590,7 @@ BEGIN
     case "TransDate": res = StockMovDClassTransDateEFAfter(wn,changed);
     case "SentTransDate": res = StockMovDClassSentTransDateEFAfter(wn,changed);
     case "CurncyCode": res = StockMovDClassCurncyCodeEFAfter(wn,changed);
-    case "ArtCode": res = StockMovDClassArtCodeEFAfter(wn,rownr,changed); if(res and changed!=0)then begin windowdook(wn,0); end;// Edit ************************** Wednesday, 10 May 2017 10:17:46
+    case "ArtCode": res = StockMovDClassArtCodeEFAfter(wn,rownr,changed);
     case "Quant": res = StockMovDClassQuantEFAfter(wn,rownr,changed);
     case "SentQuant": res = StockMovDClassSentQuantEFAfter(wn,rownr,changed);
     case "OldPrice": res = StockMovDClassOldPriceEFAfter(wn,rownr,changed);
