@@ -116,6 +116,7 @@ begin
       while (LoopBackKey(keyname,IHr,1,TrHs)) begin// Edit ************************** Monday, 17 July 2017 10:33:28
         testf = true;
         if (IHr.ArtCode!=artCode) then begin TrHs = false; testf = false; end;
+        if(nonblank(serial) and serial!=IHr.SerialNr)then begin testf = false; end;
 
         if (testf) then begin
           lastcostprice = IHr.TotCostPrice/IHr.Qty;
