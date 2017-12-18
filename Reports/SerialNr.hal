@@ -276,7 +276,7 @@ begin
                 end;
               end;
             end;
-
+            
             if (fnd2 and testf) then begin
               if (ihtestf) then begin
                 switch (IHr.FileName) begin
@@ -296,6 +296,8 @@ begin
                   case "EasyRentDispVc": sid = 24042; dblstr = "DblEasyRent";
                   case "QualConVc": sid = 11527; dblstr = "DblInspection";
                   case "WSVc": sid = 7650; dblstr = "DblWS";
+								  case "SRPriceVc": sid = 31014; dblstr = "DblSRPriceVc";IHr.Qty = 0;// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 18 December 2017 12:30:25
+
                 end;
                 switch (IHr.FileName) begin
                   case "DispatchVc":
@@ -690,6 +692,11 @@ begin
                     end;
                   end;
                 end; 
+                
+                if (IHr.FileName=="SRPriceVc") then begin
+                  PrintSerNrRow(IHr.TransDate,31014,IHr.TransNr,custname,IHr.Location,RepSpec.flags[0],IHr.Position,WSrw.SerialNr,v,totinq,"DblSRPriceVc");
+                end; 
+                
                 RecordCopy(IHr,rIHr);
               end else begin
                 if (lastIHr.SerNr>0) then begin
