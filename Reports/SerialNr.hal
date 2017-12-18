@@ -694,7 +694,7 @@ begin
                 end; 
                 
                 if (IHr.FileName=="SRPriceVc") then begin
-                  PrintSerNrRow(IHr.TransDate,31014,IHr.TransNr,custname,IHr.Location,RepSpec.flags[0],IHr.Position,WSrw.SerialNr,v,totinq,"DblSRPriceVc");
+                  PrintSerNrRow(IHr.TransDate,31014,IHr.TransNr,custname,IHr.Location,RepSpec.flags[0],IHr.Position,IHr.SerialNr,0,totinq,"DblSRPriceVc");
                 end; 
                 
                 RecordCopy(IHr,rIHr);
