@@ -247,8 +247,6 @@ begin
               if (rIHr.StockAffectf==0) then begin 
               	if(rIHr.FileName!="SRPriceVc")then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 18 December 2017 12:28:22
 									testf = false; 
-              	end else begin
-              		rIHr.Qty = 0;
               	end;
               end;
 //              if (rIHr.ItemType!=kItemTypeStocked) then begin testf = false; end;
