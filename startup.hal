@@ -64,6 +64,7 @@ begin
 	SString(31011,"Значення не може бути нульовим");
 	SString(31012,"Визначте склад призначення");
   SString(31013,"Переміщення не закрите");
+  SString(31014,"Переоцінка RRP");
 
 
   StrSetBegin(3); /* Try to keep them in alphabetical order */
