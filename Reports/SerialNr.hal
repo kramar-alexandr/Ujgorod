@@ -694,7 +694,7 @@ begin
                 end; 
                 
                 if (IHr.FileName=="SRPriceVc") then begin
-                  PrintSerNrRow(IHr.TransDate,31014,IHr.TransNr,custname,IHr.Location,RepSpec.flags[0],IHr.Position,IHr.SerialNr,0,totinq,"DblSRPriceVc");
+                  PrintSerNrRow(IHr.TransDate,31014,IHr.TransNr,custname,IHr.Location,RepSpec.flags[0],IHr.Position,IHr.SerialNr,IHr.Qty,totinq,"DblSRPriceVc");
                 end; 
                 
                 RecordCopy(IHr,rIHr);
@@ -724,7 +724,7 @@ begin
               case "EasyRentDispVc": sid = 24042; dblstr = "DblEasyRent";
               case "QualConVc": sid = 11527; dblstr = "DblInspection";
               case "WSVc": sid = 7650; dblstr = "DblWS";
-              case "SRPriceVc": sid = 31014; dblstr = "DblSRPriceVc";IHr.Qty = 0;// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 18 December 2017 12:30:25
+              case "SRPriceVc": sid = 31014; dblstr = "DblSRPriceVc";IHr.Qty = 0;custname = "";;// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 18 December 2017 12:30:25
             end;
             switch (IHr.FileName) begin
               case "DispatchVc":
