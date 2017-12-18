@@ -266,11 +266,13 @@ begin
   if (StandardHansa==true) then begin
     v = v + vs;
   end;
-  ButtonFrame(h2,vm=(v+=60),123,5,"”ункцґЯ");
+  ButtonFrame(h2,vm=(v+=60),100,2,"”ункцґЯ");
   RadioButton(h2,v,0,0,"зведений",ArtMode);
   RadioButton(h2,v+=16,1,0,"докладний",ArtMode);
-
   EndFrame;
+  
+  CheckBox(h2+120,v,0,"‡ведено по сер. ном.",flags[11]);
+  
   if (HasMultiCurrency) then begin
     v = v + 45; v1 = v;
   end;
