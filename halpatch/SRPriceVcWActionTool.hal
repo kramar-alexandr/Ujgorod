@@ -80,6 +80,7 @@ begin
   string 20 keyname;
   val maxprice;
   record INVc INr;
+  boolean foundf;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 17 January 2018 11:45:59
   
     if (SRr.PUNr>-1) then begin
       lastcostprice = SRrw.LastCostPrice;
@@ -87,9 +88,6 @@ begin
     end else begin
       lastcostprice = BlankVal;
       cur = "";
-      /*if (blank(location)) then begin
-        goto LFindLastCostPriceForArtCode;
-      end;*/
       
       if (NonBlank(serial)) then begin
         IHr.ArtCode = artCode;
@@ -120,36 +118,15 @@ begin
 
         if (testf) then begin
           lastcostprice = IHr.TotCostPrice/IHr.Qty;
+          foundf = true;
           if(maxprice<lastcostprice)then begin
           	maxprice = lastcostprice;
           	
           end;
-          //PUr.SerNr = IHr.TransNr;
-          /*if (ReadFirstMain(PUr,1,true)) then begin
-            cur = PUr.CurncyCode;
-          end;*/
-          
-          
-          
-          //TrHs = false;
         end;
       end;
       lastcostprice = maxprice;
-      
-      /*while (LoopBackKey(keyname,IHr,3,TrHs)) begin// Edit ************************** Monday, 17 July 2017 10:33:29
-        testf = true;
-        if (IHr.FileName!="PUVc" or IHr.ArtCode!=artCode) then begin TrHs = false; testf = false; end;
-        if (NonBlank(serial) and IHr.SerialNr!= serial) then begin TrHs = false; testf = false; end;
-        //if (IHr.Location!=location) then begin testf = false; end;
-        if (testf) then begin
-          lastcostprice = IHr.TotCostPrice/IHr.Qty;
-          PUr.SerNr = IHr.TransNr;
-          if (ReadFirstMain(PUr,1,true)) then begin
-            cur = PUr.CurncyCode;
-          end;
-          TrHs = false;
-        end;
-      end;*/
+
     end;
     
     
@@ -157,6 +134,67 @@ LFindLastCostPriceForArtCode:;
     
   return;
 end; //Edit***************************Sasha2,15:24 08.07.2016 }
+
+global
+procedure FindLastCostPriceForArtCodeNew(record SRPriceVc SRr,row SRPriceVc SRrw,string artCode,string serial,string location,var val lastcostprice,var string cur)
+begin
+  record ItemHistVc IHr;
+  record PUVc PUr;
+  Boolean TrHs,testf;
+  Integer keycnt;
+  string 20 keyname;
+  val maxprice;
+  record INVc INr;
+  boolean foundf;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 17 January 2018 11:45:59
+  
+    if (SRr.PUNr>-1) then begin
+      lastcostprice = SRrw.LastCostPrice;
+      cur = SRrw.CurncyCode;
+    end else begin
+      lastcostprice = BlankVal;
+      cur = "";
+      
+      if (NonBlank(serial)) then begin
+        IHr.ArtCode = artCode;
+        IHr.SerialNr = serial;
+        IHr.FileName = "PUVc";
+        keyname = "ArtCodeSerialNr";
+      end else begin
+        IHr.FileName = "PUVc";
+        IHr.ArtCode = artCode;
+        IHr.TransDate = CurrentDate;
+        keyname = "FNArtCode";
+      end;
+      maxprice = blankval;
+      INr.Code = artCode;
+      readfirstmain(INr,1,true);
+      cur = INr.LastPurchCurncyCode;
+      TrHs = true;
+      RESETLOOP(IHr);
+      
+      while (LoopBackKey(keyname,IHr,1,TrHs)) begin// Edit ************************** Monday, 17 July 2017 10:33:28
+        testf = true;
+        if (IHr.ArtCode!=artCode) then begin TrHs = false; testf = false; end;
+        if(nonblank(serial) and serial!=IHr.SerialNr)then begin testf = false; end;
+
+        if (testf) then begin
+          lastcostprice = IHr.TotCostPrice/IHr.Qty;
+          foundf = true;
+          if(maxprice<lastcostprice)then begin
+          	maxprice = lastcostprice;
+          	
+          end;
+        end;
+      end;
+      lastcostprice = maxprice;
+
+    end;
+    
+    
+LFindLastCostPriceForArtCode:;
+    
+  return;
+end;
 
 //Edit***************************Sasha2,15:23 08.07.2016 {
 procedure FindPriceInPlAndUpdDiffs(var row SRPriceVc SRrw,string artCode,string serial,record SRPriceVc SRr,boolean recalcPLPricef)
