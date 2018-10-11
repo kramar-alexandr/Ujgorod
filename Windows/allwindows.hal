@@ -2817,7 +2817,7 @@ begin
   if (HasObjects) then begin
   //EditField(h2,v,200,"Об'єкти",Normal,Objects,false,ObjSClass);
   end;
-  ButtonFrame(h4,v=2*vs,100,2,"Розрахувати ціну від"); 
+  ButtonFrame(h4,v=2*vs,100,3,"Розрахувати ціну від"); 
   RadioButton(h4,v,0,1,"Ціни RRP",CalcPriceFromCostf); 
   RadioButton(h4,v+=16,1,0,"Ціни закупки",CalcPriceFromCostf);
 	RadioButton(h4,v+=16,2,0,"Ціни головної переоцінки",CalcPriceFromCostf);
