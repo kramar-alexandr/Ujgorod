@@ -278,6 +278,10 @@ begin
 						end;
 					end;
 				end;
+				if(MainSRPrw.NewFIFO==blankval)then begin
+					SRrw.FIFO = 0;
+					matrowput(SRPr,i,SRrw);
+				end;
 				resetloop(IHr);
 			end;
     end;
