@@ -628,7 +628,7 @@ end;
 
 
 
-global//Edit----------------------Dima  01.09.2015
+global//Edit_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-Anton 11:47 11.10.2018
 procedure SearchMainPriceDsm()
 begin
   record SRPriceVc SRPr, MainSRPr;
