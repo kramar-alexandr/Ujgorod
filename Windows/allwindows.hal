@@ -2802,6 +2802,7 @@ begin
   EditField(h3,v,150,"Причина",Normal,Reason,false,StandProblemsSClass);
   end;
   CheckBox(h4,v,0,"OK",OKFlag);
+	CheckBox(h4+100,v,0,"Головна переоцінка",MainReval);
   //EditField(h,v+=vs,82,"Коротк. код",Normal,ACShort,false,ACShortSClass);
   if (HasModNL) then begin
   //EditField(h2,v,82,"Розходж. ціни",Normal,SRVarAcc,false,AccSClass);
@@ -2911,6 +2912,7 @@ begin
   end;
   SpecialMenu("Друк етикеток",'e',1,"PrintLabelEANDsm"); //Edit***************************Sasha2,13:25 08.07.2016
   SpecialMenu("Копія в Excel",'',1,"ExportTableToExcelSRPriceDsm"); //Edit***************************Sasha2,13:25 08.07.2016
+	SpecialMenu("Підтягнути основні ціни",'',1,"SearchMainPriceDsm");
   //SpecialMenu("Пошук товару",'f',1,"ItemSearchDsm");
   EndWindow;
 end;

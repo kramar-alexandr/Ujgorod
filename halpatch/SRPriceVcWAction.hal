@@ -625,6 +625,60 @@ end;
 
 
 
+
+
+
+global//Edit----------------------Dima  01.09.2015
+procedure SearchMainPriceDsm()
+begin
+  record SRPriceVc SRPr, MainSRPr;
+	row SRPriceVc SRPrw,MainSRPrw;
+  record RcVc RepSpec;
+	record ItemHistVc IHr;
+  integer wn,mtrw,i,mainmtrw,j;
+	boolean TrHs, testf; 
+	val MainPrice;
+  wn = CurWindow;
+  GetWindowRecord(wn,SRPr);
+	mtrw = matrowcnt(SRPr);
+	for (i=0;i<mtrw;i=i+1)begin
+		matrowget(SRPr,i,SRPrw);
+		IHr.FileName = "SRPriceVc";
+		IHr.ArtCode = SRPrw.ArtCode;
+		TrHs = true;
+		if(loopbackkey("FNArtCode",IHr,2,TrHs))then begin
+			if(IHr.FileName!="SRPriceVc")then begin TrHs = false; end;
+			if(IHr.ArtCode!=SRPrw.ArtCode)then begin TrHs = false; end;
+			if(TrHs)then begin 
+				MainSRPr.SerNr = IHr.TransNr;
+				if(ReadFirstMain(MainSRPr,1,true))then begin 
+					if(MainSRPr.MainReval==1)then begin
+						mainmtrw = matrowcnt(MainSRPr);
+						for (j=0;j<mainmtrw;j=j+1) begin
+							matrowget(MainSRPr,j,MainSRPrw);
+							if(MainSRPrw.ArtCode==SRPrw.ArtCode)then begin
+								SRPrw.FIFO = MainSRPrw.NewFIFO;
+								matrowput(SRPr,i,SRPrw);
+								TrHs = false;
+								j=mainmtrw;
+							end;
+						end;
+					end;
+				end;
+			end;
+		end;
+		resetloop(IHr);
+	end;
+	PutWindowRecord(wn,SRPr);
+return;
+end;
+
+
+
+
+
+
+
 global procedure DblSRPriceVc(string dblstr,string l,Integer currepwn)
 begin
   record SRPriceVc SRPricer;
