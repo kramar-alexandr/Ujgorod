@@ -201,6 +201,13 @@ procedure FindPriceInPlAndUpdDiffs(var row SRPriceVc SRrw,string artCode,string 
 begin
   record PLVc PLr;
   val rebate,markup,rate,tval; 
+	record SRPriceVc SRPr, MainSRPr;
+	row SRPriceVc SRPrw,MainSRPrw;
+  record RcVc RepSpec;
+	record ItemHistVc IHr;
+  integer wn,mtrw,i,mainmtrw,j;
+	boolean TrHs, testf; 
+	val MainPrice;
   roundmode rnd1,rnd2;
     
     rnd1.decimals = 0;
@@ -243,8 +250,36 @@ begin
     if (SRr.CalcPriceFromCostf==0) then begin
       SRrw.FIFO = SRrw.PLPrice + (SRrw.PLPrice/100*markup);
     end else begin
-      tval = SRrw.LastCostPrice * rate;
-      SRrw.FIFO = tval + (tval/100*markup);
+			if(SRr.CalcPriceFromCostf==1)then begin
+				tval = SRrw.LastCostPrice * rate;
+				SRrw.FIFO = tval + (tval/100*markup);
+			end else begin
+				IHr.FileName = "SRPriceVc";
+				IHr.ArtCode = SRrw.ArtCode;
+				TrHs = true;
+				if(loopbackkey("FNArtCode",IHr,2,TrHs))then begin
+					if(IHr.FileName!="SRPriceVc")then begin TrHs = false; end;
+					if(IHr.ArtCode!=SRrw.ArtCode)then begin TrHs = false; end;
+					if(TrHs)then begin 
+						MainSRPr.SerNr = IHr.TransNr;
+						if(ReadFirstMain(MainSRPr,1,true))then begin 
+							if(MainSRPr.MainReval==1)then begin
+								mainmtrw = matrowcnt(MainSRPr);
+								for (j=0;j<mainmtrw;j=j+1) begin
+									matrowget(MainSRPr,j,MainSRPrw);
+									if(MainSRPrw.ArtCode==SRrw.ArtCode)then begin
+										SRrw.FIFO = MainSRPrw.NewFIFO;
+										matrowput(SRPr,i,SRrw);
+										TrHs = false;
+										j=mainmtrw;
+									end;
+								end;
+							end;
+						end;
+					end;
+				end;
+				resetloop(IHr);
+			end;
     end;
     SRrw.FIFO = Round(SRrw.FIFO,rnd1);
     SRrw.NewFIFO = SRrw.FIFO - (SRrw.FIFO/100*rebate);
