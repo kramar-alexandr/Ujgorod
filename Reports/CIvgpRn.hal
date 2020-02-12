@@ -1,8 +1,10 @@
+external procedure HTCustClassType(string,var string);
+external function Boolean SetInSet2(string,string);
 external function Boolean HasContactClassification();
 external function Boolean HasCategories();
 external procedure HTCustCat(string,var string);
 external procedure HTCustClass(string,var string);
-external function Boolean ContactInGroupClass(string,string,string,string,string,string);
+external function Boolean ContactInGroupClass2(string,string,string,string,string,string,string);
 external procedure HTNr(Integer,Integer,LongInt,LongInt,var string);
 external function string 255 CreateInvoiceNumber(LongInt,string);
 external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
@@ -13,7 +15,7 @@ external procedure HTSaleMan(string, var string);
 external procedure HTDetailLevel(Integer, var string);
 external procedure FindSalesExVat(record TaxMatrixVc,string, val,Integer,Integer,var val);
 external procedure HT2Per(Date,Date,var string);
-external function Boolean SetInSet2(string,string);
+external function Boolean SetInSet2(string,string);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:15:58 PM
 
 procedure RepIVCashGP(record IVCashVc IVCashp, var val totquanp, var val totcsump,record RcVc RepSpec)
 begin
@@ -39,71 +41,78 @@ begin
     MatRowGet(IVCashp,i,IVCashrw);
   
     if (IVCashrw.stp==kInvoiceRowTypeNormal) or (IVCashrw.stp==kInvoiceRowTypeStructuredItemComponent) or (IVCashrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-            skipitem = false;
-            if (IVCashrw.ovst!=0) then begin
-              skipitem = true; 
+      skipitem = false;
+      if (IVCashrw.ovst!=0) then begin
+        skipitem = true; 
+      end;
+      if (nonblank(RepSpec.FirstAcc)) then begin
+        if (RepSpec.FirstAcc<>IVCashrw.ArtCode) then begin
+          skipitem = true;
+        end;  
+      end;
+      if (nonblank(RepSpec.f3)) then begin
+        if (SetInSet2(RepSpec.f3,IVCashrw.Objects)==false) then begin
+          skipitem = true;
+        end;
+      end; 
+      if (nonblank(RepSpec.LastAcc)) then begin
+        INr.Code=IVCashrw.ArtCode;
+        if (ReadFirstMain(INr,1,true)) then begin
+          if (nonblank(RepSpec.LastAcc)) then begin
+            if (RepSpec.LastAcc<>INr.Group) then begin
+              skipitem = true;
             end;
-            if (nonblank(RepSpec.FirstAcc)) then begin
-              if (RepSpec.FirstAcc<>IVCashrw.ArtCode) then begin
-                skipitem = true;
-              end;  
+          end;
+        end else begin
+          skipitem = true;
+        end;
+      end;
+    
+      if (skipitem==false) then begin
+        t = MULRATETOBASE1(IVCashp.CurncyCode,IVCashrw.Sum,IVCashp.FrRate,IVCashp.ToRateB1,IVCashp.ToRateB2,IVCashp.BaseRate1,IVCashp.BaseRate2,DefaultCurRoundOff);
+        UnpackRowFieldMatrix(IVCashrw,"TaxMatrix",TMr);
+        FindSalesExVat(TMr,IVCashrw.VATCode,t,IVCashp.InclVAT,IVCashp.NoTAXonVAT,rowinbase);
+        ivsum = ivsum + rowinbase;
+        gp = IVCashrw.rowGP;
+        if (blank(gp)) then begin
+          if (IVCashrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
+            t = MULRATETOBASE1(IVCashp.CurncyCode,IVCashrw.Sum,IVCashp.FrRate,IVCashp.ToRateB1,IVCashp.ToRateB2,IVCashp.BaseRate1,IVCashp.BaseRate2,DefaultCurRoundOff);
+            FindSalesExVat(TMr,IVCashrw.VATCode,t,IVCashp.InclVAT,IVCashp.NoTAXonVAT,rowinbase);
+            t = IVCashrw.Quant * IVCashrw.BasePrice;
+            if (IVCashrw.PriceFactor!=0) then begin
+              t = t/IVCashrw.PriceFactor;
             end;
-            if (nonblank(RepSpec.f3)) then begin
-              if (SetInSet(RepSpec.f3,IVCashrw.Objects)==false) then begin
-                skipitem = true;
-              end;
-            end; 
-            if (nonblank(RepSpec.LastAcc)) then begin
-              INr.Code=IVCashrw.ArtCode;
-              if (ReadFirstMain(INr,1,true)) then begin
-                if (nonblank(RepSpec.LastAcc)) then begin
-                  if (RepSpec.LastAcc<>INr.Group) then begin
-                    skipitem = true;
-                  end;
-                end;
-              end else begin
-                skipitem = true;
-              end;
-            end;
-            
-            if (skipitem==false) then begin
-              t = MULRATETOBASE1(IVCashp.CurncyCode,IVCashrw.Sum,IVCashp.FrRate,IVCashp.ToRateB1,IVCashp.ToRateB2,IVCashp.BaseRate1,IVCashp.BaseRate2,DefaultCurRoundOff);
-              UnpackRowFieldMatrix(IVCashrw,"TaxMatrix",TMr);
-              FindSalesExVat(TMr,IVCashrw.VATCode,t,IVCashp.InclVAT,IVCashp.NoTAXonVAT,rowinbase);
-              ivsum = ivsum + rowinbase;
-              gp = IVCashrw.rowGP;
-              if (blank(gp)) then begin
-                if (IVCashrw.stp==kInvoiceRowTypeMultiBuyDiscount) then begin
-                  t = MULRATETOBASE1(IVCashp.CurncyCode,IVCashrw.Sum,IVCashp.FrRate,IVCashp.ToRateB1,IVCashp.ToRateB2,IVCashp.BaseRate1,IVCashp.BaseRate2,DefaultCurRoundOff);
-                  FindSalesExVat(TMr,IVCashrw.VATCode,t,IVCashp.InclVAT,IVCashp.NoTAXonVAT,rowinbase);
-                  t = IVCashrw.Quant * IVCashrw.BasePrice;
-                  if (IVCashrw.PriceFactor!=0) then begin
-                    t = t/IVCashrw.PriceFactor;
-                  end;
-                  gp = rowinbase - t;
-                end;
-              end;
-              rowGP = gp;
+            gp = rowinbase - t;
+          end;
+        end;
+        rowGP = gp;
 
-              gps = gps + rowGP;
-              diff = rowinbase - rowGP;
-              
-               quant = IVCashrw.Quant;
-            
-              totdiff = totdiff + diff;
-              totquanp = totquanp + quant;
+        gps = gps + rowGP;
+        diff = rowinbase - rowGP;
+      
+        quant = IVCashrw.Quant;
+        if (IVCashp.InvType==kPOSInvoiceTypeCredit) then begin
+          gps = -gps;
+          diff = -diff;
+          quant = -quant;
+          rowinbase = -rowinbase;
+          rowGP = -rowGP;
+        end;
+    
+        totdiff = totdiff + diff;
+        totquanp = totquanp + quant;
 
-              StartFormat(15);
-              OutString(20,0,IVCashrw.ArtCode,false);
-              OutVal(124,0,quant,M4UVal,true);
-              OutString(130,0,IVCashrw.Spec,false);
-              OutVal(350,0,rowinbase,M4Val,true);
+        StartFormat(15);
+        OutString(20,0,IVCashrw.ArtCode,false);
+        OutVal(124,0,quant,M4UVal,true);
+        OutString(130,0,IVCashrw.Spec,false);
+        OutVal(350,0,rowinbase,M4Val,true);
 
-              OutVal(420,0,diff,M4Val,true);
-              OutVal(480,0,rowGP,M4Val,true);//IVrw
-              EndFormat;
+        OutVal(420,0,diff,M4Val,true);
+        OutVal(480,0,rowGP,M4Val,true);//IVrw
+        EndFormat;
 
-            end;
+      end;
     end;
   end;
 
@@ -198,7 +207,7 @@ begin
         end;
       end;
       if (nonblank(RepSpec.ObjStr)) then begin
-        if (SetInSet(RepSpec.ObjStr,IVCashr.Objects)==false) then begin
+        if (SetInSet2(RepSpec.ObjStr,IVCashr.Objects)==false) then begin
           testf = false;
         end;
       end;  
@@ -210,7 +219,7 @@ begin
         if (RepSpec.f2<>IVCashr.CustCode) then begin testf = false; end;
       end;  
       if (testf) then begin
-        testf = ContactInGroupClass(IVCashr.CustCode,RepSpec.f9,RepSpec.f8,"CUST","","");
+        testf = ContactInGroupClass2(IVCashr.CustCode,RepSpec.f9,RepSpec.f8,RepSpec.f10,"CUST","","");
       end;
       if (nonblank(RepSpec.AccStr)) then begin
         if (RepSpec.AccStr<>IVCashr.SalesMan) then begin testf = false; end;
@@ -227,7 +236,7 @@ begin
         end;
       end; 
       if (nonblank(RepSpec.ObjStr)) then begin
-        if (SetInSet(RepSpec.ObjStr,IVCashr.Objects)==false) then begin
+        if (SetInSet2(RepSpec.ObjStr,IVCashr.Objects)==false) then begin
           testf = false;
         end;
       end;    
@@ -250,7 +259,7 @@ begin
                 end;
               end;
               if (nonblank(RepSpec.f3)) then begin
-                if (SetInSet(RepSpec.f3,IVCashrw.Objects)==false) then begin
+                if (SetInSet2(RepSpec.f3,IVCashrw.Objects)==false) then begin
                   skipitem = true; 
                   wholeinv = false;
                 end;
@@ -304,7 +313,7 @@ begin
           end;
         end;
         if (nonblank(RepSpec.f3)) then begin
-          if (SetInSet(RepSpec.f3,IVCashrw.Objects)==false) then begin
+          if (SetInSet2(RepSpec.f3,IVCashrw.Objects)==false) then begin
             skipfr = true; 
             wholeinv = false;
           end;
@@ -340,6 +349,10 @@ begin
             end;
           end else begin
             iv = MULRATETOBASE1(IVCashr.CurncyCode,iv,IVCashr.FrRate,IVCashr.ToRateB1,IVCashr.ToRateB2,IVCashr.BaseRate1,IVCashr.BaseRate2,DefaultCurRoundOff);
+          end;
+          if (IVCashr.InvType==kPOSInvoiceTypeCredit) then begin
+            iv = -iv;
+            gps = -gps;
           end;
           TotSum = iv + TotSum;
           gpsum = gpsum + gps;
@@ -443,6 +456,13 @@ begin
     if (nonblank(tstr)) then begin
       Header(rw,tstr,1);
       rw = rw + 1;
+    end;
+    if (nonblank(RepSpec.f10)) then begin
+      HTCustClassType(RepSpec.f10,tstr);
+      if (nonblank(tstr)) then begin
+        Header(rw,tstr,1);
+        rw = rw + 1;
+      end; 
     end;
   end;  
   rw = rw + 1;

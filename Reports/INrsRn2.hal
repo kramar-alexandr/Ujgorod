@@ -418,7 +418,7 @@ LItemHistItemHeader:;
             case 0:
               OutString(60,0,USetStr(2492),false);        
               OutString(120,0,RepSpec.TransStr,false);
-              OutValBiDi(170,0,fwdqty2,M45Val,true,420);           
+              OutValBiDi(375,0,fwdqty2,M45Val,true,420);           
               OutValBiDi(410,0,fwdqty,M45Val,true,450);
               OutValBiDi(480,0,bal,M45Val,true,520);
             case 1:
@@ -435,7 +435,7 @@ LItemHistItemHeader:;
             case 3:
               OutString(60,0,USetStr(2492),false);        
               OutString(120,0,RepSpec.TransStr,false);
-              OutValBiDi(170,0,fwdqty2,M45Val,true,420);           
+              OutValBiDi(375,0,fwdqty2,M45Val,true,420);           
               OutValBiDi(410,0,fwdqty,M45Val,true,450);
               OutValBiDi(480,0,bal,M45Val,true,520);
           end;
@@ -624,12 +624,12 @@ LPrintItemHistExcel:;
             OutString(300,0,IHr.Location,false);
           end;
           switch (RepSpec.flags[12]) begin
-            case 1: OutVal(380,0,IHr.Qty2,M4UVal,true);
+            case 1: OutVal(375,0,IHr.Qty2,M4UVal,true);
             case 2: 
               if (MSb.UnitConvCalc==0) then begin
-                OutVal(380,0,IHr.Qty/IHr.Qty2,M45Val,true);
+                OutVal(375,0,IHr.Qty/IHr.Qty2,M45Val,true);
               end else begin
-                OutVal(380,0,IHr.Qty2/IHr.Qty,M45Val,true);
+                OutVal(375,0,IHr.Qty2/IHr.Qty,M45Val,true);
               end;
           end;
           OutVal(410,0,IHr.Qty,M4UVal,true);
@@ -668,9 +668,9 @@ LPrintItemHistExcel:;
           end;
           OutVal(340,0,IHr.Qty,M4UVal,true);                           
           if (outf) then begin
-            OutVal(380,0,Round(bal/IHr.Qty,SetRoundModeD(5)),M45Val,true);
+            OutVal(375,0,Round(bal/IHr.Qty,SetRoundModeD(5)),M45Val,true);
           end else begin
-            OutVal(380,0,Round(IHr.TotCostPrice/IHr.Qty,SetRoundModeD(5)),M45Val,true);
+            OutVal(375,0,Round(IHr.TotCostPrice/IHr.Qty,SetRoundModeD(5)),M45Val,true);
           end;
           OutVal(480,0,Round(bal,SetRoundModeD(4)),M45Val,true);//INRS 3
           if (RepSpec.AccSpec!=0) then begin
@@ -703,12 +703,12 @@ LPrintItemHistExcel:;
           end;
           OutString(300,0,Right(IHr.Variety,len(IHr.Variety)-1),false);   
           switch (RepSpec.flags[12]) begin
-            case 1: OutVal(380,0,IHr.Qty2,M4UVal,true);
+            case 1: OutVal(375,0,IHr.Qty2,M4UVal,true);
             case 2: 
               if (MSb.UnitConvCalc==0) then begin
-                OutVal(380,0,IHr.Qty/IHr.Qty2,M4Qty,true);
+                OutVal(375,0,IHr.Qty/IHr.Qty2,M4Qty,true);
               end else begin
-                OutVal(380,0,IHr.Qty2/IHr.Qty,M4Qty,true);
+                OutVal(375,0,IHr.Qty2/IHr.Qty,M4Qty,true);
               end;
           end;
           OutVal(410,0,IHr.Qty,M4UVal,true);
@@ -734,8 +734,7 @@ LPrintItemHistExcel:;
     otherwise    
       switch (RepSpec.ArtMode) begin
         case 0:
-        	
-        	if(IHr.FileName=="SRPriceVc")then begin// Edit ************************** Tuesday, 11 October 2016 14:53:39
+        if(IHr.FileName=="SRPriceVc")then begin// Edit ************************** Tuesday, 11 October 2016 14:53:39
         		SRPricer.SerNr = transnr;
         		if(readfirstmain(SRPricer,1,true))then begin
         			matrowget(SRPricer,IHr.Row,SRPricerw);
@@ -753,34 +752,35 @@ LPrintItemHistExcel:;
 						
 						EndFormat;
         	end else begin// Edit ************************** Tuesday, 11 October 2016 14:53:40
-						StartFormat(15);
-						OutDate(0,0,IHr.TransDate,false);
-						OutString(60,0,USetStr(strid),false);
-						OutString(115,dblstr,transnr,false);
-						if (RepSpec.flags[22]!=0) then begin
-							PrintDispatchNumber(IHr.FileName,IHr.TransNr,IHr.Row,170);   
-						end;
-						if (RepSpec.flags[21]==1) then begin
-							PrintCustName(IHr.FileName,IHr.TransNr,210);   
-						end;
-						if (HasMultiLocations) then begin
-							OutString(300,0,IHr.Location,false);
-						end;
-						switch (RepSpec.flags[12]) begin
-							case 1: OutValBiDi(380,0,IHr.Qty2,M4UVal,true,420);
-							case 2: 
-								if (MSb.UnitConvCalc==0) then begin
-									OutValBiDi(380,0,IHr.Qty/IHr.Qty2,M45Val,true,420);
-								end else begin
-									OutValBiDi(380,0,IHr.Qty2/IHr.Qty,M45Val,true,420);
-								end;
-						end;
-						OutValBiDi(410,0,IHr.Qty,M45Val,true,450);
-						OutValBiDi(480,0,bal,M45Val,true,520);
-						EndFormat;
+
+          StartFormat(15);
+          OutDate(0,0,IHr.TransDate,false);
+          OutString(60,0,USetStr(strid),false);
+          OutString(115,dblstr,transnr,false);
+          if (RepSpec.flags[22]!=0) then begin
+            PrintDispatchNumber(IHr.FileName,IHr.TransNr,IHr.Row,170);   
           end;
+          if (RepSpec.flags[21]==1) then begin
+            PrintCustName(IHr.FileName,IHr.TransNr,210);   
+          end;
+          if (HasMultiLocations) then begin
+            OutString(300,0,IHr.Location,false);
+          end;
+          switch (RepSpec.flags[12]) begin
+            case 1: OutValBiDi(375,0,IHr.Qty2,M4UVal,true,420);
+            case 2: 
+              if (MSb.UnitConvCalc==0) then begin
+                OutValBiDi(375,0,IHr.Qty/IHr.Qty2,M45Val,true,420);
+              end else begin
+                OutValBiDi(375,0,IHr.Qty2/IHr.Qty,M45Val,true,420);
+              end;
+          end;
+          OutValBiDi(410,0,IHr.Qty,M45Val,true,450);
+          OutValBiDi(480,0,bal,M45Val,true,520);
+          EndFormat;
+          end;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:25:43 PM
         case 1:
-        	if(IHr.FileName=="SRPriceVc")then begin// Edit ************************** Tuesday, 11 October 2016 14:53:39
+        if(IHr.FileName=="SRPriceVc")then begin// Edit ************************** Tuesday, 11 October 2016 14:53:39
         		SRPricer.SerNr = transnr;
         		if(readfirstmain(SRPricer,1,true))then begin
         			matrowget(SRPricer,IHr.Row,SRPricerw);
@@ -796,32 +796,33 @@ LPrintItemHistExcel:;
 						
 						EndFormat;
         	end else begin// Edit ************************** Tuesday, 11 October 2016 14:53:40
-						StartFormat(15);
-						OutDate(0,0,IHr.TransDate,false);
-						OutString(60,0,USetStr(strid),false);                        
-						if (RepSpec.flags[22]!=0) then begin
-							OutStringOvst(115,dblstr,transnr,false,IHr.Invalid);    
-							PrintDispatchNumber(IHr.FileName,IHr.TransNr,IHr.Row,150);   
-						end else begin
-							OutStringOvst(135,dblstr,transnr,false,IHr.Invalid);    
-						end;
-						if (RepSpec.flags[21]==1) then begin
-							PrintCustName(IHr.FileName,IHr.TransNr,185);                   
-						end;
-						if (HasMultiLocations) then begin
-							OutString(260,0,IHr.Location,false);                         
-						end;
-						OutValBiDi(340,0,IHr.Qty,M45Val,true,340);                 
-						if (UserCanAction("ViewCostPrice",true)) then begin
-							if (outf) then begin
-								OutValBiDi(400,0,Round(bal/IHr.Qty,SetRoundModeD(5)),M45Val,true,420);
-							end else begin
-								OutValBiDi(400,0,Round(IHr.TotCostPrice/IHr.Qty,SetRoundModeD(5)),M45Val,true,420);
-							end;
-							OutValBiDi(480,0,Round(bal,SetRoundModeD(4)),M45Val,true,500);//INRS 3
-						end;
-						EndFormat;
+
+          StartFormat(15);
+          OutDate(0,0,IHr.TransDate,false);
+          OutString(60,0,USetStr(strid),false);                        
+          if (RepSpec.flags[22]!=0) then begin
+            OutStringOvst(115,dblstr,transnr,false,IHr.Invalid);    
+            PrintDispatchNumber(IHr.FileName,IHr.TransNr,IHr.Row,150);   
+          end else begin
+            OutStringOvst(135,dblstr,transnr,false,IHr.Invalid);    
           end;
+          if (RepSpec.flags[21]==1) then begin
+            PrintCustName(IHr.FileName,IHr.TransNr,185);                   
+          end;
+          if (HasMultiLocations) then begin
+            OutString(260,0,IHr.Location,false);                         
+          end;
+          OutValBiDi(340,0,IHr.Qty,M45Val,true,340);                 
+          if (UserCanAction("ViewCostPrice",true)) then begin
+            if (outf) then begin
+              OutValBiDi(400,0,Round(bal/IHr.Qty,SetRoundModeD(5)),M45Val,true,420);
+            end else begin
+              OutValBiDi(400,0,Round(IHr.TotCostPrice/IHr.Qty,SetRoundModeD(5)),M45Val,true,420);
+            end;
+            OutValBiDi(480,0,Round(bal,SetRoundModeD(4)),M45Val,true,500);//INRS 3
+          end;
+          EndFormat;
+          end;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:26:02 PM
         case 3://INRS
           StartFormat(15);
           OutDate(0,0,IHr.TransDate,false);
@@ -832,12 +833,12 @@ LPrintItemHistExcel:;
           end;
           OutString(300,0,Right(IHr.Variety,len(IHr.Variety)-1),false);             
           switch (RepSpec.flags[12]) begin
-            case 1: OutValBiDi(380,0,IHr.Qty2,M4UVal,true,420);
+            case 1: OutValBiDi(375,0,IHr.Qty2,M4UVal,true,420);
             case 2: 
               if (MSb.UnitConvCalc==0) then begin
-                OutValBiDi(380,0,IHr.Qty/IHr.Qty2,M4Qty,true,420);
+                OutValBiDi(375,0,IHr.Qty/IHr.Qty2,M4Qty,true,420);
               end else begin
-                OutValBiDi(380,0,IHr.Qty2/IHr.Qty,M4Qty,true,420);
+                OutValBiDi(375,0,IHr.Qty2/IHr.Qty,M4Qty,true,420);
               end;
           end;
           OutValBiDi(410,0,IHr.Qty,M4UVal,true,450);

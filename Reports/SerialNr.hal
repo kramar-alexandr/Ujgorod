@@ -1,3 +1,6 @@
+external function Boolean ItemInItemGroupOrClass(string,string,string);
+external function Boolean HasItemClassification();
+external procedure HTItemClass(string,var string);
 external function val FindSerialNrBalance(string,string,string,Date);
 external function val GetStockQty(string,string,Date,Boolean);
 external procedure HTArtSel(string, string, var string);
@@ -174,6 +177,7 @@ begin
   val v,t;
   val q;
   string 255 fromart,toart;
+  string 255 frser,toser;
   string 255 ckey;
   Integer keys,sid;
   string 20 custname,dblstr;
@@ -182,6 +186,8 @@ begin
 
   fromart = FirstInRange(RepSpec.f1,20);
   toart =  LastInRange(RepSpec.f1,20);
+  frser = FirstInRange(RepSpec.f2,30);
+  toser =  LastInRange(RepSpec.f2,30);
   SerialNrHistHead(RepSpec.flags[0]);
   if (nonblank(RepSpec.f3)) then begin
     INr.Group = RepSpec.f3;
@@ -216,6 +222,9 @@ begin
             testf = false;
           end;
         end;
+        if (testf and fnd1) then begin
+          testf = ItemInItemGroupOrClass(INr.Code,"",RepSpec.f4);
+        end;        
         if (fnd1 and testf) then begin
           RecordClear(lastIHr);
           RecordClear(IHr);
@@ -239,9 +248,17 @@ begin
               if (RepSpec.TransStr<>rIHr.Location) then begin testf = false; end;
             end;   
             if (nonblank(RepSpec.f2)) then begin
-              if (RepSpec.f2<>rIHr.SerialNr) then begin testf = false; end;
+              if (rIHr.SerialNr<frser or rIHr.SerialNr>toser) then begin testf = false; end;
             end;         
-         
+/*            
+            if (lastIHr.FileName==rIHr.FileName) and (lastIHr.TransNr==rIHr.TransNr) and (lastIHr.Row==rIHr.Row) and (SignEqual(lastIHr.Qty,rIHr.Qty)) then begin
+//              if (lastIHr.SerialNr==IHr.SerialNr) then begin
+//cannot be , we can have several sources for same delivery row, so either sumup ih records or print them all
+              if (lastIHr.SerialNr==rIHr.SerialNr and lastIHr.Source==rIHr.Source) then begin
+                testf = false;
+              end;
+            end;
+*/            
             if (rIHr.Invalid!=0) then begin testf = false; end;
             if (RepSpec.flags[29]==0 and RepSpec.flags[3]==0) then begin
               if (rIHr.StockAffectf==0) then begin 
@@ -250,6 +267,13 @@ begin
               	end;
               end;
 //              if (rIHr.ItemType!=kItemTypeStocked) then begin testf = false; end;
+            end;
+            if (testf) then begin 
+              if (RepSpec.flags[3]==0) then begin
+                if (rIHr.FileName=="INTransferVc") then begin testf = false;  end;
+              end else begin
+                testf = (left(rIHr.FileName,3)!="Fut");
+              end;
             end;
             if (testf) then begin
               if (RepSpec.flags[1]!=0) then begin
@@ -296,7 +320,8 @@ begin
                   case "EasyRentDispVc": sid = 24042; dblstr = "DblEasyRent";
                   case "QualConVc": sid = 11527; dblstr = "DblInspection";
                   case "WSVc": sid = 7650; dblstr = "DblWS";
-								  case "SRPriceVc": sid = 31014; dblstr = "DblSRPriceVc";IHr.Qty = 0;// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 18 December 2017 12:30:25
+                  case "INTransferVc": sid = 7993; dblstr = "DblINTransferVc";
+									case "SRPriceVc": sid = 31014; dblstr = "DblSRPriceVc";IHr.Qty = 0;// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 18 December 2017 12:30:25
 
                 end;
                 switch (IHr.FileName) begin
@@ -693,7 +718,7 @@ begin
                   end;
                 end; 
                 
-                if (IHr.FileName=="SRPriceVc") then begin
+                if (IHr.FileName=="SRPriceVc") then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:34:38 PM
                   PrintSerNrRow(IHr.TransDate,31014,IHr.TransNr,custname,IHr.Location,RepSpec.flags[0],IHr.Position,IHr.SerialNr,IHr.Qty,totinq,"DblSRPriceVc");
                 end; 
                 
@@ -724,6 +749,7 @@ begin
               case "EasyRentDispVc": sid = 24042; dblstr = "DblEasyRent";
               case "QualConVc": sid = 11527; dblstr = "DblInspection";
               case "WSVc": sid = 7650; dblstr = "DblWS";
+              case "INTransferVc": sid = 7993; dblstr = "DblINTransferVc";
               case "SRPriceVc": sid = 31014; dblstr = "DblSRPriceVc";IHr.Qty = 0;custname = "";;// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 18 December 2017 12:30:25
             end;
             switch (IHr.FileName) begin
@@ -816,6 +842,13 @@ begin
     tstr = tstr & RepSpec.TransStr;
     Header(rw,tstr,1);
   end;
+  if (HasItemClassification) then begin
+    HTItemClass(RepSpec.f4,tstr);
+    if (nonblank(tstr)) then begin
+      Header(rw,tstr,1);
+      rw = rw + 1;
+    end;
+  end;  
   EndHeader;
   SerialNrHistRn(RepSpec);
   EndJob;

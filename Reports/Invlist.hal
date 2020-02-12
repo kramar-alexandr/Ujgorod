@@ -1,3 +1,5 @@
+external function Boolean SetInSet2(string,string);
+external function Boolean TestArtCodeMatch(string,string);
 external function boolean SalesGroupExistWithinUsersList(string,string);
 external procedure HTItemClass(string,var string);
 external function Boolean SetInSet2(string,string);
@@ -227,11 +229,16 @@ begin
     if (IVrw.stp==kInvoiceRowTypeGiftVoucherPayment) then begin goto LSKIPIVROW; end;
     if (IVrw.stp==kInvoiceRowTypeCashPayment) then begin goto LSKIPIVROW; end;
     if (IVrw.stp==kInvoiceRowTypeCreditCardPayment) then begin goto LSKIPIVROW; end;
+    if (IVrw.stp==kInvoiceRowTypeSwishPayment) then begin goto LSKIPIVROW; end;
+    if (IVrw.stp==kInvoiceRowTypeQRPayment) then begin goto LSKIPIVROW; end;
+    if (IVrw.stp==kInvoiceRowTypeCashWithdrawal) then begin goto LSKIPIVROW; end;
     if (IVrw.stp==kInvoiceRowTypeChequePayment) then begin goto LSKIPIVROW; end;
+    if (IVrw.stp==kInvoiceRowTypePrePayment) then begin goto LSKIPIVROW; end;
     testf = true;
     if (nonblank(items)) then begin
       testf = false;
-      if (IVrw.ArtCode>=frin) and (IVrw.ArtCode<=toin) then begin 
+//      if (IVrw.ArtCode>=frin) and (IVrw.ArtCode<=toin) then begin 
+      if (TestArtCodeMatch(IVrw.ArtCode,items)) then begin 
         testf = true;    
       end;
     end;
@@ -275,7 +282,8 @@ begin
       end;
     end;
     if (testf==false) then begin goto LSKIPIVROW; end;
-    AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,blankval,vcnt,IVr.InclVAT,IVr.NoTAXonVAT);
+
+
     s1 = 0;
     s3 = 0;
     if (invheaderprntdf==false) then begin
@@ -313,6 +321,11 @@ begin
       OutVal(460,0,s1,M4Val,true);
       OutString(480,0,IVrw.VATCode,true);
       EndFormat;
+    end;
+    if (IVrw.stp==kInvoiceRowTypeCorrection) then begin
+      AddVATBase(VATr,IVrw.VATCode,-IVrw.Sum,blankval,vcnt,IVr.InclVAT,IVr.NoTAXonVAT);
+    end else begin
+      AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,blankval,vcnt,IVr.InclVAT,IVr.NoTAXonVAT);
     end;
     if (IVrw.stp==kInvoiceRowTypeDownpayment) then begin
       StartFormat(15);
@@ -448,11 +461,15 @@ begin
     if (IVrw.stp==kInvoiceRowTypeGiftVoucherPayment) then begin goto LSKIPIVROW_CalculateInvoiceSum; end;
     if (IVrw.stp==kInvoiceRowTypeCashPayment) then begin goto LSKIPIVROW_CalculateInvoiceSum; end;
     if (IVrw.stp==kInvoiceRowTypeCreditCardPayment) then begin goto LSKIPIVROW_CalculateInvoiceSum; end;
+    if (IVrw.stp==kInvoiceRowTypeSwishPayment) then begin goto LSKIPIVROW_CalculateInvoiceSum; end;
+    if (IVrw.stp==kInvoiceRowTypeQRPayment) then begin goto LSKIPIVROW_CalculateInvoiceSum; end;
+    if (IVrw.stp==kInvoiceRowTypeCashWithdrawal) then begin goto LSKIPIVROW_CalculateInvoiceSum; end;
     if (IVrw.stp==kInvoiceRowTypeChequePayment) then begin goto LSKIPIVROW_CalculateInvoiceSum; end;
+    if (IVrw.stp==kInvoiceRowTypePrePayment) then begin goto LSKIPIVROW_CalculateInvoiceSum; end;
     testf = true;
     if (nonblank(RepSpec.f10)) then begin
       testf = false;
-      if (IVrw.ArtCode>=frin) and (IVrw.ArtCode<=toin) then begin 
+      if (TestArtCodeMatch(IVrw.ArtCode,RepSpec.f10)) then begin 
         testf = true;    
       end;
     end;
@@ -622,7 +639,11 @@ begin
   val totv,vatv,t1;
   string 255 frin,toin;
   record COCUServiceVc COCUSr;
-  boolean testf1;// Edit ************************** Thursday, 7 July 2016 12:57:39
+  record StandProblemVc SPr;
+  vector val vreasons;
+  array string 255 areasons;
+    boolean testf1;// Edit ************************** Thursday, 7 July 2016 12:57:39
+
 
   RepSpec.sStartDate2 = FirstInRange(RepSpec.Period2Str2,10);
   RepSpec.sEndDate2 = LastInRange(RepSpec.Period2Str2,10);
@@ -778,7 +799,7 @@ begin
         if (overviewpervatcodef) then begin
           OutString(170,0,USetStr(2358),false);//280
         end else begin
-          OutString(285,0,USetStr(2358),false);//280
+          OutString(275,0,USetStr(2358),false);//280
         end;
       end;
       if (RepSpec.flags[15]!=0) then begin
@@ -966,7 +987,7 @@ begin
             end;
           end;
           if (nonblank(RepSpec.f4)) then begin
-            if (SetInSet(RepSpec.f4,CUr.Classification)==false) then begin
+            if (SetInSet2(RepSpec.f4,CUr.Classification)==false) then begin
               testf = false;
             end;
           end;
@@ -988,7 +1009,7 @@ begin
       end;
       if (testf and nonblank(RepSpec.f14) and nonblank(IVr.SalesMan)) then begin
         testf = SalesGroupExistWithinUsersList(RepSpec.f14,IVr.SalesMan);
-      end;      
+      end;  
       if (testf and nonblank(RepSpec.f8)) then begin
         if (IVr.ARAcc<frdebacc) or (IVr.ARAcc>todebacc) then begin
           testf = false;
@@ -1042,6 +1063,7 @@ begin
         if (IVr.OfficialSerNr<froffic) then begin testf = false; end;
         if (IVr.OfficialSerNr>tooffic) then begin testf = false; end;
       end;      
+      
       if (IVr.OKFlag==0) then begin
         if (RepSpec.flags[1]==0) then begin
           testf = false;
@@ -1054,6 +1076,11 @@ begin
       end;
       if (RepSpec.flags[20]!=0) then begin
         if (IVr.Sum4!=0) then begin
+          testf = false;
+        end;
+      end;
+      if (IVr.FactoringExported==0) then begin
+        if (RepSpec.flags[22]!=0) then begin
           testf = false;
         end;
       end;
@@ -1139,7 +1166,7 @@ begin
       end;
       if (testf) then begin
       if (nonblank(RepSpec.ObjStr)) then begin
-        if (SetInSet(RepSpec.ObjStr,IVr.Objects)==false) then begin
+        if (SetInSet2(RepSpec.ObjStr,IVr.Objects)==false) then begin
           testf = false;
         end;
       end else begin
@@ -1210,7 +1237,6 @@ begin
             rwcnt = MatRowCnt(IVr);
             for (i=0;i<rwcnt;i=i+1) begin
               MatRowGet(IVr,i,IVrw);
-              
               testf1 = true;// Edit ************************** Thursday, 7 July 2016 12:57:20
 							if (IVrw.stp==kInvoiceRowTypeSubtotal) then begin testf1 = false; end;
 							if (IVrw.stp==kInvoiceRowTypeGiftVoucherPayment) then begin testf1 = false; end;
@@ -1219,10 +1245,16 @@ begin
 							if (IVrw.stp==kInvoiceRowTypeChequePayment) then begin testf1 = false; end;
 							if (testf1) then begin// Edit ************************** Thursday, 7 July 2016 12:57:19
               
+								testrowf["ItemFlag"] = false;
+								testrowf["ItemGroupFlag"] = false;
+								testrowf["DispGroupsFlag"] = false;
+								testrowf["RowObjectFlag"] = false;
+								testrowf["VATCodeFlag"] = false;
 								testrowf["TESTALL"] = true;              
 								if (nonblank(RepSpec.f10)) then begin
-									if (IVrw.ArtCode>=frin) and (IVrw.ArtCode<=toin) then begin 
+									if (TestArtCodeMatch(IVrw.ArtCode,RepSpec.f10)) then begin 
 										testrowf["Item"] = true;
+										testrowf["ItemFlag"] = true;
 									end else begin
 										testrowf["TESTALL"] = false;
 									end;
@@ -1232,6 +1264,7 @@ begin
 										if (INr.Group>=frit) then begin 
 											if (INr.Group<=toit) then begin
 												testrowf["ItemGroup"] = true;
+												testrowf["ItemGroupFlag"] = true;
 											end else begin
 												testrowf["TESTALL"] = false;
 											end;
@@ -1242,6 +1275,7 @@ begin
 									if (ReadFirstItem(IVrw.ArtCode,INr,true,true)) then begin
 										if SetInSet2(RepSpec.Comment,INr.DispGroups) then begin
 											testrowf["DispGroups"] = true;
+											testrowf["DispGroupsFlag"] = true;
 										end else begin
 											testrowf["TESTALL"] = false;
 										end;
@@ -1250,6 +1284,7 @@ begin
 								if (nonblank(RepSpec.f11)) then begin
 									if (SetInSet2(RepSpec.f11,IVrw.Objects)) then begin
 										testrowf["RowObject"] = true;
+										testrowf["RowObjectFlag"] = true;
 									end else begin
 										testrowf["TESTALL"] = false;
 									end; 
@@ -1257,19 +1292,20 @@ begin
 								if (nonblank(RepSpec.f13)) then begin
 									if (SetInSet2(RepSpec.f13,IVrw.VATCode)) then begin
 										testrowf["VATCode"] = true;
+										testrowf["VATCodeFlag"] = true;
 									end else begin
 										testrowf["TESTALL"] = false;                
 									end; 
 								end;
 								if (testrowf["TESTALL"]) then begin 
-									if (testrowf["Item"] or testrowf["ItemGroup"] or testrowf["DispGroups"] or testrowf["RowObject"] or testrowf["VATCode"]) then begin
+									if (testrowf["ItemFlag"] or testrowf["ItemGroupFlag"] or testrowf["DispGroupsFlag"] or testrowf["RowObjectFlag"] or testrowf["VATCodeFlag"]) then begin
 										if (RepSpec.ArtMode!=1) then begin
 											AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,blankval,vcnt,IVr.InclVAT,IVr.NoTAXonVAT);
 											totv = totv + IVrw.Sum;
 										end;
 									end;
 								end;
-							end;// Edit ************************** Thursday, 7 July 2016 12:57:15
+              end;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:27:41 PM
             end;
             if (nonblank(RepSpec.f10)) then begin
               if (testrowf["Item"]==false) then begin  testf = false;  end;
@@ -1457,11 +1493,15 @@ LkInvoiceTypeCredit1:;
                 if (IVrw.stp==kInvoiceRowTypeGiftVoucherPayment) then begin testf = false; end;
                 if (IVrw.stp==kInvoiceRowTypeCashPayment) then begin testf = false; end;
                 if (IVrw.stp==kInvoiceRowTypeCreditCardPayment) then begin testf = false; end;
+                if (IVrw.stp==kInvoiceRowTypeSwishPayment) then begin testf = false; end;
+                if (IVrw.stp==kInvoiceRowTypeQRPayment) then begin testf = false; end;
+                if (IVrw.stp==kInvoiceRowTypeCashWithdrawal) then begin testf = false; end;
                 if (IVrw.stp==kInvoiceRowTypeChequePayment) then begin testf = false; end;
+                if (IVrw.stp==kInvoiceRowTypePrePayment) then begin testf = false; end;
                 if (testf) then begin
                   if (nonblank(RepSpec.f10)) then begin
                     testf = false;
-                    if (IVrw.ArtCode>=frin) and (IVrw.ArtCode<=toin) then begin 
+                    if (TestArtCodeMatch(IVrw.ArtCode,RepSpec.f10)) then begin 
                       testf = true;              
                     end;
                   end;
@@ -1583,7 +1623,16 @@ LkInvoiceTypeCredit1:;
                 end;
                 OutDate(60,0,IVr.InvDate,false);
                 OutStringCut(110,220,0,IVr.Addr0,false,0);
-                OutString(285,0,tstr,false);
+                if (IVr.InvType==kInvoiceTypeCredit or IVr.InvType==kInvoiceTypeCreditSpecialSales) then begin
+                  if (nonblank(IVr.Reason)) then begin
+                    OutString(275,0,tstr & " (" & IVr.Reason & ")",false);
+                  end else begin
+                    OutString(275,0,tstr,false);
+                  end;
+                  vreasons[IVr.Reason] = vreasons[IVr.Reason] + IVr.Sum4;
+                end else begin
+                  OutString(275,0,tstr,false);
+                end;
               end;
               if (RepSpec.flags[15]!=0) then begin
                 OutVal(5,0,ivnvat,M4Val,true);
@@ -1776,6 +1825,28 @@ LkInvoiceTypeCredit1:;
   OutString(270,0,USetStr(26560),false);
   OutLongInt(455,0,totinv,true);
   EndFormat;
+
+  GetVectorTags(vreasons,areasons);
+  SortStringArray(areasons);
+  
+  StartFormat(5);
+  EndFormat;
+  Gray_Divider(220,1);
+  StartFormat(15);
+   OutString(220,0,USetStr(19197),false);
+//   OutString(270,0,USetStr(19197),false);
+   OutString(455,0,USetStr(2355),true);
+  EndFormat;
+  Gray_Divider(220,1);
+  for (i=0;i<areasons.length;i=i+1) begin
+    SPr.Code = areasons[i];
+    ReadFirstMain(SPr,1,true);
+    StartFormat(15);
+    OutString(220,0,areasons[i],false);
+    OutString(270,0,SPr.ShortDesc,false);
+    OutVal(455,0,vreasons[areasons[i]],M4Val,true);
+    EndFormat;
+  end;
 
   EndJob;
   return;

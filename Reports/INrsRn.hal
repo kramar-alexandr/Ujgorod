@@ -231,7 +231,7 @@ begin
   switch (RepSpec.ArtMode) begin
     case 0:
       if (RepSpec.flags[12]!=0) then begin
-        OutVal(380,0,itemq2in,M45Val,true);
+        OutVal(375,0,itemq2in,M45Val,true);
       end else begin
         OutString(300,0,"",false);          
       end;
@@ -239,7 +239,7 @@ begin
       OutVal(480,0,bal,M45Val,true);
     case 1:
       if (RepSpec.flags[12]!=0) then begin
-        OutVal(380,0,itemq2in,M45Val,true);
+        OutVal(375,0,itemq2in,M45Val,true);
       end else begin
         OutString(300,0,"",false);                
       end;
@@ -247,7 +247,7 @@ begin
       OutVal(480,0,Round(fwdtotcp+itemcpin-itemcpout,SetRoundModeD(2)),M4Val,true);
     case 3:
       if (RepSpec.flags[12]!=0) then begin
-        OutVal(380,0,itemq2in,M45Val,true);
+        OutVal(375,0,itemq2in,M45Val,true);
       end else begin
         OutString(300,0,"",false);                
       end;
@@ -274,14 +274,14 @@ begin
         switch (RepSpec.ArtMode) begin
           case 0:
             if (RepSpec.flags[12]!=0) then begin
-              OutValBiDi(380,0,itemq2in,M4Qty,true,420);
+              OutValBiDi(375,0,itemq2in,M4Qty,true,420);
             end;
             OutValBiDi(410,0,fwdqty+itemqin+itemqout,M45Val,true,450);
             OutValBiDi(480,0,bal,M45Val,true,520);
           case 1:
             OutValBiDi(340,0,fwdqty+itemqin+itemqout,M45Val,true,350);
             if (RepSpec.flags[12]!=0) then begin
-              OutValBiDi(380,0,itemq2in,M45Val,true,420);
+              OutValBiDi(375,0,itemq2in,M45Val,true,420);
             end;
             if (UserCanAction("ViewCostPrice",true)) then begin
               OutValBiDi(480,0,Round(fwdtotcp+itemcpin-itemcpout,SetRoundModeD(2)),M4Val,true,500);
@@ -289,7 +289,7 @@ begin
           case 3:
             OutValBiDi(300,0,fwdqty+itemqin+itemqout,M45Val,true,340);
             if (RepSpec.flags[12]!=0) then begin
-              OutValBiDi(380,0,itemq2in,M45Val,true,420);
+              OutValBiDi(375,0,itemq2in,M45Val,true,420);
             end;
             OutValBiDi(480,0,bal,M45Val,true,520);
         end;
@@ -407,12 +407,12 @@ LPrintItemHist_PerLocationExcel:;
           end;
           OutString(310,0,Right(IHr.Variety,len(IHr.Variety)-1),false);      
           switch (RepSpec.flags[12]) begin
-            case 1: OutVal(380,0,IHr.Qty2,M4UVal,true);
+            case 1: OutVal(375,0,IHr.Qty2,M4UVal,true);
             case 2: 
               if (MSb.UnitConvCalc==0) then begin
-                OutVal(380,0,IHr.Qty/IHr.Qty2,M4Qty,true);
+                OutVal(375,0,IHr.Qty/IHr.Qty2,M4Qty,true);
               end else begin
-                OutVal(380,0,IHr.Qty2/IHr.Qty,M4Qty,true);
+                OutVal(375,0,IHr.Qty2/IHr.Qty,M4Qty,true);
               end;
           end;
           OutVal(410,0,IHr.Qty,M4UVal,true);
@@ -454,12 +454,12 @@ LPrintItemHist_PerLocationExcel:;
           end;
           OutString(300,0,Right(IHr.Variety,len(IHr.Variety)-1),false);
           switch (RepSpec.flags[12]) begin
-            case 1: OutValBiDi(380,0,IHr.Qty2,M4UVal,true,420);
+            case 1: OutValBiDi(375,0,IHr.Qty2,M4UVal,true,420);
             case 2: 
               if (MSb.UnitConvCalc==0) then begin
-                OutValBiDi(380,0,IHr.Qty/IHr.Qty2,M4Qty,true,420);
+                OutValBiDi(375,0,IHr.Qty/IHr.Qty2,M4Qty,true,420);
               end else begin
-                OutValBiDi(380,0,IHr.Qty2/IHr.Qty,M4Qty,true,420);
+                OutValBiDi(375,0,IHr.Qty2/IHr.Qty,M4Qty,true,420);
               end;
           end;
           OutValBiDi(410,0,IHr.Qty,M4UVal,true,450);
@@ -516,7 +516,7 @@ LPrintReportTotalsExcel:;
           switch (RepSpec.ArtMode) begin
             case 0:
               if (RepSpec.flags[12]!=0) then begin
-                OutVal(380,0,SumQ2,M4Qty,true);
+                OutVal(375,0,SumQ2,M4Qty,true);
               end;
               OutVal(480,0,SumQIn+SumQOut+SumQFwd,M4Qty,true);
             case 1:
@@ -524,7 +524,7 @@ LPrintReportTotalsExcel:;
               OutVal(480,0,SumCPIn-SumCPOut+SumCPFwd,M45Val,true);
             case 3:
               if (RepSpec.flags[12]!=0) then begin
-                OutVal(380,0,SumQ2,M4Qty,true);
+                OutVal(375,0,SumQ2,M4Qty,true);
               end;
               OutVal(480,0,SumQIn+SumQOut+SumQFwd,M4Qty,true);
           end;
@@ -558,7 +558,7 @@ LPrintReportTotalsExcel:;
           switch (RepSpec.ArtMode) begin
             case 0:
               if (RepSpec.flags[12]!=0) then begin
-                OutValBiDi(380,0,SumQ2,M4Qty,true,420);
+                OutValBiDi(375,0,SumQ2,M4Qty,true,420);
               end;
               OutValBiDi(480,0,SumQIn+SumQOut+SumQFwd,M4Qty,true,520);
             case 1:
@@ -568,7 +568,7 @@ LPrintReportTotalsExcel:;
               end;
             case 3:
               if (RepSpec.flags[12]!=0) then begin
-                OutValBiDi(380,0,SumQ2,M4Qty,true,420);
+                OutValBiDi(375,0,SumQ2,M4Qty,true,420);
               end;
               OutValBiDi(480,0,SumQIn+SumQOut+SumQFwd,M4Qty,true,520);
           end;
@@ -744,7 +744,7 @@ LItemHistList_Out:;
   return;
 end;
 
-
+// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:23:11 PM
 procedure ItemHistList_NonStock(record RcVc RepSpec,record ItemHistVc IHr,record INVc INr,record MainStockBlock MSb,                         
                           record CostAccBlock CAb,var Boolean itemheaderf,
                           val fwdqty,val fwdtotcp,val fwdqty2,
@@ -776,6 +776,7 @@ begin
 LItemHistList_Out:;  
   return;
 end;
+// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:23:13 PM
 
 procedure ItemForwardBalance(record RcVc RepSpec,record INVc INr,var val fwdqty,var val fwdtotcp,var val fwdcp,string mainstock)
 begin
@@ -1276,7 +1277,7 @@ begin
           if (RepSpec.flags[11]==0) then begin
             if (INr.ItemType==kItemTypeStocked) then begin 
               if (IHr.StockAffectf==0 and IHr.FileName!="SRPriceVc") then begin testf = false; end;// Edit ************************** Tuesday, 11 October 2016 14:24:49
-              if (IHr.ItemType!=kItemTypeStocked and IHr.FileName!="SRPriceVc") then begin testf = false; end;
+              if (IHr.ItemType!=kItemTypeStocked and IHr.FileName!="SRPriceVc") then begin testf = false; end;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:23:39 PM
             end else begin
               if (IHr.ItemType==kItemTypeStocked and IHr.FileName!="SRPriceVc") and (IHr.StockAffectf==0 and IHr.FileName!="SRPriceVc") then begin testf = false; end;// Edit ************************** Tuesday, 11 October 2016 14:35:22
             end;
@@ -1285,7 +1286,7 @@ begin
 	
           end;
         end;
-        if (nonblank(RepSpec.f7) or nonblank(RepSpec.f8)) then begin
+        if (nonblank(RepSpec.f7) or nonblank(RepSpec.f8) or RepSpec.flags[23]!=0) then begin
           Locationr.Code = IHr.Location;
           ReadFirstMain(Locationr,1,true);
           if (nonblank(RepSpec.f7)) then begin
@@ -1298,8 +1299,10 @@ begin
               testf = false;
             end;
           end;
+          if (RepSpec.flags[23]!=0) then begin
+            if (Locationr.Closed!=0) then begin testf = false; end;
+          end;
         end;
-                
         if (foundIH==false) then begin testf = false; end;
 //StopAlert("IHr.FileName " & IHr.FileName & " IHr.TransNr " & IHr.TransNr & " IHr.Location " & IHr.Location & " foundIH " & foundIH);
         if (testf) then begin
@@ -1355,7 +1358,7 @@ end;
 procedure PrintLocation(record LocationVc Locr)
 begin
   StartFormat(15);
-   OutString(0,0,Locr.Code,false);
+   OutString(0,"DblLocationVc",Locr.Code,false);
    OutString(100,0,Locr.Name,false);
   EndFormat;
   Gray_Divider(0,200);
@@ -1472,7 +1475,7 @@ begin
   record CostAccBlock CAb;
   record LocationVc Locr;
   Boolean found,testf;
-  string 255 frloc,toloc;
+  string 255 frloc,toloc,index;
   val SumQIn,SumQOut,SumQFwd,SumCPIn,SumCPOut,SumCPFwd,SumQ2;
   val bal;
   val LocSumQIn,LocSumQOut,LocSumQFwd,LocSumCPIn,LocSumCPOut,LocSumCPFwd,LocSumQ2;
@@ -1497,7 +1500,11 @@ begin
     case 1:
       found = true;
       Locr.Code = frloc;
-      while (LoopMain(Locr,1,found)) begin
+      index = "Code";
+      if (RepSpec.flags[23]!=0) then begin
+        index = "ActCode";
+      end;
+      while (LoopKey(index,Locr,1,found)) begin
         if (nonblank(RepSpec.f6)) then begin
           if (Locr.Code>toloc) then begin found = false; end;
         end;
@@ -1511,6 +1518,9 @@ begin
           if (!SetInSet2(RepSpec.f8,Locr.Classification)) then begin
             testf = false;
           end;
+        end;
+        if (RepSpec.flags[23]!=0) then begin
+          if (Locr.Closed!=0) then begin testf = false; end; 
         end;
         if (testf) then begin
           SetSumBlankVals(LocSumQFwd,LocSumCPFwd,LocSumQIn,LocSumQOut,LocSumCPIn,LocSumCPOut,LocSumQ2);

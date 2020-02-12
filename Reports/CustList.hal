@@ -1,3 +1,4 @@
+external function Boolean SetInSet2(string,string);
 external procedure HT2Per(Date, Date , var string);
 external procedure HTDepartments(string,string,var string);
 external function Boolean HasModSL();
@@ -419,7 +420,7 @@ begin
   return;
 end;
 
-procedure OutSale(record CUVc CUr, var val tot1, var val tot2)
+procedure OutSale(record CUVc CUr, var val tot1, var val tot2)// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:17:40 PM
 begin
   val totsum;
   record IVVc IVr;
@@ -465,7 +466,9 @@ begin
   Array string 20 anoclasscucode;
   Array string 255 anoclasscuname;
   LongInt anoclasscne;
-  val tot1,tot2;
+  LongInt i,cnt;
+  val tot1,tot2;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:17:51 PM
+
 
   cucnt = 0;
   anoclasscne = 0;
@@ -492,14 +495,14 @@ begin
       SetRepCol(3,150);
       SetRepCol(4,230);
       SetRepCol(5,300);
-      SetRepCol(6,400);
+      SetRepCol(6,400);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:17:59 PM
       StartFormat(15);
       OutString(0,0,USetStr(2302),false);
       OutString(2,0,USetStr(2311),false);
       OutString(3,0,USetStr(2312),false);
       OutString(4,0,USetStr(31003),false);
       OutString(5,0,USetStr(31001),false);
-      OutString(6,0,USetStr(31002),false);
+      OutString(6,0,USetStr(31002),false);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:18:19 PM
       EndFormat;
     case 2:
       StartFormat(15);
@@ -516,14 +519,21 @@ begin
   end;
   switch (RepSpec.flags[1]) begin
     case 0:
-      if (RepSpec.f3=="") then begin
+      if (blank(RepSpec.f3)) then begin
         CUr.Code = fromcust;
         mykey = "Code";
         keys = 1;
       end else begin
-        CUr.CustCat = RepSpec.f3;
-        CUr.Code = fromcust;
-        mykey = "Group";
+        switch (RepSpec.flags[9]) begin
+          case 1: 
+            CUr.VECat = RepSpec.f3;
+            CUr.Code = fromcust;
+            mykey = "VECat";
+          otherwise
+            CUr.CustCat = RepSpec.f3;
+            CUr.Code = fromcust;
+            mykey = "Group";
+        end;
         keys = 2;
       end;
     case 1:
@@ -532,9 +542,16 @@ begin
       mykey = "Name";
       keys = 1;
     case 2:
-      CUr.CustCat = RepSpec.f3;
-      CUr.Code = fromcust;
-      mykey = "Group";
+      switch (RepSpec.flags[9]) begin
+        case 1:
+          CUr.VECat = RepSpec.f3;
+          CUr.Code = fromcust;
+          mykey = "VECat";
+        otherwise
+          CUr.CustCat = RepSpec.f3;
+          CUr.Code = fromcust;
+          mykey = "Group";
+      end;
       keys = 2;
     case 3:
       CUr.Sorting = "";
@@ -551,17 +568,36 @@ begin
       CUr.Code = fromcust;
       mykey = "Phone";
       keys = 2;
+    case 6:
+      CUr.CountryCode = "";
+      CUr.Code = fromcust;
+      mykey = "CountryCode";
+      keys = 2;
   end;
   TrHs = true;
   if (RepSpec.flags[8]==0) then begin
     Gray_Divider(0,1);
   end;
+
+  cnt = CountRecords("CUVc");
+  i = 0;
   while (LoopKey(mykey,CUr,keys,TrHs)) begin
+//    UpdateReportProgress(cnt,i,"");
+//    MilliSleep(250);
+//why such silly code ? 
+    i = i + 1;
     if (TrHs) then begin
       if (RepSpec.flags[1]==0) begin
         if (nonblank(RepSpec.f3)) then begin
-          if (CUr.CustCat<>RepSpec.f3) then begin
-            TrHs = false;
+          switch (RepSpec.flags[9]) begin
+            case 1:
+              if (CUr.VECat<>RepSpec.f3) then begin
+                TrHs = false;
+              end;
+            otherwise
+              if (CUr.CustCat<>RepSpec.f3) then begin
+                TrHs = false;
+              end;
           end;
         end;
         if (nonblank(tocust)) then begin
@@ -574,8 +610,15 @@ begin
       end;
       if (RepSpec.flags[1]==2) begin
         if (nonblank(RepSpec.f3)) then begin
-          if (CUr.CustCat<>RepSpec.f3) then begin
-            TrHs = false;
+          switch (RepSpec.flags[9]) begin
+            case 1:
+              if (CUr.VECat<>RepSpec.f3) then begin
+                TrHs = false;
+              end;
+            otherwise
+              if (CUr.CustCat<>RepSpec.f3) then begin
+                TrHs = false;
+              end;
           end;
         end;
       end;
@@ -597,7 +640,12 @@ begin
           end;
         end;
       end;
-      if ((RepSpec.flags[1]==2) or (RepSpec.flags[1]==3) or (RepSpec.flags[1]==4) or (RepSpec.flags[1]==5)) then begin
+      if (RepSpec.flags[14]) then begin
+        if (CUr.eInvRcvPref!=1) then begin 
+          testf = false; 
+        end;
+      end;
+      if ((RepSpec.flags[1]==2) or (RepSpec.flags[1]==3) or (RepSpec.flags[1]==4) or (RepSpec.flags[1]==5) or (RepSpec.flags[1]==6)) then begin
         if (nonblank(fromcust)) then begin
           if (CUr.Code<fromcust) then begin
             testf = false;
@@ -633,30 +681,79 @@ begin
         end;
       end;
       switch (RepSpec.flags[9]) begin
-        case 0: if (CUr.CUType==0) then begin testf = false; end;
-        case 1: if (CUr.VEType==0) then begin testf = false; end;
-        case 2: if (CUr.GuestType==0) then begin testf = false; end;
-        case 3: if (CUr.DealerType==0) then begin testf = false; end;
+        case 0: 
+          if (CUr.CUType==0) then begin testf = false; end;
+          if ((nonblank(RepSpec.f3)) and (CUr.CustCat<>RepSpec.f3))  then begin testf = false; end;
+        case 1: 
+          if (CUr.VEType==0) then begin testf = false; end;
+          if ((nonblank(RepSpec.f3)) and (CUr.VECat<>RepSpec.f3))  then begin testf = false; end;
+        case 2: 
+          if (CUr.GuestType==0) then begin testf = false; end;
+          if ((nonblank(RepSpec.f3)) and (CUr.CustCat<>RepSpec.f3))  then begin testf = false; end;
+        case 3: 
+          if (CUr.DealerType==0) then begin testf = false; end;
+          if ((nonblank(RepSpec.f3)) and (CUr.CustCat<>RepSpec.f3))  then begin testf = false; end;
         case 4:
-        case 5: if (CUr.EmployeeType==0) then begin testf = false; end;
+          if ((nonblank(RepSpec.f3)) and (CUr.CustCat<>RepSpec.f3))  then begin testf = false; end;
+        case 5: 
+          if (CUr.EmployeeType==0) then begin testf = false; end;
+          if ((nonblank(RepSpec.f3)) and (CUr.CustCat<>RepSpec.f3))  then begin testf = false; end;
+        case 6: 
+          if (CUr.LeadType==0) then begin testf = false; end;
+          if ((nonblank(RepSpec.f3)) and (CUr.CustCat<>RepSpec.f3))  then begin testf = false; end;
       end;
-      if ((nonblank(RepSpec.f3)) and (CUr.CustCat<>RepSpec.f3))  then begin
+      if ((nonblank(RepSpec.AccStr)) and (SetInSet2(RepSpec.AccStr,CUr.Objects)==false))  then begin
         testf = false;
       end;
-      if ((nonblank(RepSpec.AccStr)) and (SetInSet(RepSpec.AccStr,CUr.Objects)==false))  then begin
+      if (nonblank(RepSpec.f9) and SetInSet(CUr.CountryCode,RepSpec.f9)==false)  then begin
         testf = false;
       end;
-      if ((nonblank(RepSpec.TransStr)) and (CUr.CountryCode<>RepSpec.TransStr))  then begin
-        testf = false;
-      end;
-      if ((nonblank(RepSpec.f2)) and (CUr.SalesMan<>RepSpec.f2))  then begin 
+      if (nonblank(RepSpec.TransStr) and CUr.SalesMan!=RepSpec.TransStr)  then begin 
         testf = false;
       end;
       if ((nonblank(RepSpec.FirstAcc)) and (CUr.LangCode<>RepSpec.FirstAcc)) then begin 
         testf = false;
       end;
-      if ((nonblank(RepSpec.LastAcc)) and (CUr.PayDeal<>RepSpec.LastAcc))  then begin
-        testf = false;
+      if (testf) then begin 
+        switch (RepSpec.flags[9]) begin
+          case 1: 
+            if (CUr.VEType==0) then begin testf = false; end;
+            if ((nonblank(RepSpec.LastAcc)) and (CUr.VEPayDeal<>RepSpec.LastAcc))  then begin
+              testf = false;
+            end;
+          case 2: 
+            if (CUr.GuestType==0) then begin testf = false; end;
+            if ((nonblank(RepSpec.LastAcc)) and (CUr.PayDeal<>RepSpec.LastAcc))  then begin
+              testf = false;
+            end;
+          case 3: 
+            if (CUr.DealerType==0) then begin testf = false; end;
+            if ((nonblank(RepSpec.LastAcc)) and (CUr.PayDeal<>RepSpec.LastAcc))  then begin
+              testf = false;
+            end;
+          case 4: 
+            if (testf) then begin
+              if (nonblank(RepSpec.LastAcc))  then begin
+                if (CUr.VEPayDeal!=RepSpec.LastAcc) then begin testf = false; end;
+                if (CUr.PayDeal!=RepSpec.LastAcc) then begin testf = false; end;
+              end;
+            end; 
+          case 5: 
+            if (CUr.EmployeeType==0) then begin testf = false; end;
+            if ((nonblank(RepSpec.LastAcc)) and (CUr.PayDeal<>RepSpec.LastAcc))  then begin
+              testf = false;
+            end;
+          case 6: 
+            if (CUr.LeadType==0) then begin testf = false; end;
+            if ((nonblank(RepSpec.LastAcc)) and (CUr.PayDeal<>RepSpec.LastAcc))  then begin
+              testf = false;
+            end;
+          otherwise
+            if (CUr.CUType==0) then begin testf = false; end;
+            if ((nonblank(RepSpec.LastAcc)) and (CUr.PayDeal<>RepSpec.LastAcc))  then begin
+              testf = false;
+            end;
+        end;
       end;
       if ((nonblank(RepSpec.f10)) and (CUr.Comment<>RepSpec.f10))  then begin
         testf = false;
@@ -702,8 +799,14 @@ begin
       if (RepSpec.flags[6]!=0) then begin
         if (nonblank(CUr.Fax)) then begin testf = false; end;
       end;
+      if (RepSpec.flags[13]!=0) then begin
+        if (CUr.NoMailPosting!=0) then begin testf = false; end;
+      end;
       if (RepSpec.flags[10]!=0) then begin
         if (nonblank(CUr.Mobile)) then begin testf = false; end;
+      end;
+      if (RepSpec.flags[12]!=0) then begin
+        if (blank(CUr.Phone) and blank(CUr.AltPhone) and blank(CUr.Mobile)) then begin testf = false; end;
       end;
       if (testf) then begin
         if (RepSpec.flags[1]==2) then begin
@@ -843,7 +946,7 @@ begin
           if (testf2) then begin
             if (RepSpec.flags[8]==0) then begin
               StartFormat(15);
-              //Edit-------------------Vitalii 13:53 10.08.2016
+              tstr = "";
               OutString(0,"DblCUVc",CUr.Code,false);
               tstr = CUr.Name;
               if nonblank(CUr.Person) then begin
@@ -851,9 +954,8 @@ begin
               end;
               OutString(2,0,tstr,false);//Edit-------------------Vitalii 13:54 10.08.2016
               if (RepSpec.flags[0]==1) then begin
-                //Edit-------------------Vitalii 14:00 10.08.2016
-                OutString(3,0,CUr.Phone,false);
-                OutSale(CUr,tot1,tot2);
+                OutString(1,0,CUr.Phone,true);
+								OutSale(CUr,tot1,tot2);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:19:54 PM
               end;
               if (RepSpec.flags[0]==2) then begin
                 OutString(1,0,CUr.Fax,true);
@@ -887,13 +989,13 @@ begin
   if (RepSpec.flags[8]==0) then begin
     StartFormat(15);
     OutString(0,0,USetStr(7305),false);
-    OutLongInt(2,0,cucnt,false);
+    OutLongInt(2,0,cucnt,false);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:20:10 PM
     if (tot1!=blankval) or (tot2!=blankval) then begin
       OutString(3,0,"",false);
       OutString(4,0,"",false);
       OutVal(5,0,tot1,M4Val,false);
       OutVal(6,0,tot2,M4Val,false);
-    end;
+    end;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:20:09 PM
     EndFormat;
   end;
   if (RepSpec.flags[7]!=0) then begin
@@ -925,12 +1027,19 @@ begin
     StartReportJob(USetStr(2301));
   end;
   if ((blank(fromcust)) and (blank(tocust))) then begin
-    tstr = USetStr(1104);
+    if ((RepSpec.flags[14])) then begin
+      tstr = USetStr(42432);
+    end else begin
+      tstr = USetStr(1104);
+    end;
   end else begin
     tstr = USetStr(1105);
     tstr = tstr & fromcust;
     if (fromcust<>tocust) then begin
       tstr = tstr & " : " & tocust;
+    end;
+    if ((RepSpec.flags[14])) then begin
+      tstr = tstr & " (" & USetStr(42432) & ")";
     end;
   end;
   Header(rw,tstr,1);
@@ -948,16 +1057,28 @@ begin
     tstr = USetStr(7300);
   end;
   Header(rw,tstr,0);
-  if (RepSpec.f3<>"") then begin
+  tstr = USetStr(19079) & ": ";
+  switch (RepSpec.flags[9]) begin
+    case 0: tstr = tstr & USetStr(13477);
+    case 1: tstr = tstr & USetStr(1213);
+    case 2: tstr = tstr & USetStr(12033);
+    case 3: tstr = tstr & USetStr(16306);
+    case 4: tstr = tstr & USetStr(12727); 
+    case 5: tstr = tstr & USetStr(6810);
+    case 6: tstr = tstr & USetStr(16311);
+  end;
+  Header(rw,tstr,1);
+  rw = rw + 1;     
+  if (nonblank(RepSpec.f3)) then begin
     tstr = USetStr(1114);
     tstr = tstr & RepSpec.f3;
     Header(rw,tstr,1);
     rw = rw + 1;
   end;
   if (ProgramType<>4) then begin
-    if (RepSpec.f2<>"") then begin
+    if (RepSpec.TransStr<>"") then begin
       tstr = USetStr(1824);
-      tstr = tstr & RepSpec.f2;
+      tstr = tstr & RepSpec.TransStr;
     end else begin
       tstr = USetStr(4918);
     end;
@@ -987,12 +1108,15 @@ begin
     HTDepartments(RepSpec.f7,RepSpec.f7,tstr);
     Header(rw,tstr,0);
   end;  
-  if (RepSpec.flags[1]==0) then begin tstr = USetStr(1187); end;
-  if (RepSpec.flags[1]==1) then begin tstr = USetStr(1189); end;
-  if (RepSpec.flags[1]==2) then begin tstr = USetStr(1190); end;
-  if (RepSpec.flags[1]==3) then begin tstr = USetStr(1349); end;
-  if (RepSpec.flags[1]==4) then begin tstr = USetStr(1350); end;
-  if (RepSpec.flags[1]==5) then begin tstr = USetStr(1351); end;
+  switch (RepSpec.flags[1]) begin
+    case 0:  tstr = USetStr(1187); 
+    case 1:  tstr = USetStr(1189); 
+    case 2:  tstr = USetStr(1190); 
+    case 3:  tstr = USetStr(1349); 
+    case 4:  tstr = USetStr(1349); 
+    case 5:  tstr = USetStr(1351); 
+    case 6:  tstr = USetStr(38550); 
+  end;
   Header(rw,tstr,1);
   rw = rw + 1;
   HT2Per(RepSpec.sStartDate,RepSpec.sEndDate,tstr);
@@ -1023,12 +1147,19 @@ begin
   tocust = LastInRange(RepSpec.f1,20);
   StartReportJob(USetStr(2301));
   if ((blank(fromcust)) and (blank(tocust))) then begin
-    tstr = USetStr(1104);
+    if ((RepSpec.flags[14])) then begin
+      tstr = USetStr(42432);
+    end else begin
+      tstr = USetStr(1104);
+    end;
   end else begin
     tstr = USetStr(1105);
     tstr = tstr & fromcust;
     if (fromcust<>tocust) then begin
       tstr = tstr & " : " & tocust;
+    end;
+    if ((RepSpec.flags[14])) then begin
+      tstr = tstr & " (" & USetStr(42432) & ")";
     end;
   end;
   Header(rw,tstr,1);
@@ -1046,16 +1177,16 @@ begin
     tstr = USetStr(7300);
   end;
   Header(rw,tstr,0);
-  if (RepSpec.f3<>"") then begin
+  if (nonblank(RepSpec.f3)) then begin
     tstr = USetStr(1114);
     tstr = tstr & RepSpec.f3;
     Header(rw,tstr,1);
     rw = rw + 1;
   end;
   if (ProgramType<>4) then begin
-    if (nonblank(RepSpec.f2)) then begin
+    if (nonblank(RepSpec.TransStr)) then begin
       tstr = USetStr(1824);
-      tstr = tstr & RepSpec.f2;
+      tstr = tstr & RepSpec.TransStr;
     end else begin
       tstr = USetStr(4918);
     end;
@@ -1081,12 +1212,15 @@ begin
     Header(rw,tstr,1);
     rw = rw + 1;
   end;
-  if (RepSpec.flags[1]==0) then begin tstr = USetStr(1187); end;
-  if (RepSpec.flags[1]==1) then begin tstr = USetStr(1189); end;
-  if (RepSpec.flags[1]==2) then begin tstr = USetStr(1190); end;
-  if (RepSpec.flags[1]==3) then begin tstr = USetStr(1349); end;
-  if (RepSpec.flags[1]==4) then begin tstr = USetStr(1350); end;
-  if (RepSpec.flags[1]==5) then begin tstr = USetStr(1351); end;
+  switch (RepSpec.flags[1]) begin
+    case 0:  tstr = USetStr(1187); 
+    case 1:  tstr = USetStr(1189); 
+    case 2:  tstr = USetStr(1190); 
+    case 3:  tstr = USetStr(1349); 
+    case 4:  tstr = USetStr(1349); 
+    case 5:  tstr = USetStr(1351); 
+    case 6:  tstr = USetStr(38550); 
+  end;
   Header(rw,tstr,1);
   rw = rw + 1;
   EndHeader;  
