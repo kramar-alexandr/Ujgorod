@@ -5,8 +5,60 @@ SourceFile("halcust\\LabelPrint",0);
 SourceFile("halcust\\Reports",0);
 
 begin
+	
+	recordaddbegin(VARVc,"myVARVc");
+		DisableIndex("Code");
+		DisableIndex("VARGCode");
+		DisableIndex("Comment");
+		MainKeyBegin(Code,0);
+		KeySegment(Code);
+		KeySegment(VARGCode);
+		KeyBegin(VARGCode);
+		KeySegment(VARGCode);
+		KeySegment(Code);
+		KeyBegin(Comment);
+		KeySegment(Comment);
+		KeySegment(Code);
+		KeySegment(VARGCode);
+	endrecordadd;
+	
+	recordaddbegin(PLVc,"myPLVc");
+		RecordField(SerialNr,M4Str,60,0);				//Edit----------------------Dima  14.06.2016
+		DisableIndex("PLCode");
+		DisableIndex("ArtCode");
+		DisableIndex("Price");
+		DisableIndex("Comment");
+		
+		MainKeyBegin(PLCode,0);
+		KeySegment(PLCode);
+		KeySegment(ArtCode);
+		KeySegment(CustCode);
+		KeySegment(SerialNr);//-------------alexandr
+		KeyBegin(ArtCode);
+		KeySegment(ArtCode);
+		KeySegment(PLCode);
+		KeySegment(CustCode);
+		KeySegment(SerialNr);//-------------alexandr
+		KeyBegin(Price);
+		KeySegment(ExVatPrice);
+		KeySegment(PLCode);
+		KeySegment(ArtCode);
+		KeySegment(CustCode);
+		KeySegment(SerialNr);//-------------alexandr
+		KeyBegin(Comment);
+		KeySegment(Comment);
+		KeySegment(PLCode);
+		KeySegment(ArtCode);
+		KeySegment(CustCode);
+		KeySegment(SerialNr);//-------------alexandr
+		KeyBegin(SerialNr);//-------------alexandr
+			KeySegment(SerialNr);
+			KeySegment(PLCode);
+			KeySegment(ArtCode);
+			KeySegment(CustCode); 
+	endrecordadd;
 
-
+/*
   RecordBegin(VARVc,VARView,"VARVc31");
   NewAutosyncRegister(kSyncDirectionToClient,true);
   RecordField(Code,M4Code,10,0);
@@ -30,39 +82,8 @@ begin
   KeySegment(VARGCode);
   EndRecord;
   
-  BlockBegin(ZebraPrinterBlock,-,""); // Edit ************************** Monday, 16 May 2016 12:12:45
-  BlockForAllCompanies;
-  RecordField(PrinterNameMac,M4Str,200,0);
-  RecordField(ParamIn1,M4Int,0,0);
-  RecordField(ParamIn2,M4Int,0,0);
-  RecordField(CompNameWin,M4Str,200,0);
-  RecordField(PrinterNameWin,M4Str,200,0);
-  RecordField(ParamStr3,M4Str,200,0);
-  RecordField(ParamStr4,M4Str,200,0);
-  RecordField(ParamVal1,M4Val,0,0);
-  RecordField(ParamVal2,M4Val,0,0);
-  EndBlock;// Edit ************************** Monday, 16 May 2016 12:12:43
-
-	RecordAddBegin(POVc,"MyPO1"); 
-		RecordField(GeneralCollection,M4Str,200,0);
-		ArrayField(Color,M4Code,100,0); 
-		ArrayField(Size,M4Code,100,0); 
-		ArrayField(Collection,M4Code,100,0); 
-		ArrayField(SerialNr,M4Str,60,0); 
-	EndRecordAdd;
-	
-	
-	/*RecordAddBegin(PLVc,"MyPL1"); 
-		RecordField(SerialNr,M4Str,60,0);				//Edit----------------------Dima  14.06.2016
-  	KeyBegin(SerialNr);
-  	KeySegment(SerialNr);
-  	KeySegment(PLCode);
-  	KeySegment(ArtCode);
-  	KeySegment(CustCode); 
-	EndRecordAdd;	*/
-	
-	
-	RecordBegin(PLVc,-,"pl2");
+  
+  RecordBegin(PLVc,-,"pl2");
   NewAutosyncRegister(kSyncDirectionToClient,true);
   //ImpExpLevel(0);
   RecordField(PLCode,M4Code,5,0);
@@ -106,6 +127,41 @@ begin
   	KeySegment(ArtCode);
   	KeySegment(CustCode); 
   EndRecord;
+  
+  */
+  
+  BlockBegin(ZebraPrinterBlock,-,""); // Edit ************************** Monday, 16 May 2016 12:12:45
+  BlockForAllCompanies;
+  RecordField(PrinterNameMac,M4Str,200,0);
+  RecordField(ParamIn1,M4Int,0,0);
+  RecordField(ParamIn2,M4Int,0,0);
+  RecordField(CompNameWin,M4Str,200,0);
+  RecordField(PrinterNameWin,M4Str,200,0);
+  RecordField(ParamStr3,M4Str,200,0);
+  RecordField(ParamStr4,M4Str,200,0);
+  RecordField(ParamVal1,M4Val,0,0);
+  RecordField(ParamVal2,M4Val,0,0);
+  EndBlock;// Edit ************************** Monday, 16 May 2016 12:12:43
+
+	RecordAddBegin(POVc,"MyPO1"); 
+		RecordField(GeneralCollection,M4Str,200,0);
+		ArrayField(Color,M4Code,100,0); 
+		ArrayField(Size,M4Code,100,0); 
+		ArrayField(Collection,M4Code,100,0); 
+		ArrayField(SerialNr,M4Str,60,0); 
+	EndRecordAdd;
+	
+	
+	/*RecordAddBegin(PLVc,"MyPL1"); 
+		RecordField(SerialNr,M4Str,60,0);				//Edit----------------------Dima  14.06.2016
+  	KeyBegin(SerialNr);
+  	KeySegment(SerialNr);
+  	KeySegment(PLCode);
+  	KeySegment(ArtCode);
+  	KeySegment(CustCode); 
+	EndRecordAdd;	*/
+	
+	
 
 	
 	RecordAddBegin(BarcodeVc,"MyBarcodeVc1"); 
@@ -114,33 +170,6 @@ begin
   	KeySegment(SerialNr);
   	KeySegment(Barcode); 
 	EndRecordAdd;	
-		
-	/*RecordBegin(BarcodeVc,-,"BarcodeVc2");
-  NewAutosyncRegister(kSyncDirectionToClient,true);
-	ImpExpLevel(0);
-  RecordField(Barcode,M4UStr,60,0);
-  RecordField(Itemcode,M4Code,20,INVc);
-  RecordField(Comment,M4Str,100,0);
-  RecordField(BarCodeSerialNo,M4Str,20,0);
-  RecordField(CustCode,M4Code,20,CUVc);
-  RecordField(SerialNr,M4Str,60,0);	
-  MainKeyBegin(Barcode,0);
-  KeySegment(Barcode);
-  KeyBegin(Itemcode);
-  KeySegment(Itemcode);
-  KeySegment(Barcode);
-  KeyBegin(Comment);
-  KeySegment(Comment);
-  KeySegment(Barcode);
-  KeySegment(Itemcode);
-  KeyBegin(BarCodeSerialNo);
-  KeySegment(BarCodeSerialNo);
-  KeySegment(Barcode);
-  KeySegment(Itemcode);
-  KeyBegin(SerialNr);
-  	KeySegment(SerialNr);
-  	KeySegment(Barcode);
-  EndRecord;*/
 	
 	BlockBegin(VARMaskBlock,-,"");
   NewAutosyncHBlock(kSyncDirectionToClient);
