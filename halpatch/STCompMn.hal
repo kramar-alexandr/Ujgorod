@@ -839,13 +839,45 @@ LCASE0:;
               AddtoPU(RepSpec,PUr,IN2r,batcha[i],diff,flushcnt,ARAccb,loctype,dbupdatedf);
             end;
           end;
+        end;
+
+        if (RepSpec.flags[4]!=0) then begin
+          ResetLoop(SerBalr);
+          SerBalr.Item = IN2r.Code;
+          SerBalr.Location = RepSpec.AccStr;
+          found = true;
+          while (LoopMain(SerBalr,2,found)) begin
+            if (SerBalr.Item!=IN2r.Code) then begin found = false; end;
+            if (SerBalr.Location!=RepSpec.AccStr) then begin found = false; end; 
+            if (found) then begin
+              testf = true;
+              for (i=0;i<arrcnt;i=i+1) begin
+                if (SerBalr.Serial==batcha[i]) then begin 
+                  testf = false; 
+                  i = arrcnt;
+                end;
+              end;
+              if (testf) then begin
+                instock = STCompFindSerialNrQty(INr.Code,variety,SerBalr.Serial,RepSpec.AccStr,RepSpec.LastAcc,serialnr);
+                diff = -instock;
+                if (diff<0) then begin
+                  AddtoSD(RepSpec,SDr,IN2r,SerBalr.Serial,diff,flushcnt,ARAccb,loctype,dbupdatedf);
+                end;     
+                if (diff>0) then begin
+                  AddtoPU(RepSpec,PUr,IN2r,SerBalr.Serial,diff,flushcnt,ARAccb,loctype,dbupdatedf);
+                end;
+              end;
+            end;
+          end;                
         end else begin
-          instock = STCompFindSerialNrQty(INr.Code,variety,"",RepSpec.AccStr,RepSpec.LastAcc,serialnr);
-          if (diff<0) then begin
-            AddtoSD(RepSpec,SDr,IN2r,serialnr,diff,flushcnt,ARAccb,loctype,dbupdatedf);
-          end;     
-          if (diff>0) then begin
-            AddtoPU(RepSpec,PUr,IN2r,serialnr,diff,flushcnt,ARAccb,loctype,dbupdatedf);
+          if (arrcnt==0) then begin
+            instock = STCompFindSerialNrQty(INr.Code,variety,"",RepSpec.AccStr,RepSpec.LastAcc,serialnr);
+            if (diff<0) then begin
+              AddtoSD(RepSpec,SDr,IN2r,serialnr,diff,flushcnt,ARAccb,loctype,dbupdatedf);
+            end;     
+            if (diff>0) then begin
+              AddtoPU(RepSpec,PUr,IN2r,serialnr,diff,flushcnt,ARAccb,loctype,dbupdatedf);
+            end;
           end;
         end;
       end else begin

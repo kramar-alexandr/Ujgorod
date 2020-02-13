@@ -1,3 +1,4 @@
+external function Date FindDueDateInAccPeriod(Date);
 external function val FindVAT(string,val,Integer,Integer);
 external function roundmode SetRoundModeD(Integer);
 external function Boolean ReadFirstItemInclClosed(string,var record INVc,Boolean,Boolean);
@@ -192,6 +193,7 @@ end;
   end else begin
     AddBalance(CSr,ldp,"salesexclvat",exl,"salesinclvat",incl,"grossprofit",gp,"paidvalue",pay,"balance",basebal,"priceexcldiscount",sump);
   end;
+  
 LCustStatUp:;
   RETURN;
 END;
@@ -344,6 +346,18 @@ BEGIN
       cashvincustcur = cashvincustcur + IVrw.Sum;
     end;
     if (IVrw.stp==kInvoiceRowTypeCreditCardPayment) then begin 
+      b1cashv = b1cashv + MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff); 
+      cashvincustcur = cashvincustcur + IVrw.Sum;
+    end;
+    if (IVrw.stp==kInvoiceRowTypeSwishPayment) then begin 
+      b1cashv = b1cashv + MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff); 
+      cashvincustcur = cashvincustcur + IVrw.Sum;
+    end;
+    if (IVrw.stp==kInvoiceRowTypeQRPayment) then begin 
+      b1cashv = b1cashv + MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff); 
+      cashvincustcur = cashvincustcur + IVrw.Sum;
+    end;
+    if (IVrw.stp==kInvoiceRowTypeCashWithdrawal) then begin 
       b1cashv = b1cashv + MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff); 
       cashvincustcur = cashvincustcur + IVrw.Sum;
     end;
@@ -1042,7 +1056,7 @@ BEGIN
   record ARInstallVc ARIr;
   record ARInstallVc oldARIr;
   Integer rwcnt,i;
-  date tdr,tdp,lasttdr;
+  date tdr,tdp,lasttdr,paydate;
   val sum,t;
   Boolean found,delf,firstf;
   record IVVc origIVr;
@@ -1050,6 +1064,7 @@ BEGIN
   record PDVc crPDr;
   record JobVc Jobr;  
   val totsumcur,totsumb1;
+  Integer m;
   
   linstcode = PDr.Installment;
   if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin
@@ -1067,6 +1082,12 @@ BEGIN
   end else begin
     delf = false;
   end;
+  paydate = FindDueDateInAccPeriod(IVp.InvDate);
+  if (IVp.pdays>0) then begin
+    paydate = AddDay(paydate,IVp.pdays);
+  end;
+  if (blankdate(paydate)) then begin paydate = IVp.PayDate; end;
+  
   lasttdr = IVp.InvDate;
   Intr.Code = linstcode;
   if (ReadFirstMain(Intr,1,true)) then begin
@@ -1077,7 +1098,7 @@ BEGIN
       switch (Insrw.Type) begin
         case 0: 
           if (firstf) then begin
-            tdr = AddDay(IVp.InvDate,PDr.pdays);
+            tdr = AddDay(paydate,PDr.pdays);
             firstf = false;
           end else begin
             tdr = lasttdr;
@@ -1103,8 +1124,15 @@ BEGIN
       if (Insrw.Days!=-1) then begin
         tdr = AddDay(tdr,Insrw.Days);
       end;
-      if (tdr<IVp.InvDate) then begin
-        tdr = lasttdr;
+      switch (Insrw.Type) begin
+        case 0: 
+          if (tdr<paydate) then begin
+            tdr = lasttdr;
+          end;
+        otherwise
+          if (tdr<IVp.InvDate) then begin
+            tdr = lasttdr;
+          end;
       end;
       lasttdr = tdr;
       if (createsupp) then begin
@@ -1204,14 +1232,14 @@ BEGIN
   row IVVc IVrw;
   Integer i,rwcnt;
   Boolean cashf;
-  Integer sign,zdacha;
+  Integer sign,zdacha;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:55:51 PM
   val basepayment;// Edit ************************** Wednesday, 15 June 2016 15:04:07
-  val tempsum;
-  record BaseCurBlock BCr;
+  val tempsum;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:55:54 PM
+  record BaseCurBlock BCr;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:55:56 PM
   
-  blockload(BCr);
+  blockload(BCr);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:56:04 PM
 
-  zdacha = 1;
+  zdacha = 1;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:56:02 PM
   sign = 1;
   if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales or ARp.RVal<0) then begin //Edit***************************Sasha2,15:14 19.01.2015  
     sign = -1;
@@ -1278,7 +1306,6 @@ BEGIN
   	ARp.RVal = 0;
   	ARp.BookRVal = 0;
   end;
-  
   if (cashf) then begin
 /*
 nonsense ?     

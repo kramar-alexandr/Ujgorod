@@ -5,7 +5,7 @@ external procedure Zebra_Printing(record RcVc);
 external function Boolean PUVcRowEFActiveCheck(string,Integer,Integer,Integer);
 external function Boolean PUVcEFActiveTest(Integer,Integer,record PUVc);
 remote updating function LongInt RecordAction_raPastePUInSRPrice(var record PUVc,var record SRPriceVc);
-
+ 
 global //Edit***************************Sasha2,13:15 15.09.2016 {
 updating procedure SRPriceFromPUDsm()
 BEGIN

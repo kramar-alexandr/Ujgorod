@@ -11,7 +11,7 @@ external procedure SRPriceVc_PasteSerialNr(var record SRPriceVc,Integer); //Edit
 external procedure SRPriceSumUp(var record SRPriceVc); //Edit***************************Sasha2,14:52 15.09.2016
 external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
 external function val AbsoluteVal(val);
-
+ 
 global
 procedure CalcEANCHS(var string str)
 begin

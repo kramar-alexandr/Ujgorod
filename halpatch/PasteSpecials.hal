@@ -1,3 +1,7 @@
+remote procedure YodleeAccountIdSClassArrayOnOpen(var Array string);
+remote procedure NPTSPagesSClassArrayOnOpen(string,string,Integer,var Array string,var Integer);
+external outer procedure OuterReadTRObjReplace();
+external outer procedure OuterReadTRObjSClassOnOpenWindow(var record RcVc);
 external procedure PayModeBankAccSClassArrayOnOpen(var Array string,var Array string);
 external procedure SerialNoScanNPTSSClass_SerialNrSClass(Integer,Integer,Integer,var Array string,var Integer);
 external procedure UnoccupTableSClassArrayOnOpen(var Array string,var Integer);
@@ -33,6 +37,7 @@ external procedure POVc_ContactSClass(Integer,Integer);
 external procedure PerSClassArrayOnOpen(var Array string,var Integer);
 external procedure BudgetClassSClassArrayOnOpen(var Array string,var Array string);
 external procedure QuoteClassSClassArrayOnOpen(var Array string,var Integer);
+external procedure OYClassSClassArrayOnOpen(var Array string,var Integer);
 external procedure PRClassSClassArrayOnOpen(var Array string,var Integer);
 external procedure ContractClassSClassArrayOnOpen(var Array string,var Integer);
 external procedure LangSClassArrayOnOpen(var Array string,var Integer);
@@ -51,6 +56,7 @@ external procedure HealthStatusSClassArrayOnOpen(var Array string,var Integer);
 external procedure AC2SClassArrayOnOpen(var Array string,var Integer);
 external procedure RegDefSClassArrayOnOpen(var Array string,var Integer);
 external procedure CustomDeclKeySClassArrayOnOpen(var Array string,var Integer);
+external procedure ChemicalTaxCodeSClassArrayOnOpen(var Array string);
 external procedure VATCodeSClassArrayOnOpen(var Array string,var Integer);
 external procedure VATVITypeSClassArrayOnOpen(var Array string,var Integer);
 external procedure VATIVTypeSClassArrayOnOpen(var Array string,var Integer);
@@ -127,7 +133,7 @@ external function Boolean GetNextItem2(string,var Integer,var string);
 external procedure StripEndingSpaces(var string);
 external procedure CClassBTSClassArrayOnOpen(integer,integer,var Array string,var Integer);
 remote   procedure CUVc_CUClassSClass(record CUVc,var record RcVc);
-external procedure ObjBTSClassArrayOnOpen(integer,integer,var Array string,var Integer);
+external procedure ObjBTSClassArrayOnOpen2(integer,integer,var Array string,var Array string);
 remote   procedure TRVc_TRObjSClass(record TRVc,integer,var record RcVc);
 external procedure AgreementVc_DelAddrSClass(Integer,Integer);
 external procedure RetPUVc_DelAddrSClass(Integer,Integer);
@@ -138,6 +144,10 @@ external procedure OffHireVc_DelAddrSClass(Integer,Integer);
 external procedure SVOVc_DelAddrSClass(Integer,Integer);
 external procedure CustRouteVc_DelAddrSClass(Integer,Integer);
 external procedure CourtesyTitlesSClassArrayOnOpen(var Array string,var Integer);
+external procedure TaxAuthIDBlockSClassArrayOnOpen(var Array string,var Array string);
+external procedure TaxExemptionsSClassArrayOnOpen(var Array string,var Integer);
+external procedure FiscalRegimeSClassOnOpenWindowRemote(var Array string,var Array string);
+external procedure PrevEntitySClassOnOpenWindowRemote(var Array string,var Array string);
 external procedure SRPriceVc_SerialNrSClass(Integer,Integer,Integer,var Array string,var Integer); //Edit***************************Sasha2,16:18 07.07.2016
 
 global
@@ -241,6 +251,23 @@ begin
   DelAddrSClassOnOpenWindow = false;
   return;
 end;
+
+global
+function Boolean DelAddr3SClassOpenRecord(Integer wn,string fieldname,Integer fn,Integer rownr)
+begin
+  Boolean res;
+  record DelAddrVc DAr;
+  string 255 subset;
+  
+  res = false;
+  if (ReadMarkedRecord(wn,DAr)) then begin
+    OpenWindow("DelAddrDClass",0,0,"","",DAr);    
+    res = true;
+  end; 
+  DelAddr3SClassOpenRecord = res;
+  return;
+end;
+
 
 global
 function Boolean SerialNrSClassOnOpenWindow(Integer wn)
@@ -451,6 +478,22 @@ begin
 end;
 
 global
+function Boolean YodleeAccountIdSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 astr;
+  Integer i;
+  
+  YodleeAccountIdSClassArrayOnOpen(astr);
+  for (i=0;i<astr.length;i=i+1) begin
+    AddListRow(wn,"YodleeAccountIds",1,astr[i],0);
+    AddListData(wn,"YodleeAccountIds","AccountId",astr[i]);
+  end;
+  YodleeAccountIdSClassOnOpenWindow = false;
+  return;
+end;
+
+
+global
 function Boolean WHTaxSClassOnOpenWindow(Integer wn)
 begin
   Array string 255 astr;
@@ -485,19 +528,54 @@ begin
   Integer i,acnt;
   Integer mwn;
   record RestAccVc RestAccr;
+  record IVCashVc IVCr;
   string 255 machine;
   
+  machine = CurMachineName;
   mwn = MotherWindow(wn);
   switch (GetWindowFileName(mwn)) begin
     case "RestAccVc":
       GetWindowRecord(mwn,RestAccr);
       machine = RestAccr.MachineName;
+    case "IVCashVc":
+      GetWindowRecord(mwn,IVCr);
+      machine = IVCr.LocalMachineCode;
   end;
   RestPMSClassArrayOnOpen(machine,astr,acnt);
   for (i=0;i<acnt;i=i+1) begin
     SetListString(wn,len(astr[i]),astr[i],false);    
   end;
   RestPMSClassOnOpenWindow = false;
+  return;
+end;
+
+global
+function Boolean NPTSPagesSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 astr;
+  Integer i,acnt;
+  Integer mwn;
+  record POSButtonsVc POSBr;
+  record RcVc RepSpec;
+  
+  mwn = MotherWindow(wn);
+  switch (GetWindowFileName(mwn)) begin
+    case "POSButtonsVc":
+      GetWindowRecord(mwn,POSBr);
+    case "RcVc":
+      switch (GetWindowClass(mwn)) begin
+        case "NPTSButtonDefineWClass":
+          GetWindowRecord(mwn,RepSpec);
+          POSBr.WindowClass = RepSpec.f20;
+          POSBr.POSButtonGroupCode = RepSpec.f19;
+          POSBr.Page = StringToLongInt(RepSpec.f2);
+      end;
+  end;
+  NPTSPagesSClassArrayOnOpen(POSBr.WindowClass,POSBr.POSButtonGroupCode,POSBr.Page,astr,acnt);
+  for (i=0;i<acnt;i=i+1) begin
+    SetListString(wn,len(astr[i]),astr[i],false);    
+  end;
+  NPTSPagesSClassOnOpenWindow = false;
   return;
 end;
 
@@ -526,6 +604,34 @@ begin
     SetListString(wn,len(astr[i]),astr[i],false);    
   end;
   VATCodeSClassOnOpenWindow = false;
+  return;
+end;
+
+global
+function Boolean ChemicalTaxCodeSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 astr;
+  Integer i,acnt;
+  
+  ChemicalTaxCodeSClassArrayOnOpen(astr);
+  for (i=0;i<astr.length;i=i+1) begin
+    SetListString(wn,len(astr[i]),astr[i],false);    
+  end;
+  ChemicalTaxCodeSClassOnOpenWindow = false;
+  return;
+end;
+
+global
+function Boolean TaxExemptionsSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 astr;
+  Integer i,acnt;
+  
+  TaxExemptionsSClassArrayOnOpen(astr,acnt);
+  for (i=0;i<acnt;i=i+1) begin
+    SetListString(wn,len(astr[i]),astr[i],false);    
+  end;
+  TaxExemptionsSClassOnOpenWindow = false;
   return;
 end;
 
@@ -868,6 +974,20 @@ begin
 end;
 
 global
+function Boolean OYClassSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 astr;
+  Integer i,acnt;
+  
+  OYClassSClassArrayOnOpen(astr,acnt);
+  for (i=0;i<acnt;i=i+1) begin
+    SetListString(wn,len(astr[i]),astr[i],false);    
+  end;
+  OYClassSClassOnOpenWindow = false;
+  return;
+end;
+
+global
 function Boolean BudgetClassSClassOnOpenWindow(Integer wn)
 begin
   Array string 255 acode,acomment;
@@ -979,7 +1099,9 @@ global
 function Boolean ObjBTSClassOnOpenWindow(Integer wn)
 begin
   Array string 255 astr;
+  Array string 255 astr2;
   Integer i,acnt,mwn,fn;
+  string 255 object,name;
   
   mwn = MotherWindow(wn);
   switch (WindowActiveField(mwn)) begin
@@ -991,9 +1113,13 @@ begin
     case "AccStr": fn = 6;
     case "FirstAcc": fn = 7;
   end;
-  ObjBTSClassArrayOnOpen(mwn,fn,astr,acnt);
+  ObjBTSClassArrayOnOpen2(mwn,fn,astr,astr2);
+  acnt = astr.length;
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,len(astr[i]),astr[i],false);    
+    AddListRow(wn,"ObjBT",1,astr[i],0);
+    AddListData(wn,"ObjBT","Object",astr[i]);
+    AddListData(wn,"ObjBT","Name",astr2[i]);
+//    SetListString(wn,len(astr[i]),astr[i],false);    
   end;
   ObjBTSClassOnOpenWindow = false;
   return;
@@ -1161,6 +1287,8 @@ begin
       Bud2r.Objects = "";
       PutWindowRecord(mwn,Bud2r);
       WindowFieldGoto(mwn,Bud2r,RepSpec.long1,RepSpec.TransStr,true);
+    otherwise
+      OuterReadTRObjReplace;
   end;
   PasteFromTRObjS(wn,1);
   return;
@@ -1235,6 +1363,8 @@ begin
     case "Bud2Vc":
       GetWindowRecord(mwn,Bud2r);
       Bud2Vc_TRObjSClass(Bud2r,RepSpec); 
+    otherwise
+      OuterReadTRObjSClassOnOpenWindow(RepSpec);
   end;  
   RepSpec.TransStr = WindowActiveField(mwn);
   RepSpec.long1 = WindowActiveRow(mwn);
@@ -1300,5 +1430,53 @@ begin
     AddListData(wn,"PayModeBankAccClass","bankacc",acode[i]);
   end;
   PayModeBankAccSClassOnOpenWindow = false;
+  return;
+end;
+
+global
+function Boolean TaxAuthIDBlockSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 acode,acomment;
+  Integer i;
+  
+  TaxAuthIDBlockSClassArrayOnOpen(acode,acomment);
+  for (i=0;i<acode.length;i=i+1) begin
+    AddListRow(wn,"TaxAuthIDBlockClass",1,acode[i],0);
+    AddListData(wn,"TaxAuthIDBlockClass","TaxAuthID",acode[i]);
+    AddListData(wn,"TaxAuthIDBlockClass","Comment",acomment[i]);
+  end;
+  TaxAuthIDBlockSClassOnOpenWindow = false;
+  return;
+end;
+
+global
+function Boolean FiscalRegimeSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 acode,acomment;
+  Integer i;
+  
+  FiscalRegimeSClassOnOpenWindowRemote(acode,acomment);
+  for (i=0;i<acode.length;i=i+1) begin
+    AddListRow(wn,"FiscalRegimeSClass",1,acode[i],0);
+    AddListData(wn,"FiscalRegimeSClass","Code",acode[i]);
+    AddListData(wn,"FiscalRegimeSClass","Description",acomment[i]);
+  end;
+  FiscalRegimeSClassOnOpenWindow = false;
+  return;
+end;
+
+global
+function Boolean PrevEntitySClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 acode,acomment;
+  Integer i;
+  
+  PrevEntitySClassOnOpenWindowRemote(acode,acomment);
+  for (i=0;i<acode.length;i=i+1) begin
+    AddListRow(wn,"FiscalRegimeSClass",1,acode[i],0);
+    AddListData(wn,"FiscalRegimeSClass","Code",acode[i]);
+    AddListData(wn,"FiscalRegimeSClass","AdmRef",acomment[i]);
+  end;
+  PrevEntitySClassOnOpenWindow = false;
   return;
 end;

@@ -749,7 +749,7 @@ LFindSourceLIFO:;
   return;
 end;
 
-function Boolean FindSource(record MainStockBlock MSb,record CostAccBlock CAb,record INVc INr,string location,string serialnr,var record ItemHistVc sourceIHr,string position)
+function Boolean FindSource(record MainStockBlock MSb,record CostAccBlock CAb,record INVc INr,string filename,string location,string serialnr,var record ItemHistVc sourceIHr,string position)
 begin
   Integer primary,queuecostmodel;
   Boolean res;
@@ -759,19 +759,24 @@ begin
   GetCostModel(INr,CAb,ITr,primary,queuecostmodel,true);
   res = false;
   switch (queuecostmodel) begin
-    case 0:
+    case kQueuedCostModelFIFO:
       res = FindSourceFIFO(MSb,CAb,INr,location,serialnr,sourceIHr);
-    case 1:
+    case kQueuedCostModelLIFO:
       res = FindSourceLIFO(MSb,CAb,INr,location,serialnr,sourceIHr);
-    case 20: 
+    case kQueuedCostModelPerSerialNr: 
       res = FindSourceSerialNr(MSb,CAb,INr,location,serialnr,sourceIHr,position);
   end;
+/*
+  if (CAb.FIFOPerLocation==0) then begin
+    if (filename=="StockMovVc") then begin res = false; end;//we need price but we do not move FIFO queue
+  end;
+*/  
   FindSource = res;
   return;
 end;
 
 global
-updating procedure StoreItemHistory_Out(record MainStockBlock MSb,string artcode,string serialnr,string location,string filename,Date td,val qty,val coeff,val totalcost,LongInt transnr,Integer rownr,Integer stockaffectf,string position,record TempStockVc TSr,Boolean usetmpstkf)
+updating procedure StoreItemHistory_Out2(record MainStockBlock MSb,string artcode,string serialnr,string location,string filename,Date td,val qty,val coeff,val totalcost,LongInt transnr,Integer rownr,Integer stockaffectf,string position,record TempStockVc TSr,Boolean usetmpstkf,string recipe)
 begin
   record ItemHistVc IHr;
   record ItemHistVc sourceIHr;
@@ -819,9 +824,9 @@ begin
           end;
         case 1: ;
         case 2:
-          if (nonblank(INr.Recepy)) then begin
+//          if (nonblank(INr.Recepy)) then begin
             IHr.StockAffectf = 0;
-          end;
+//          end;
         case 3: IHr.StockAffectf = 0;
       end;
     end;
@@ -832,7 +837,7 @@ begin
     IHr.FIFODate = td;
     IHr.RemQty = BlankVal;
     if (IHr.StockAffectf!=0) then begin
-      foundf = FindSource(MSb,CAb,INr,location,serialnr,sourceIHr,position);
+      foundf = FindSource(MSb,CAb,INr,filename,location,serialnr,sourceIHr,position);
       if (ItemCostPerLocation(INr)==0) then begin
         if (filename=="StockMovVc") then begin
           IHr.FIFODate = sourceIHr.FIFODate;
@@ -944,6 +949,12 @@ begin
         IHr.WATotCostPerLoc = (ltotalcost/qty)*(-IHr.Qty);
     end;
 */    
+    IHr.Recepy = recipe;
+    if (blank(IHr.Recepy)) then begin
+      if (INr.ItemType==kItemtypeStructured) then begin
+        IHr.Recepy = INr.Recepy;
+      end;
+    end;
     IHr.Position = position;
     IHr.SerNr = NextSerNr("ItemHistVc",IHr.TransDate,-1,false,"");
     if (RecordStore(IHr,false)) then begin end;
@@ -957,6 +968,13 @@ begin
     rem = rem - useqty;
   end;
 LStoreItemHistory_Out:;
+  return;
+end;
+
+global
+updating procedure StoreItemHistory_Out(record MainStockBlock MSb,string artcode,string serialnr,string location,string filename,Date td,val qty,val coeff,val totalcost,LongInt transnr,Integer rownr,Integer stockaffectf,string position,record TempStockVc TSr,Boolean usetmpstkf)
+begin
+  StoreItemHistory_Out2(MSb,artcode,serialnr,location,filename,td,qty,coeff,totalcost,transnr,rownr,stockaffectf,position,TSr,usetmpstkf,"");
   return;
 end;
 

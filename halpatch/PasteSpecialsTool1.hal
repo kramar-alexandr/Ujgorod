@@ -27,11 +27,19 @@ BEGIN
   record CUVc CUr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,CUr);
   ContactSClassOnOpen(wn,CUr.Code,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -42,6 +50,8 @@ BEGIN
   record JobVc Jobr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,Jobr);
   if (nonblank(Jobr.Source)) then begin
@@ -50,7 +60,13 @@ BEGIN
     ContactSClassOnOpen(wn,FindJobCustomerCode(Jobr),acontact,acnt);
   end;
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -61,6 +77,8 @@ BEGIN
   record ResAvVc ResAvr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,ResAvr);
   if (nonblank(ResAvr.SourceCode)) then begin
@@ -69,7 +87,13 @@ BEGIN
     ContactSClassOnOpen(wn,ResAvr.CUCode,acontact,acnt);
   end;
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -80,6 +104,8 @@ BEGIN
   record CQVc CQr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   string 255 custcode;
   
   GetWindowRecord(mwn,CQr);
@@ -89,7 +115,13 @@ BEGIN
   end;
   ContactSClassOnOpen(wn,custcode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -100,6 +132,8 @@ BEGIN
   record COVc COr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   string 255 custcode;
   
   GetWindowRecord(mwn,COr);
@@ -109,7 +143,13 @@ BEGIN
   end;
   ContactSClassOnOpen(wn,custcode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -120,11 +160,19 @@ BEGIN
   record PRVc PRr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,PRr);
   ContactSClassOnOpen(wn,PRr.CustCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -135,11 +183,19 @@ BEGIN
   record ActVc Actr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,Actr);
   ContactSClassOnOpen(wn,Actr.CUCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -150,11 +206,19 @@ BEGIN
   record IVVc IVr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,IVr);
   ContactSClassOnOpen(wn,IVr.CustCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -165,11 +229,19 @@ BEGIN
   record ORVc ORr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,ORr);
   ContactSClassOnOpen(wn,ORr.CustCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -180,11 +252,19 @@ BEGIN
   record QTVc QTr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,QTr);
   ContactSClassOnOpen(wn,QTr.CustCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -195,11 +275,19 @@ BEGIN
   record LetVc Letr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,Letr);
   ContactSClassOnOpen(wn,Letr.CustCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -210,11 +298,19 @@ BEGIN
   record SVGMVc SVGMr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,SVGMr);
   ContactSClassOnOpen(wn,SVGMr.CustCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -225,11 +321,19 @@ BEGIN
   record SVOVc SVOr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,SVOr);
   ContactSClassOnOpen(wn,SVOr.CustCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -240,11 +344,19 @@ BEGIN
   record WOVc WOr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,WOr);
   ContactSClassOnOpen(wn,WOr.CustCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -255,11 +367,19 @@ BEGIN
   record WSVc WSr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,WSr);
   ContactSClassOnOpen(wn,WSr.CustCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -270,11 +390,19 @@ BEGIN
   record POVc POr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,POr);
   ContactSClassOnOpen(wn,POr.VECode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -285,11 +413,19 @@ BEGIN
   record POCOVc POCOr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,POCOr);
   ContactSClassOnOpen(wn,POCOr.VECode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -300,11 +436,19 @@ BEGIN
   record POQTVc POQTr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
   
   GetWindowRecord(mwn,POQTr);
   ContactSClassOnOpen(wn,POQTr.VECode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -612,7 +756,7 @@ BEGIN
       location = IVr.Location;
     end;
     switch (type) begin
-      case 1: MyFillSerialNr(IVrw.ArtCode,location,asernrstr,acnt,IVrw.Quant,IVr,rn);
+      case 1: MyFillSerialNr(IVrw.ArtCode,location,asernrstr,acnt,IVrw.Quant,IVr,rn);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:26:07 PM
       case 2: FillSerialNr2(IVrw.ArtCode,location,asernrstr,acnt);
     end;   
   end;  
@@ -917,11 +1061,19 @@ BEGIN
   record RestBookingVc RestBookingr;
   Array string 60 acontact;
   Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr;
 
   GetWindowRecord(mwn,RestBookingr);
   ContactSClassOnOpen(wn,RestBookingr.CUCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,60,acontact[i],false);
+//    SetListString(wn,60,acontact[i],false);
+    pos = 0;
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);
   end;
   RETURN;
 END;
@@ -932,11 +1084,20 @@ BEGIN
   record EmailRecipVc EmailRecipr;
   Array string 60 acontact;
   Integer i,acnt;
+  LongInt pos;
+  string 255 namestr,titlestr,custcode;
 
   GetWindowRecord(mwn,EmailRecipr);
-  ContactCustCodeSClassOnOpenRemote(EmailRecipr.MainContactCode,acontact,acnt);
+  ContactSClassOnOpen(wn,EmailRecipr.MainContactCode,acontact,acnt);
   for (i=0;i<acnt;i=i+1) begin
-    SetListString(wn,80,acontact[i],false);
+//     SetListString(wn,80,acontact[i],false);
+    pos = 0;    
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    GetNextSubstring(acontact[i],pos,"#",custcode);
+    AddListRow(wn,"DLPasteContact",1,custcode,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);    
   end;
   RETURN;
 END;

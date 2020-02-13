@@ -1,3 +1,5 @@
+external function LongInt ReadLocation(string,var record LocationVc);
+external function Boolean PayModeRegistered(string);
 external function Boolean IsEnterprise();
 external function Boolean HasModIN();
 external function Boolean StockRecordForLocationAllowed(string,string,string,date,integer,var Integer,var string);
@@ -126,33 +128,6 @@ LCheckLoanInv88:;
   end;
 LCheckLoanInv:;
   CheckLoanInv = res;
-  RETURN;
-END;
-
-global
-function LongInt IVVcRecordProtectFields(var record IVVc IVr,record IVVc IV2r,LongInt long3,LongInt long4)
-begin
-  LongInt res;
-  Integer i,rwcnt;
-  row IVVc IVrw;
-  row IVVc IV2rw;
-  Integer rwcnt2;
-  
-  IV2r.Prntdf = IVr.Prntdf;
-  IV2r.TaxAdminServSeal = IVr.TaxAdminServSeal;
-/*
-  rwcnt = MatRowCnt(IVr);
-  rwcnt2 = MatRowCnt(IV2r);
-  for (i=0;i<rwcnt2;i=i+1) begin
-    if (i<rwcnt) then begin
-      MatRowGet(IVr,i,IVrw);
-      MatRowGet(IV2r,i,IV2rw);
-      IV2rw.OrdNr = IVrw.OrdNr;
-      MatRowPut(IV2r,i,IV2rw);
-    end;
-  end;  
-*/
-  IVVcRecordProtectFields = res;
   RETURN;
 END;
 
@@ -594,7 +569,7 @@ begin
   record SerNrTrackBlock SNrb;
   string 255 serialnr;
   val serqty;
-  string 255 gotofield;
+  string 255 gotofield,tstr1;
   Integer gotorow;
   record ACPVc ACPr;
   record RetVc Retr;
@@ -603,9 +578,14 @@ begin
   record QTVc QTr;
   row QTVc QTrw;
   Boolean qtf;
-  record BrazilEInvTypeVc BEInvTyper;
+  record BrazilEInvTypeVc EInvTyper;
   record EInvoiceBlock EIb;
+  record BaseCurBlock BCb;
   Integer daysrange;
+  record StockMovVc StockMovr;
+  row StockMovVc StockMovrw; 
+  LongInt err;
+  record IVTBlock IVTb;
   record POSCurrenciesBlock POSCb;// Edit ************************** Friday, 22 April 2016 14:56:39
   string 20 poscur;
   integer pos;
@@ -633,6 +613,8 @@ begin
   BlockLoad(CYb);
   BlockLoad(SNrb);
   BlockLoad(EIb);
+  BlockLoad(BCb);
+  BlockLoad(IVTb);
   
   if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin
     orgIVr.SerNr = IVp.CredInv;
@@ -663,8 +645,8 @@ begin
     qtf = ReadFirstMain(QTr,1,true);
   end;
   if (HasLocalization("BRA")) then begin
-    BEInvTyper.Code = IVp.BrazilEInvType;
-    ReadFirstMain(BEInvTyper,1,true);
+    EInvTyper.Code = IVp.BrazilEInvType;
+    ReadFirstMain(EInvTyper,1,true);
   end;
   rwcnt = MatRowCnt(IVp);
   if (RecordValid(IV2p)) then begin
@@ -673,6 +655,15 @@ begin
   for (i=0; i<rwcnt;i=i+1) begin
     MatRowGet(IVp,i,IVrw);
     testf = true;    
+    if (IsStandardProduct) then begin
+      if (HasLocalization("POL")) then begin
+        if (len(IVrw.Spec)>35) then begin
+          RecordCheckError(22139,"",i,"Spec");      
+          res = -1;
+          goto L99;
+        end;
+      end;
+    end;
     switch (IVrw.stp) begin
       case kInvoiceRowTypeGiftVoucherSold:
         res = IVVc_CheckRowType13(IVp,IVrw,i);
@@ -686,21 +677,48 @@ begin
           goto L99;
         end;
       case kInvoiceRowTypeLoyaltyPointsPayment:
+        if (nonblank(IVrw.PayMode)) then begin
+          if (PayModeRegistered(IVrw.PayMode)==false) then begin
+            RecordCheckError(1120," " & IVrw.PayMode,i,"PMCode");      
+            res = -1;
+            goto L99;
+          end;
+        end;
         cash = cash + MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
       case kInvoiceRowTypeCashPayment:
-      	if(blank(IVrw.CurncyCode))then begin // Edit ************************** Friday, 22 April 2016 15:17:05
+        if (nonblank(IVrw.PayMode)) then begin
+          if (PayModeRegistered(IVrw.PayMode)==false) then begin
+            RecordCheckError(1120," " & IVrw.PayMode,i,"PMCode");      
+            res = -1;
+            goto L99;
+          end;
+        end;
+if(blank(IVrw.CurncyCode))then begin // Edit ************************** Friday, 22 April 2016 15:17:05
 					IVrw.CurncyCode = poscur;
 					GetFullCurncyRate(IVrw.CurncyCode,IVp.InvDate,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2);
 				end;
         cash = cash + MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);// Edit ************************** Friday, 22 April 2016 15:17:08
-      case kInvoiceRowTypeChequePayment:
+       case kInvoiceRowTypeChequePayment:
         cash = cash + MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
       case kInvoiceRowTypeCreditCardPayment:
+        if (nonblank(IVrw.PayMode)) then begin
+          if (PayModeRegistered(IVrw.PayMode)==false) then begin
+            RecordCheckError(1120," " & IVrw.PayMode,i,"PMCode");      
+            res = -1;
+            goto L99;
+          end;
+        end;
       	if(blank(IVrw.CurncyCode))then begin // Edit ************************** Friday, 22 April 2016 15:17:02
 					IVrw.CurncyCode = poscur;
 					GetFullCurncyRate(IVrw.CurncyCode,IVp.InvDate,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2);
 				end;
         cash = cash + MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);     
+      case kInvoiceRowTypeSwishPayment:
+        cash = cash + IVrw.Sum;      
+      case kInvoiceRowTypeQRPayment:
+        cash = cash + IVrw.Sum;      
+      case kInvoiceRowTypeCashWithdrawal:
+        cash = cash + IVrw.Sum;      
       case kInvoiceRowTypeLoan:
         if (CheckLoanInv(IVp)==false) then begin
           res = -1;
@@ -823,6 +841,7 @@ LkInvoiceRowTypeNormal2:;
         if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin
           if (IVp.CredInv>0) then begin
             if (IVrw.CreditedRow>=0) then begin
+              s = blankval;
               MatRowGet(orgIVr,IVrw.CreditedRow,orgIVrw);
               if (orgIVrw.ArtCode!=IVrw.ArtCode) then begin
                 RecordCheckError(20754,"",i,"ArtCode");      
@@ -833,6 +852,8 @@ LkInvoiceRowTypeNormal2:;
                 case Rs_insert:
                   s = LastCreditedRowSum(IVp,orgIVr.SerNr,IVrw.CreditedRow);
                 case Rs_update:
+                  s = LastCreditedRowSum(IV2p,orgIVr.SerNr,IVrw.CreditedRow);
+                case Rs_normal:
                   s = LastCreditedRowSum(IV2p,orgIVr.SerNr,IVrw.CreditedRow);
               end;
               if (blank(s)) then begin s = orgIVrw.Sum; end;
@@ -872,6 +893,13 @@ LkInvoiceRowTypeNormal2:;
             goto L99;
           end;
         end;
+        if (nonblank(IVrw.RvrsVATCode)) then begin
+          if (blank(IVp.VATNr)) then begin
+            RecordCheckError(1058,"",-1,"VATNr");
+            res = -1; 
+            goto L99;
+          end;
+        end;
         location = IVrw.Location;
         if (blank(location)) then begin
           location = IVp.Location;
@@ -881,9 +909,9 @@ LkInvoiceRowTypeNormal2:;
         end;
 // Amazing that before this addition, it was possible to put ANY location on the invoice and it wouldn't complain....
         if (nonblank(location)) then begin
-          Locationr.Code = location;
-          if (ReadFirstMain(Locationr,1,true)==false) then begin
-            RecordCheckError(1290,"",-1,"Location");      
+          err = ReadLocation(location,Locationr);
+          if (err!=0) then begin
+            RecordCheckError(err,"",-1,"Location");      
             res = -1; 
             goto L99;
           end;                    
@@ -972,7 +1000,12 @@ LkInvoiceRowTypeNormal2:;
             RecordCheckError(1258,tstr,i,"VATCode");      
             res = -1; 
             goto L99;
-          end;          
+          end;  
+          if (blank(IVrw.Sum)) then begin
+            RecordCheckError(40308,"",i,"Sum");      
+            res = -1; 
+            goto L99;
+          end;
         end;
         if (nonblank(IVrw.ArtCode)) then begin
           if (HasLocalization("ARG,PRT")) then begin
@@ -1080,7 +1113,7 @@ LkInvoiceRowTypeNormal2:;
               end;  
           end;
           if (HasLocalization("BRA")) then begin
-            if (BEInvTyper.ServiceFlag and INr.ItemType!=kItemTypeService) then begin
+            if (EInvTyper.ServiceFlag and INr.ItemType!=kItemTypeService) then begin
               RecordCheckError(20119,IVrw.ArtCode,i,"ArtCode");      
               res = -1;
               goto L99;
@@ -1197,7 +1230,8 @@ not needed any more
           end;    
           
         end else begin
-          if (HasLocalization("ARG,MEX,PRT")) then begin
+//        if (HasLocalization("ARG,MEX,PRT") or IVTb.AllowSalesWithoutItem==0) then begin
+          if (IVTb.SalesWithoutItem==0) then begin
             if (blank(IVrw.ArtCode)) then begin
               if (nonblank(IVrw.Sum) or nonblank(IVrw.SalesAcc)) then begin
                 RecordCheckError(2210,"",i,"ArtCode");
@@ -1217,12 +1251,12 @@ not needed any more
           end;
         end;
         if (lightFlag==false) then begin
-          if ((check==true) and (nonblank(IVrw.ArtCode))) then begin
+          if ((check==true and transf) and (nonblank(IVrw.ArtCode))) then begin
             if (MSb.dontAllowOvership==1) then begin
               if (HasLocalization("RUS") and IsStandardProduct) then begin 
               end else begin   
                 if ((IVrw.OrdRow!=-1) and (IVp.OrderNr!=-1) and (IVp.InvType!=kInvoiceTypeCredit and IVp.InvType!=kInvoiceTypeCreditSpecialSales)) then begin
-                  if (IsEnterprise or (IsStandardProduct and HasModIN)) then begin
+                  if (IsEnterprise or HasModIN) then begin
                   if (ORr.InvBeforeShip==0) then begin
                     if (GetDeliveredQty(IVp.OrderNr,IVrw.OrdRow,IVrw.Quant,shquant,MSb)) then begin end;
                     if (IVrw.Quant>shquant) then begin
@@ -1252,11 +1286,13 @@ not needed any more
                       location = MSb.MainStock;
                     end;  
                     if (HasModSL) then begin
-                      if (IVp.InvType!=kInvoiceTypeCredit and IVp.InvType!=kInvoiceTypeCreditSpecialSales) then begin
-                        if (CheckStructureItemsLevel(IVrw.ArtCode,IVrw.Recepy,location,IVrw.Quant)==false) then begin
-                          RecordCheckError(1247,": " & IVrw.ArtCode,i,"Quant");     
-                          res = -1; 
-                          goto L99;
+                      if (ShouldInvoiceRowUpdateStock(IVp,IVrw)) then begin
+                        if (IVp.InvType!=kInvoiceTypeCredit and IVp.InvType!=kInvoiceTypeCreditSpecialSales) then begin
+                          if (CheckStructureItemsLevel(IVrw.ArtCode,IVrw.Recepy,location,IVrw.Quant)==false) then begin
+                            RecordCheckError(1247,": " & IVrw.ArtCode,i,"Quant");     
+                            res = -1; 
+                            goto L99;
+                          end;
                         end;     
                       end;     
                     end;     
@@ -1320,7 +1356,11 @@ not needed any more
                         end;
                         if ((ISr.Instock-stockreservq<prev) and (prev>0)) then begin
                           if (HasModSL) then begin
-                            RecordCheckError(1247,": " & IVrw.ArtCode,i,"Quant");      
+                            if (nonblank(IVrw.SerialNr)) then begin
+                              RecordCheckError(1240,"",i,"SerialNr");      
+                            end else begin
+                              RecordCheckError(1247,": " & IVrw.ArtCode,i,"Quant");      
+                            end;
                             res = -1; 
                             goto L99;
                           end;
@@ -1347,12 +1387,13 @@ not needed any more
             end;
           end;
         end;
-        if ((check==true) and (nonblank(IVrw.ArtCode))) then begin
-        if ((IVp.UpdStockFlag!=0) and ((IVrw.OrdRow==-1) or (IVp.QTNr!=-1))) then begin
+        if ((check==true and transf) and (nonblank(IVrw.ArtCode))) then begin//SerialNrs
+//        if ((IVp.UpdStockFlag!=0) and ((IVrw.OrdRow==-1) or (IVp.QTNr!=-1))) then begin
+        if (IVrw.NotUpdStockFlag==0) then begin
           if (INr.SerNrf<3) then begin
             if (INr.SerNrf>0) then begin  
               if (blank(IVrw.SerialNr)) then begin
-                if (IVrw.NotUpdStockFlag==0) then begin
+                if (ShouldInvoiceRowUpdateStock(IVp,IVrw)) then begin
                   if (IVrw.Quant!=0) then begin
                      RecordCheckError(1239,"",i,"SerialNr");      
                      res = -1; 
@@ -1379,7 +1420,7 @@ not needed any more
               if (MSb.NoSerOnPU==0) then begin
               if (quant>0) then begin
                 if (INr.SerNrf==1) then begin
-                  if (IVrw.NotUpdStockFlag==0) then begin
+                  if (ShouldInvoiceRowUpdateStock(IVp,IVrw)) then begin
                     if (SNrb.BulkSerialNos!=0) then begin
                       serqty = blankval;
                       serialnr = FirstInRange(IVrw.SerialNr,60);
@@ -1407,7 +1448,7 @@ not needed any more
                     end;                    
                   end;
                 end else begin  
-                  if (IVrw.NotUpdStockFlag==0) then begin
+                  if (ShouldInvoiceRowUpdateStock(IVp,IVrw)) then begin
                     prevsn = blankval;
                     for (cnt=0;cnt<i;cnt=cnt+1) begin
                       MatRowGet(IVp,cnt,IV2rw);
@@ -1466,6 +1507,9 @@ not needed any more
                        if (IV2rw.SerialNr!=IVrw.SerialNr) then begin testf = false; end;
                      end;
                      if (testf) then begin
+                       if (ShouldInvoiceRowUpdateStock(IVp,IV2rw)==false) then begin testf = false; end;
+                     end;
+                     if (testf) then begin
                        RecordCheckError(1242,"",i,"SerialNr");
                        res = -1; 
                        goto L99;
@@ -1502,7 +1546,7 @@ not needed any more
             end;          
           end;
         end;
-        end;
+        end;//SerialNrs
         if ((nonblank(IVrw.VATCode)) and (IsVATCodeDefined(IVrw.VATCode)==false)) then begin
           RecordCheckError(1120,IVrw.VATCode,i,"VATCode");      
           res = -1; 
@@ -1518,10 +1562,18 @@ not needed any more
         end;
         if (lightFlag==false) then begin
           if (CYb.UseTaxTemplatesforTaxCalc==0) then begin
-            if ((blank(IVrw.VATCode) and (nonblank(IVrw.Sum)))) and (nonblank(IVrw.ArtCode)) then begin
-              RecordCheckError(1120,"",i,"VATCode");      
-              res = -1; 
-              goto L99;
+            if (nonblank(IVrw.RvrsVATCode)) then begin
+              if (IsVATCodeDefined(IVrw.RvrsVATCode)==false) then begin
+                RecordCheckError(1120,"",i,"RvrsVATCode");      
+                res = -1; 
+                goto L99;
+              end;
+            end else begin
+              if ((blank(IVrw.VATCode) and (nonblank(IVrw.Sum)))) and (nonblank(IVrw.ArtCode)) then begin
+                RecordCheckError(1120,"",i,"VATCode");      
+                res = -1; 
+                goto L99;
+              end;
             end;
           end else begin
             if ((blank(IVrw.TaxTemplateCode) and (nonblank(IVrw.Sum)))) and (nonblank(IVrw.ArtCode)) then begin
@@ -1601,7 +1653,7 @@ not needed any more
           if (ORr.SerNr>0) then begin
             if (IVp.InvType!=kInvoiceTypeDownpayment) then begin
               if (((ORr.DownPaySent-ORr.DownPayRedcd) + IVrw.Sum)>ORr.Sum4) then begin
-                RecordCheckError(20406,ORr.Sum4-(ORr.DownPaySent-ORr.DownPayRedcd),i,"Sum");
+                RecordCheckError(20406,ORr.Sum4,i,"Sum");
                 res = -1;
                 goto L99;
               end;
@@ -1720,7 +1772,7 @@ not needed any more
               end;
               ARPayr.CUPNr = IVrw.CUPNr;
               if (ReadFirstMain(ARPayr,1,true)) then begin
-                 if (IVp.CurncyCode==ARPayr.CurncyCode) then begin 
+                if (IVp.CurncyCode==ARPayr.CurncyCode) or (blank(IVp.CurncyCode) and ARPayr.CurncyCode==BCb.BaseCur1) then begin 
                   if (IVp.CustCode==ARPayr.CustCode) then begin
                     if (IVrw.Sum>ARPayr.RVal) then begin
                       RecordCheckError(1254,"",i,"VATCode");      
@@ -1763,6 +1815,40 @@ not needed any more
           end;
         end;  
     end;
+    if (HasLocalization("PRT") and nonblank(IVp.GlobalTransportNr)) then begin
+      tstr = Right(IVp.GlobalTransportNr,len(IVp.GlobalTransportNr)-6);
+      for (j=0;j<len(tstr);j=j+1) begin
+        if (Mid(tstr,j,1)!="/") then begin
+          tstr1 = tstr1 & Mid(tstr,j,1);
+        end;
+      end;
+      StockMovr.OfficialSerNr = tstr1;
+      if (ReadLastKey("OfficialSerNr",StockMovr,1,true)) then begin
+        if (StockMovr.OfficialSerNr==tstr1) then begin
+          for (j=0; j<rwcnt;j=j+1) begin
+            MatRowGet(IVp,j,IVrw);
+            MatRowGet(StockMovr,j,StockMovrw);
+            if (IVrw.ArtCode!=StockMovrw.ArtCode or StockMovrw.Quant!=IVrw.Quant) then begin
+              if (blank(StockMovrw.ArtCode) and StockMovrw.Quant!=-1) then begin
+                RecordCheckError(40891,"",j,"ArtCode");
+                res = -1;
+                goto L99; 
+              end;
+              if (IVrw.ArtCode!=StockMovrw.ArtCode) then begin
+                RecordCheckError(40887,chr(13) & chr(10) & USetStr(40888) & " " & j+1 & " " & USetStr(40890) & " " & StockMovrw.ArtCode,j,"ArtCode");
+                res = -1;
+                goto L99;
+              end;  
+              if (IVrw.Quant!=StockMovrw.Quant) then begin
+                RecordCheckError(40887,chr(13) & chr(10) & USetStr(40889) & " " & j+1 & " " & USetStr(40890) & " " & ValToString(StockMovrw.Quant,M40Val,"","",0),j,"Quant");
+                res = -1;
+                goto L99;
+              end; 
+            end;
+          end;
+        end;
+      end;     
+    end;
   end;
   if (HasLocalization("ARG") and (daysrange>0)) then begin
     if (IVp.InvType!=kInvoiceTypeCredit) and (IVp.InvType!=kInvoiceTypeCreditSpecialSales) then begin
@@ -1773,7 +1859,6 @@ not needed any more
       end;  
     end;
   end;
-  
 L99:;  
   IVVcRecordCheckRows = res;
   return;

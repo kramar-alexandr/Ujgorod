@@ -1,3 +1,4 @@
+external procedure VIAddDownpaymentRows(record POVc,var record VIVc);
 external function Boolean HasApprovals();
 remote function Integer PUApprovalStatus(record PUVc,var record AcceptanceRulesVc);
 external function Boolean BulkSerialNos_CalculateQuantityAndSerialNr(record SerNrTrackBlock,Boolean,string,var string,var val);
@@ -57,7 +58,7 @@ external function Boolean GetFirstItemSer(var string,var record INVc,var string)
 
 global
 procedure NextNumber(string code,var string next)
-BEGIN
+begin
   string 255 pre;
   string 255 suff;
   Integer i,j;
@@ -80,10 +81,10 @@ L10NextNumber:;
     suff = suff & Mid(code,j,1);
   end;
   padcnt = len(suff);
-  t = StringToVal(suff,M40Val);
+  t = StringToVal(suff,M4UVal);//M40Val
   t = t + 1;
 //  tstr = Left(t,len(t)-3);
-  tstr = ValToString(t,M40Val,"","",0);  
+  tstr = ValToString(t,M4UVal,"","",0);  //M40Val
   M4PadString(tstr,padcnt,"0",true,suff);
   next = pre & suff;
   if (next=="0") then begin next = "1"; end;
@@ -92,8 +93,8 @@ L10NextNumber:;
     suff = next;
     next = zerostr & suff;
   end;
-  RETURN;
-END;
+  return;
+end;
 
 global
 procedure NextM4SerialNumber(string code,var string next)
@@ -105,6 +106,7 @@ BEGIN
   string 1 c;
   string 255 zerostr,tstr;
   Integer padcnt;
+  ulong64 ul;
 
   for (i=len(code);i>0;i=i-1) begin
     c = Mid(code,i-1,1);
@@ -123,9 +125,14 @@ L10NextM4SerialNumber:;
   if (padcnt==0) then begin 
     padcnt = 1; 
   end;
+  ul = StringToULongInt(suff);
+  ul = ul + 1;
+  tstr = ul;
+/*
   t = StringToVal(suff,M40Val);
   t = t + 1;
   tstr = ValToString(t,M40Val,"","",0);  
+*/  
   if (len(suff))<(len(tstr)) then begin
     suff = tstr;
   end else begin
@@ -909,6 +916,9 @@ LSKIPROW:;
   VIp.PayVal = -t;
   VIp.PayVal = Round(VIp.PayVal,DefaultRoundMode);
   VICalcEReb(VIp);
+  if (PUp.PONr>0) then begin
+    VIAddDownpaymentRows(POr,VIp);
+  end;
   if (VITb.autoVATflag!=0) then begin
     if (nonblank(VITb.autoVATVal)) then begin
       if ((VIp.ExportFlag==0) or (VIp.ExportFlag==3) or (VIp.ExportFlag==4)) then begin
@@ -1046,6 +1056,22 @@ begin
   if (ReadFirstMain(Locr,1,true)) then begin end;
   if (GetPUStockAcc(CAb.ItemGroupAccounts,rowstockacc,Locr.StockAcc,INr.Group,ARb,stocktype,stockacc,tstr,findnewf)==0) then begin end;  
   if (GetPUPControlAcc(loccode,vecode,CAb.ItemGroupAccounts,rowcontrolacc,INr.Group,ARb,stocktype,purchacc,tstr,findnewf)==0) then begin end;
+  return;
+end;
+
+global
+procedure UpdatePUCost(var record PUVc PUr)
+begin
+
+  PUSetShipCost(PUr,1);
+  PUSetShipCost(PUr,2);
+  PUSetShipCost(PUr,3);
+  PUSetShipCost(PUr,4);
+  PUSetShipCost(PUr,5);
+  PUSetShipCost(PUr,6);
+  PUSetShipCost(PUr,7);
+  PURecalcCost(PUr);
+
   return;
 end;
 
@@ -1223,9 +1249,7 @@ BEGIN
     chsum = true;
   end;
   MatRowPut(PUr,rownr,PUrw);    
-  if (chsum) then begin
-    PUSumUp(PUr);
-  end;
+  UpdatePUCost(PUr);
 LPUVc_PasteArtCode:; 
   PUVc_PasteArtCode = res;
   RETURN;
@@ -1445,8 +1469,7 @@ LPUVc_PasteQuantAGAIN:;
   end;    
 LPUVc_PasteQuant:; 
 //  PUSetShipCost(PUr,2);// why RowCost1 works difrent than and other RowCost and difrnet than on PO ? 
-  PURecalcCost(PUr);
-  PUSumUp(PUr);
+  UpdatePUCost(PUr);
   PUVc_PasteQuant = res;
   RETURN;
 END;

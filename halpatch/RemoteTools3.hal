@@ -1238,6 +1238,18 @@ LCheckAttachedFilesSize:;
 END;
 
 global
+function Boolean TestMailToEMailQue(record MailVc Mailr)
+begin
+  Boolean res;
+  
+  if (IsRecordLocked(Mailr)==false and CheckAttachedFilesSize(Mailr)) then begin
+    res = true;
+  end;
+  TestMailToEMailQue = res;
+  return;
+end;
+
+global
 updating function Boolean RecordAction_raEMailQue(var record MailVc Mailp,Boolean readf)
 BEGIN
   Boolean res;
@@ -1460,7 +1472,7 @@ BEGIN
   RETURN;
 END;
 
-global
+global// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:09:37 PM
 function Time GetCurTimeOnServ()
 begin
   GetCurTimeOnServ = CurrentTime;

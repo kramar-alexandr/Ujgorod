@@ -1,3 +1,4 @@
+external function Boolean SetInSet2(string,string);
 external function string 60 AddObjectToObjectList(string,string);
 external procedure PurgeTRExtYc(record PurgeTRVc,var string);
 external function Boolean CheckIfIVOpen(Date,record IVVc,string,var val,Boolean,Boolean);
@@ -20,6 +21,8 @@ external function val MulWithRateToBase1(var string,Date,val,roundmode);
 external procedure BeginCurncyTotals(var Integer);
 external function string 255 CreateInvoiceNumber(LongInt,string);
 external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
+external function string 255 GetHRVOfficialInvoiceNo(string);
+external function Boolean CreditedIVisDownpayment(record IVVc);
 external procedure ExtractObj(string,var Integer,var string); //Edit***************************Sasha2,14:35 21.06.2016
 
 // moved CustListTransCLOut to CUPerTool2.hal
@@ -177,7 +180,7 @@ procedure CUPer_PrintInvoice(record RcVc RepSpec,LongInt IVSerNr,record CUVc CUp
                              Integer pos1,Integer pos2,var string cuperlastprepcur,Integer fwdbalinvoices,
                              var string statmentcurrency,var string remainingcurrencies,vector Boolean vreportedcurncy)
 BEGIN
-  val v,v1,cashv,cuscurval,lossv,prepv;
+  val v,cashv,cuscurval,lossv,prepv,v1;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:07:58 PM
   row IVVc IVrw;
   Integer i,rwcnt;
   string 255 tstr;
@@ -186,6 +189,7 @@ BEGIN
   Boolean cash;
   val frrate,torate1,torate2,baserate1,baserate2;
   val opensum;
+  record AccBlock Accb;
   record POSCurrenciesBlock POSCb; //Edit***************************Sasha2,14:29 21.06.2016
   string 20 poscur; //Edit***************************Sasha2,14:29 21.06.2016
   integer pos; //Edit***************************Sasha2,14:29 21.06.2016
@@ -194,7 +198,9 @@ BEGIN
 	if(nonblank(POSCb.Currencies))then begin
 		ExtractObj(POSCb.Currencies,pos,poscur);
 	end; //Edit***************************Sasha2,14:29 21.06.2016 }
-  
+
+
+  BlockLoad(Accb);
   IVr.SerNr = IVSerNr;
   if (ReadFirstMain(IVr,1,true)==false) then begin goto LCUPer_PrintInvoice; end;
   if (RepSpec.flags[2]!=0) then begin
@@ -219,7 +225,7 @@ CURRENCIES-TODO
   vreportedcurncy[statmentcurrency] = true;
 */  
   if (nonblank(RepSpec.ObjStr)) then begin
-    if (SetInSet(RepSpec.ObjStr,IVr.Objects)==false) then begin goto LCUPer_PrintInvoice; end;
+    if (SetInSet2(RepSpec.ObjStr,IVr.Objects)==false) then begin goto LCUPer_PrintInvoice; end;
   end;  
   if (IVr.Invalid!=0) then begin goto LCUPer_PrintInvoice; end;        
   if (IVr.InvType==kInvoiceTypePrepayment) then begin goto LCUPer_PrintInvoice; end;        
@@ -231,6 +237,13 @@ CURRENCIES-TODO
   if (fwdbalinvoices==1) then begin
     if (CheckIfIVOpen(RepSpec.sEndDate,IVr,"",opensum,true,false)==false) then begin
       goto LCUPer_PrintInvoice;
+    end;
+  end;
+  if (HasLocalization("SVN") or HasLocalization("HRV")) then begin
+    if (Accb.BookVATOnlyFromDownpayment!=0) then begin
+      if (IVr.InvType==kInvoiceTypeDownpayment or (IVr.InvType==kInvoiceTypeCredit and CreditedIVisDownpayment(IVr))) then begin
+        goto LCUPer_PrintInvoice;
+      end;
     end;
   end;
   if ((IVr.InvType==kInvoiceTypeNormal or IVr.InvType==kInvoiceTypeNormalSpecialSales) or (IVr.InvType==kInvoiceTypeInterest) or (IVr.InvType==kInvoiceTypeDownpayment) or (IVr.InvType==kInvoiceTypeDebit)) then begin
@@ -326,7 +339,11 @@ change does not increase invoice values
       OutDate(0,0,IVr.InvDate,false);
       OutString(pos1,0,USetStr(2485),false);
       if (RepSpec.flags[15]!=0) then begin
-        OutString(pos1,0,IVr.OfficialSerNr,false);
+        tstr = IVr.OfficialSerNr;
+        if (HasLocalization("HRV")) then begin 
+          tstr = GetHRVOfficialInvoiceNo(IVr.OfficialSerNr);
+        end;
+        OutString(pos1,0,tstr,false);
       end;
       tstr = CreateInvoiceNumber(IVr.SerNr,IVr.OfficialSerNr);
       OutString(pos2,"DblCustPS2",tstr,false);
@@ -370,7 +387,11 @@ change does not increase invoice values
       OutDate(0,0,IVr.InvDate,false);
       OutString(pos1,0,USetStr(2488),false);
       if (RepSpec.flags[15]!=0) then begin
-        OutString(pos1,0,IVr.OfficialSerNr,false);
+        tstr = IVr.OfficialSerNr;
+        if (HasLocalization("HRV")) then begin 
+          tstr = GetHRVOfficialInvoiceNo(IVr.OfficialSerNr);
+        end;
+        OutString(pos1,0,tstr,false);
       end;
       tstr = CreateInvoiceNumber(IVr.SerNr,IVr.OfficialSerNr);
       OutString(pos2,"DblCustPS2",tstr,false);            
@@ -466,7 +487,11 @@ change does not increase invoice values
       OutDate(0,0,IVr.InvDate,false);
       OutString(pos1,0,USetStr(2487),false);
       if (RepSpec.flags[15]!=0) then begin
-        OutString(pos1,0,IVr.OfficialSerNr,false);
+        tstr = IVr.OfficialSerNr;
+        if (HasLocalization("HRV")) then begin 
+          tstr = GetHRVOfficialInvoiceNo(IVr.OfficialSerNr);
+        end;
+        OutString(pos1,0,tstr,false);
       end;
       if (IVr.VINr>0) then begin
         OutLongInt(140,"DblVIVc",IVr.VINr,false);
@@ -532,7 +557,7 @@ BEGIN
   if (ReadFirstMain(PurgeTRr,3,true)) then begin
 
     if (nonblank(RepSpec.ObjStr)) then begin
-      if (SetInSet(RepSpec.ObjStr,PurgeTRr.Objects)==false) then begin goto L111; end;
+      if (SetInSet2(RepSpec.ObjStr,PurgeTRr.Objects)==false) then begin goto L111; end;
     end;
     if (PurgeTRr.CompCode!=CUp.Code) then begin
       goto L111;
@@ -882,7 +907,7 @@ BEGIN
     for (tcnt=0;tcnt<trwcnt;tcnt=tcnt+1) begin
       MatRowGet(TRr,tcnt,TRrw);
       if (nonblank(RepSpec.ObjStr)) then begin
-        if (SetInSet(RepSpec.ObjStr,TRrw.Objects)==false) then begin goto L11; end;
+        if (SetInSet2(RepSpec.ObjStr,TRrw.Objects)==false) then begin goto L11; end;
       end;
       if (TRrw.CompCode!=CUp.Code) then begin
         goto L11;
@@ -1310,7 +1335,7 @@ CURRENCIES-TODO
   vreportedcurncy[statmentcurrency] = true;
 */
   if (nonblank(RepSpec.ObjStr)) then begin
-    if (SetInSet(RepSpec.ObjStr,IVr.Objects)==false) then begin goto LCUPer_PrintDataForInvoice; end;
+    if (SetInSet2(RepSpec.ObjStr,IVr.Objects)==false) then begin goto LCUPer_PrintDataForInvoice; end;
   end;  
   if (IVr.Invalid!=0) then begin goto LCUPer_PrintDataForInvoice; end;        
   if (IVr.InvType==kInvoiceTypePrepayment) then begin goto LCUPer_PrintDataForInvoice; end;        

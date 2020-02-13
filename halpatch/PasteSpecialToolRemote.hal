@@ -16,7 +16,7 @@ external function Boolean GetCOSAcc(string,string,string,record AccBlock,record 
 external procedure CreateSBString(Integer,string,string,string,val,Boolean,val,Boolean,var string);
 external function val GetORRowReserv(LongInt,string,string,var val,var string,var string,Boolean);
 external function val GetIntORRowReserv(LongInt,string,string,var val,var string,var string,var string,Boolean);
-external function val AbsoluteVal(val);
+external function val AbsoluteVal(val);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:27:37 PM
 
 SetLangMode(LangUkrainian,"UKR",0);  
 
@@ -230,12 +230,12 @@ begin
   row LegalInvNrBlock LINrbrw;
   Integer i,rwcnt;
   record CUVc CUr;
-  Boolean testf;  
+  Boolean testf;
   
-  if (nonblank(custcode)) then begin 
+  if (nonblank(custcode)) then begin
     CUr.Code = custcode;
     if (ReadFirstMain(CUr,1,true)) then begin end;
-  end;  
+  end;
   BlockLoad(LegalInvNrRec);
   rwcnt = MatRowCnt(LegalInvNrRec);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -302,6 +302,12 @@ begin
         if (recordtype==10) then begin testf = true; end;
       case kOfficialNumTypeRecoverdPOSIVVc:
         if (recordtype==10) then begin testf = true; end;
+      case kOfficialNumTypeCreditIVCashVc:
+        if (recordtype==-10) then begin testf = true; end;
+      case kOfficialNumTypeManualCreditIVCashVc:
+        if (recordtype==-10) then begin testf = true; end;
+      case kOfficialNumTypeRecoverdCreditIVCashVc:
+        if (recordtype==-10) then begin testf = true; end;
       case kOfficialNumTypeRestAccVc:
         if (recordtype==16) then begin testf = true; end;      
       case kOfficialNumTypeSHVc:
@@ -362,6 +368,12 @@ begin
         if (recordtype==17) and (status==kRecordStatusManual) then begin testf = true; end;
       case kOfficialNumTypeIPVc:
         if (recordtype==17) and (status==kRecordStatusNone) then begin testf = true; end;
+      case kOfficialNumTypeFwdIVVc:
+        if (recordtype==kInvoiceTypeNormal and nonblank(curivnr)) then begin  testf = true; end;
+      case kOfficialNumTypeFwdCreditIVVc:
+        if (recordtype==kInvoiceTypeCredit and nonblank(curivnr)) then begin  testf = true; end;
+      case kOfficialNumTypeFwdManualInterestIVVc:
+        if (recordtype==kInvoiceTypeInterest and nonblank(curivnr)) then begin  testf = true; end;
     end;
 
 /*    
@@ -680,14 +692,14 @@ BEGIN
 END;
 
 global
-function string 50 NextLegalCLInSerNr(LongInt curclinnr,Date transdate,string serie,LongInt tserstart,LongInt tserend)
+function string 50 NextLegalCLInSerNr(LongInt curclinnr,Date transdate,string serie,string tserstart,string tserend)
 BEGIN
   string 50 res,tstr;
   string 1 c;
   Integer i,l,seriel;
   record CLInVc CLInr;
   
-  if (tserend>0) then begin
+  if (StringToLongInt(tserend)>0) then begin
     CLInr.OfficialSerNr = serie & tserend;
     if (ReadLastKey("OfficialSerNr",CLInr,1,false)) then begin
       if (CLInr.SerNr!=curclinnr) or (blank(CLInr.OfficialSerNr)) then begin
@@ -706,7 +718,7 @@ BEGIN
       end;
     end;
 LBREAK:;
-    if (StringToLongInt(tstr)<tserstart) then begin tstr = ""; end;
+    if (StringToLongInt(tstr)<StringToLongInt(tserstart)) then begin tstr = ""; end;
     if (blank(tstr)) then begin
       res = serie & tserstart;
     end else begin
@@ -725,32 +737,124 @@ LNextLegalCLInSerNr:;
 END;
 
 global
-procedure LegalCLInNrSClassArrayOnOpen(LongInt curclinnr,Date transdate,var Array string astr,var Integer acnt)
-BEGIN
+procedure LegalCLInNrSClassArrayOnOpen2(LongInt curclinnr,Date transdate,var Array string astr,var Integer acnt,string filename,string custcode)
+begin
   record LegalCLInNrBlock LegalCLInNrRec;
   row LegalCLInNrBlock LegalCLInNrrw;
-  Integer i,rwcnt;  
+  Integer i,rwcnt;
+  record LegalInvNrBlock LegalInvNrRec;
+  row LegalInvNrBlock LINrbrw;
+  record CUVc CUr;
+  Boolean testf; 
   
-  BlockLoad(LegalCLInNrRec);
-  rwcnt = MatRowCnt(LegalCLInNrRec);
+  if (nonblank(custcode)) then begin 
+    CUr.Code = custcode;
+    if (ReadFirstMain(CUr,1,true)) then begin end;
+  end;
+  
+  if (acnt<=0) then begin
+    BlockLoad(LegalCLInNrRec);
+    rwcnt = MatRowCnt(LegalCLInNrRec);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(LegalCLInNrRec,i,LegalCLInNrrw);
+      if (transdate>=LegalCLInNrrw.PurchDate) then begin
+        astr[acnt] = NextLegalCLInSerNr(curclinnr,transdate,LegalCLInNrrw.Serie,LegalCLInNrrw.TSerStart,LegalCLInNrrw.TSerEnd);
+        acnt = acnt + 1;
+      end;
+    end;
+  end;
+
+  if (acnt<=0) then begin
+    BlockLoad(LegalInvNrRec);
+    rwcnt = MatRowCnt(LegalInvNrRec);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(LegalInvNrRec,i,LINrbrw);
+      testf = false;
+      switch (LINrbrw.RegType) begin
+        case 56: testf = true;
+      end;
+      if (testf) then begin
+        if (DateInRange(transdate,LINrbrw.PurchDate,LINrbrw.EndDate)==false) then begin testf = false; end;
+        if (nonblank(custcode)) then begin 
+          if (nonblank(LINrbrw.CClass)) then begin
+            if (nonblank(CUr.Classification)) then begin
+              if (SetInSet(LINrbrw.CClass,CUr.Classification)==false) then begin testf = false; end;
+            end;
+          end;  
+        end;
+      end;  
+      if (testf) then begin
+        astr[acnt] = NextLegalSerNr(filename,curclinnr,transdate,LINrbrw.Serie,LINrbrw.TSerStart,LINrbrw.TSerEnd);
+        astr[acnt] = astr[acnt] & "    ";
+        astr[acnt] = astr[acnt] & LINrbrw.TSerCom;
+        acnt = acnt + 1;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+global
+procedure LegalCLInNrSClassArrayOnOpen(LongInt curclinnr,Date transdate,var Array string astr,var Integer acnt)
+begin
+
+  LegalCLInNrSClassArrayOnOpen2(curclinnr,transdate,astr,acnt,"","");
+
+  return;
+end;
+
+global
+procedure LegalCLOutNrSClassArrayOnOpen(LongInt curcloutnr,Date transdate,var Array string astr,var Integer acnt,string filename,string custcode)
+begin
+  Integer i,rwcnt;
+  record LegalInvNrBlock LegalInvNrRec;
+  row LegalInvNrBlock LINrbrw;
+  record CUVc CUr;
+  Boolean testf; 
+  
+  if (nonblank(custcode)) then begin 
+    CUr.Code = custcode;
+    if (ReadFirstMain(CUr,1,true)) then begin end;
+  end;  
+  BlockLoad(LegalInvNrRec);
+  rwcnt = MatRowCnt(LegalInvNrRec);
   for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(LegalCLInNrRec,i,LegalCLInNrrw);
-    if (transdate>=LegalCLInNrrw.PurchDate) then begin
-      astr[acnt] = NextLegalCLInSerNr(curclinnr,transdate,LegalCLInNrrw.Serie,LegalCLInNrrw.TSerStart,LegalCLInNrrw.TSerEnd);
+    MatRowGet(LegalInvNrRec,i,LINrbrw);
+    testf = false;
+    switch (LINrbrw.RegType) begin
+      case 57: testf = true;
+    end;
+    if (testf) then begin
+      if (DateInRange(transdate,LINrbrw.PurchDate,LINrbrw.EndDate)==false) then begin testf = false; end;
+      if (nonblank(custcode)) then begin 
+        if (nonblank(LINrbrw.CClass)) then begin
+          if (nonblank(CUr.Classification)) then begin
+            if (SetInSet(LINrbrw.CClass,CUr.Classification)==false) then begin testf = false; end;
+          end;
+        end;  
+      end;
+    end;  
+    if (testf) then begin
+      astr[acnt] = NextLegalSerNr(filename,curcloutnr,transdate,LINrbrw.Serie,LINrbrw.TSerStart,LINrbrw.TSerEnd);
+      astr[acnt] = astr[acnt] & "    ";
+      astr[acnt] = astr[acnt] & LINrbrw.TSerCom;
       acnt = acnt + 1;
     end;
   end;
-  RETURN;
-END;
+
+  return;
+end;
 
 global
-procedure ObjBTSClassArrayOnOpenRemote(string objtype,var Array string astr,var Integer acnt)
+procedure ObjBTSClassArrayOnOpenRemote2(string objtype,var Array string astr,var Array string astr2)
 begin
   record ObjVc OBjr;
-  boolean TrHs,testf;
+  Boolean TrHs,testf;
+  Integer acnt;
  
-  OBjr.OTCode=objtype; 
-  TrHs=true;
+  OBjr.OTCode = objtype; 
+  TrHs = true;
   While (LoopKey("OTCode",OBjr,1,TrHs)) begin
     testf = true;
     if (OBjr.OTCode<>objtype) then begin
@@ -761,11 +865,20 @@ begin
       testf = false;
     end;
     if (testf) then begin
-      astr[acnt] = OBjr.Code & "     ";
-      astr[acnt] = astr[acnt] & OBjr.Comment;
-      acnt = acnt + 1;
+      acnt = astr.length;
+      astr[acnt] = OBjr.Code;
+      astr2[acnt] = OBjr.Comment;
     end;
   end;
+  return;
+end;
+
+global
+procedure ObjBTSClassArrayOnOpenRemote(string objtype,var Array string astr,var Integer acnt)
+begin
+  Array string 255 astr2;
+  
+  ObjBTSClassArrayOnOpenRemote2(objtype,astr,astr2);
   return;
 end;
 
@@ -2279,5 +2392,69 @@ begin
     aComment[s] = INr.Name;
   end;
 
+  return;
+end;
+
+global
+procedure CountryNameSClassOnOpenRemote(var Array string astr)
+begin
+  record CountryVc Cntryr;
+  boolean found;
+
+  found = true;
+  while (LoopKey("Comment",Cntryr,1,found)) begin
+    if (found) then begin    
+      astr[astr.length] = Cntryr.Comment;
+    end;
+  end;
+  return;
+end;
+
+global
+procedure AccCompSClassArrayOnOpen(var Array string aacc,var Array string aaccname)
+begin
+  record AccVc Accr;
+  Boolean found,testf;
+  Integer acnt;
+  
+  acnt = 0;
+  found = true;
+  while (LoopKey("ActAccNumber",Accr,1,found)) begin
+    if (found) then begin
+      testf = true;
+      if (Accr.blockedFlag!=0) then begin testf = false; end;
+      if (testf) then begin
+        acnt = aacc.length;
+        aacc[acnt] = Accr.AccNumber;
+        aaccname[acnt] = Accr.Comment;
+      end;
+    end;
+  end;
+  
+  return;
+end;
+
+global
+procedure ObjCompSClassArrayOnOpen(var Array string aobj,var Array string aobjtype,var Array string aobjname)
+begin
+  record ObjVc Objr;
+  Boolean found,testf;
+  Integer acnt;
+  
+  acnt = 0;
+  found = true;
+  while (LoopKey("ActOTCode",Objr,1,found)) begin
+    if (found) then begin
+      testf = true;
+      if (Objr.TerminateFlag!=0) then begin testf = false; end;
+      if (testf) then begin
+        acnt = aobj.length;
+        aobj[acnt] = Objr.Code;
+        aobjtype[acnt] = Objr.OTCode;
+        aobjname[acnt] = Objr.Comment;
+      end;
+    end;
+  end;
+  
   return;
 end;

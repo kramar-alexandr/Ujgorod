@@ -124,9 +124,11 @@ BEGIN
   gTRp.RegDate = CurrentDate;
   gTRp.RegTime = CurrentTime;
   gTRp.TransDate = Actr.TransDate;
-  if (TransInFiscal(gTRp.TransDate)==false) then begin
-    errstr = 1075;
-    goto LMakeTransFromAct;
+  if (rpt==false) then begin
+    if (TransInFiscal(gTRp.TransDate)==false) then begin
+      errstr = 1075;
+      goto LMakeTransFromAct;
+    end;
   end;
   gTRp.Comment = Actr.Comment;
   gTRp.Comment = gTRp.Comment & ", ";
@@ -293,11 +295,12 @@ BEGIN
   ExtractObj(newActr.MainPersons,pos,usercode);
   while (nonblank(usercode)) begin
     ResetLoop(oldActr);
+    oldActr.SerNr = -1;
     oldActr.TransDate = newActr.TransDate;
     oldActr.TodoFlag = 0; // Calendar
     foundf = true;
     ukey = "UserMain:" & usercode;
-    while (LoopKey(ukey,oldActr,3,foundf)) begin
+    while (LoopKey(ukey,oldActr,2,foundf)) begin
       if (oldActr.TodoFlag!=0) then begin foundf = false; end;
       if (oldActr.TransDate>newActr.TransDate) then begin foundf = false; end;      
       if (foundf) then begin
@@ -426,6 +429,30 @@ LCheckMultipleIndexField:;
 end;
 
 global
+function Boolean ActStateSeqAllowed(string fromstate,string tostate)
+begin
+  record ActStateSeqVc ASSr;
+  Boolean res;
+
+  res = true;
+  if (fromstate!=tostate) then begin
+    if (CountRecords("ActStateSeqVc")>0) then begin
+      res = false;
+      ASSr.FromState = fromstate;
+      if (ReadFirstMain(ASSr,1,true)) then begin
+        if (nonblank(tostate)) then begin
+          if (SetInSet(tostate,ASSr.AllowedState)) then begin
+            res = true;
+          end;
+        end;
+      end;
+    end;
+  end;
+  ActStateSeqAllowed = res;
+  return;
+end;
+
+global
 updating function LongInt ActVcRecordCheck(var record ActVc Actr,record ActVc Act2r,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;
@@ -529,9 +556,19 @@ BEGIN
   if (nonblank(Actr.ActResult)) then begin
     ActTyper.Code = Actr.ActResult;
     if (ReadFirstMain(ActTyper,1,true)==false) then begin
-      RecordCheckError(1120,Actr.ActResult,-1,"ActResult");      
+      RecordCheckError(1120," " & Actr.ActResult,-1,"ActResult");      
       res = -1; 
       goto LActVcRecordCheck;
+    end;
+  end;
+  if (nonblank(Actr.ActState)) then begin
+    switch (stat) begin
+      case Rs_update:
+        if (ActStateSeqAllowed(Act2r.ActState,Actr.ActState)==false) then begin
+          RecordCheckError(38454," " & Actr.ActState,-1,"ActState");      
+          res = -1; 
+          goto LActVcRecordCheck;
+        end;
     end;
   end;
   if (nonblank(Actr.Supervisor)) then begin
@@ -850,7 +887,7 @@ L44:;
         goto LActVcRecordCheck;
       end;
     end;
-    if (Actr.TodoFlag!=kTodoFlagRecurring) then begin
+    if (Actr.TodoFlag!=kTodoFlagRecurring and Actr.TodoFlag!=kTodoFlagProject) then begin
       if (ATGrr.ForceTime!=0) or (blank(Actr.ActType)) and (Actr.TodoFlag==0) then begin
         if ((blanktime(Actr.StartTime)) and (Actr.OKFlag!=0)) then begin
           RecordCheckError(1058,"",-1,"StartTime");      
@@ -959,7 +996,7 @@ L44:;
       end;
     end;
   end;  
-  if ((Actr.FromFileName=="StockMovVc") and (Actr.MainPersons=="SKLAD") and (Actr.ActType=="SIGNA")) then begin
+  if ((Actr.FromFileName=="StockMovVc") and (Actr.MainPersons=="SKLAD") and (Actr.ActType=="SIGNA")) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:46:35 PM
     if (stat==Rs_update) then begin
       if ((Actr.OKFlag!=0) and (Act2r.OKFlag==0)) then begin
         StockMovr.SerNr = Actr.FromSerNr;
@@ -996,7 +1033,7 @@ BEGIN
   end;
   Actr.SerNr = -1;  
   Actr.TransDate = CurrentDate;
-  if (Actr.TodoFlag!=kTodoFlagRecurring) then begin
+  if (Actr.TodoFlag!=kTodoFlagRecurring and Actr.TodoFlag!=kTodoFlagProject) then begin
     Actr.EndDate = CurrentDate;
     Actr.StartTime = CurrentTime;
   end;
@@ -1004,6 +1041,9 @@ BEGIN
   Actr.CostTime = blankt;
   Actr.PrioLevel = -1;
   Actr.Invalid = 0;
+  if (Actr.TodoFlag==kTodoFlagProject) then begin
+    Actr.Supervisor = CurrentUser;
+  end;
   if (SingleUserMode) then begin
 //    Actr.SerNr = NextSerNr("ActVc",Actr.TransDate,-1,false,"");
 // not good, if u do 2 actiities and save 2nd one first u have problem
@@ -1019,7 +1059,7 @@ global
 procedure ActVcRecordDefServer(var record ActVc Actr)
 begin
   Actr.TransDate = CurrentDate;
-  if (Actr.TodoFlag!=kTodoFlagRecurring) then begin
+  if (Actr.TodoFlag!=kTodoFlagRecurring and Actr.TodoFlag!=kTodoFlagProject) then begin
     Actr.EndDate = CurrentDate;
     Actr.StartTime = CurrentTime;
   end;
@@ -1054,6 +1094,9 @@ BEGIN
   Actr.FromFileName = "";
   Actr.FromSerNr = "";
 */  
+  if (Actr.TodoFlag==kTodoFlagProject) then begin
+    Actr.Supervisor = CurrentUser;
+  end;
   if (DateLocked(Actr.TransDate,"ActVc")) then begin
     MessageBox(1046,"");
   end else begin
@@ -1190,7 +1233,7 @@ BEGIN
       goto LActVcRecordRemoveTest;
     end;
   end;
-  if ((res>0) and (Actr.FromFileName=="StockMovVc") and (Actr.MainPersons=="SKLAD") and (Actr.ActType=="SIGNA")) then begin
+  if ((res>0) and (Actr.FromFileName=="StockMovVc") and (Actr.MainPersons=="SKLAD") and (Actr.ActType=="SIGNA")) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 1:46:48 PM
     MessageBox(1560,"");
     res = 0;
     goto LActVcRecordRemoveTest;
@@ -1200,7 +1243,7 @@ BEGIN
       res = 0;
     end;
   end;
-LActVcRecordRemoveTest:;  
+LActVcRecordRemoveTest:;
   ActVcRecordRemoveTest = res;
   RETURN;
 END;
@@ -1311,12 +1354,25 @@ BEGIN
 
   Actr.LengthClass = ActLenClass(Actr.TransDate,Actr.EndDate);
   Actr.LastChangedDate = CurrentDate;
-  if (Actr.TodoFlag==kTodoFlagTimedTodo) then begin
-    if (blankdate(Actr.EndDate)) then begin
-      Actr.EndDate = CurrentDate;
-    end;
-    if (blanktime(Actr.EndTime)) then begin
-      Actr.EndTime = CurrentTime;
+  if (Act2r.OKFlag==0) then begin
+    switch (Actr.TodoFlag) begin
+      case kTodoFlagTimedTodo:
+        if (blankdate(Actr.EndDate)) then begin
+          Actr.EndDate = CurrentDate;
+        end;
+        if (blanktime(Actr.EndTime)) then begin
+          Actr.EndTime = CurrentTime;
+        end;
+      case kTodoFlagProject:
+/*      
+moved to client side
+        if (Actr.EndDate==Act2r.EndDate) then begin//when no manual amendmends
+          Actr.EndDate = CurrentDate;
+        end;
+        if (Actr.EndTime==Act2r.EndTime) then begin//when no manual amendmends
+          Actr.EndTime = CurrentTime;
+        end;
+*/  
     end;
   end;
   ActVcRecordUpdate = res;
@@ -1500,18 +1556,17 @@ begin
     if (indexname=="ActActType")  then begin res = 0; end;
     if (indexname=="ActDateTypeUserMain")  then begin res = 0; end;
     if (indexname=="ActUserMain")  then begin res = 0; end;
+    if (indexname=="ActActState")  then begin res = 0; end;
+    if (indexname=="ActDateStateUserMain")  then begin res = 0; end;
+    if (indexname=="ActActStateEndDate")  then begin res = 0; end;
+    if (indexname=="ActEndDateStateUserMain")  then begin res = 0; end;
+  end;
+  if (Actr.TodoFlag!=kTodoFlagProject) then begin 
+    if (indexname=="ProjCUCode")  then begin res = 0; end;
+    if (indexname=="ProjTransDate")  then begin res = 0; end;
+    if (indexname=="ProjActType")  then begin res = 0; end;
+    if (indexname=="ProjActState")  then begin res = 0; end;
   end;
   ActVcRecordInIndex = res;
-  return;
-end;
-
-global
-function LongInt ActVcRecordProtectFields(var record ActVc Actr,record ActVc Act2r,LongInt long3,LongInt long4)
-begin
-  LongInt res;
-
-  Act2r.NextApprovers = Actr.NextApprovers;
-  Act2r.NextFYIPersons = Actr.NextFYIPersons;
-  ActVcRecordProtectFields = res;
   return;
 end;

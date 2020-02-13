@@ -1,8 +1,11 @@
+external updating function LongInt IVGetExternalTaxRates(var record IVVc,var string);
+external function Boolean HasSalesman();
+external updating procedure CheckCreateSetDefaultCustomCode(var record IVVc);
+external function Boolean IsEnterprise();
 external updating function LongInt IVVcSVNFiscalization(Boolean,var record IVVc,var string);
 external function Boolean AssignOfficialSerNr();
 external function Boolean LegalRecordNumberInRange(string,string,string);
 external function string 255 GetLegalInvoiceNrString(row LegalInvNrBlock,string);
-external procedure OpenHWStore();
 external procedure NextM4Number(string,var string);
 external function string 255 UpdateOfficialSerNrSerie(Integer,Integer,Integer,string,boolean);
 external function Boolean CheckCreditInvTotOnOrigIV(record IVVc,var string,var LongInt);
@@ -34,7 +37,7 @@ external procedure GetARAcc(string,var string);
 external function Integer IVVcRecordCheckRows(record IVVc,record IVVc,record CUVc,record ORVc,record ModuleBlock,record MainStockBlock,record AccBlock,Boolean,Boolean,LongInt,var val);
 external function Boolean CanOKStockRecord(var Integer);
 external function Boolean DisallowPriceLowerCost_IVVc(record IVVc);
-external function Boolean ValidEInvoiceData2(record IVVc,record CUVc,var LongInt,var string);
+external function Boolean ValidEInvoiceData3(record IVVc,record CUVc,var LongInt,var string,var string);
 external function Integer CheckCLInAmount(LongInt,val,val,string);
 external updating procedure AddTTrans_IVVc(record TRVc,record IVVc);
 external function Integer InString2(string,string);
@@ -70,13 +73,16 @@ external procedure IVUpdateFIFO(record IVVc,Boolean);
 external function Integer GetCreditedInvoiceType(record IVVc);
 external function Boolean IsSessionOpen(string,string,Date,Time);
 external function boolean ShouldSendArgEinvoice(record IVVc);
+external function boolean ShouldSendMexEinvoice();
 external function boolean ArgEInvoiceBeingSentRemote(longint,string,Boolean);
 external function boolean RoyaltyRecordExistsForCN(record IVVc);
-external function Boolean HasModNL();
-external function Boolean HasIncomeAndExpenseBook();
+external function Boolean HasSLIntegratedWithNL();
+external function Boolean HasIntegratedNL();
 external updating function Boolean DoXMLExport_IVVc(var record IVVc);
+external function Boolean OperationCodeExists(string,Boolean);
 external procedure LookUpAvailableReturnItemsInIVs(var vector string,var vector integer,string,string,record IVVc,integer,Boolean); //Edit***************************Sasha2,9:44 02.03.2017
-external function val AbsoluteVal(val);
+external function val AbsoluteVal(val);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:57:33 PM
+
 
 function Boolean CheckIfNextLegalSerNr(LongInt curivnr,string OfficialSerNr,Date invdate,record CUVc CUr)
 begin
@@ -176,6 +182,9 @@ begin
   record UserVc Userr;
   
   res = 0;
+  if (HasSalesman==false) then begin
+    goto LVerifySalesmen;
+  end;
   ExtractObj(salesmen,pos,salesman);
   while (nonblank(salesman)) begin
     Userr.Code = salesman;
@@ -375,7 +384,7 @@ begin
   record CashierDefBlock CDb;
   record INVc INr;
   transaction Boolean gDoNotTestIfRecordExists;
-  record BrazilEInvTypeVc BEInvTyper;
+  record BrazilEInvTypeVc EInvTyper;
   record CYBlock CYb;
   Boolean TouchScreenFinishButtonf;
   roundmode rnd;// Edit ************************** Tuesday, 21 June 2016 10:38:51
@@ -449,7 +458,7 @@ begin
       if (IV2p.OKFlag==0) then begin transf = true; end;
     end;  
   end;
-  if (IVp.OKFlag!=0) and (IV2p.OKFlag==0) then begin
+  if (IVp.OKFlag!=0) and (IV2p.OKFlag==0) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:58:04 PM
     if (!UserCanAction("DisallowOKNotToday",true) and (IVp.InvDate!=CurrentDate)) then begin
     logtext(0,IVp.InvDate & " " & CurrentDate);
       RecordCheckError(31004,"",-1,"InvDate");  
@@ -479,6 +488,11 @@ begin
         end;
     end;
   end;
+  if (IsStandardProduct) then begin 
+    if (blank(IVp.CustCode)) then begin
+      CheckCreateSetDefaultCustomCode(IVp);  
+    end; 
+  end; 
   testf = true;
   if (blank(IVp.CustCode)) then begin
     if (IsStandardProduct) then begin
@@ -508,7 +522,14 @@ begin
     RecordCheckError(22118,": " & USetStr(7801),-1,"PayDate");      
     res = -1; 
     goto L99;
-  end;  
+  end;
+  if (nonblankdate(IVp.ExpectedClearingDate)) then begin
+    if (IVp.ExpectedClearingDate<IVp.InvDate) then begin
+      RecordCheckError(22118,": " & USetStr(7423),-1,"ExpectedClearingDate");
+      res = -1;
+      goto L99;
+    end;
+  end;
   if (CDb.RequireReturnReason!=0) then begin
     if (IVp.OKFlag!=0) and (IVp.Sum4<0) then begin
       if (blank(IVp.InvComment)) then begin
@@ -517,6 +538,11 @@ begin
         goto L99;
       end;
     end;
+  end;
+  if (IVp.InvType==kInvoiceTypeEmployee) then begin
+    RecordCheckError(1958,"",-1,"PayDeal");      
+    res = -1;
+    goto L99;        
   end;
   if (MCLb.CashCollection!=0) then begin
     if (CLInforIVRecordExists(IVp.SerNr,"IVVc",clin)) then begin
@@ -799,7 +825,7 @@ begin
         end;
       end;
     end;
-    if (HasLocalization("ARG")) then begin
+    if (HasLocalization("ARG,MEX")) then begin
       if (AssignOfficialSerNr==false) then begin
         FindNextIVVcOfficialSerialNr(IVp);
       end;
@@ -809,7 +835,20 @@ begin
     RecordCheckError(26201," " & td,-1,"InvDate");  
     res = -1;
     goto L99;
-  end;  
+  end;
+  if (HasLocalization("RUS")) then begin
+    if (blank(IVp.OperationCode)) then begin //DDC
+      RecordCheckError(1058,"",-1,"OperationCode");
+      res = -1;
+      goto L99;
+    end else begin
+      if (OperationCodeExists(IVp.OperationCode,false)) then begin
+        RecordCheckError(1120,IVp.OperationCode,-1,"OperationCode");
+        res = -1;
+        goto L99;
+      end;
+    end;
+  end;
   if (nonblank(IVp.OfficialSerNr)) then begin    
     BlockLoad(IOSTr);
     if (nonblank(IOSTr.From)) then begin
@@ -922,7 +961,7 @@ begin
       end;
     end;
   end;
-  if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin
+  if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales or IVp.InvType==kInvoiceTypeDebit) then begin
     if (ARAccb.RequireCreditNoteReason!=0) then begin
       if (blank(IVp.Reason)) then begin
         RecordCheckError(1058,"",-1,"Reason");   
@@ -1203,19 +1242,19 @@ L12:;
   if (check==false) then begin
     goto LIVVcRecordCheck_GenTrans;
   end;  
-  if (Date2Test("IVVc",IVp.TransDate,"TransDate",-1)==false) then begin
-    res = -1;
-    goto L99;
-  end;
   if (Date2Test("IVVc",IVp.InvDate,"InvDate",-1)==false) then begin
     res = -1;
     goto L99;
   end;
-  if (DisallowFutureDateCheck(true,IVp.TransDate,"TransDate",-1)) then begin
+  if (DisallowFutureDateCheck(true,IVp.InvDate,"InvDate",-1)) then begin
     res = -1;
     goto L99;
   end;
-  if (DisallowFutureDateCheck(true,IVp.InvDate,"InvDate",-1)) then begin
+  if (Date2Test("IVVc",IVp.TransDate,"TransDate",-1)==false) then begin
+    res = -1;
+    goto L99;
+  end;
+  if (DisallowFutureDateCheck(true,IVp.TransDate,"TransDate",-1)) then begin
     res = -1;
     goto L99;
   end;
@@ -1312,21 +1351,21 @@ L12:;
     res = -1; 
     goto L99;
   end;
-  if (HasLocalization("BRA")) then begin
+  if (HasLocalization("BRA,MEX")) then begin
     if (blank(IVp.BrazilEInvType)) then begin
-      RecordCheckError(1058,"",-1,"BrazilEInvType");      
+      RecordCheckError(1058,"",-1,"BrazilEInvType");
       res = -1; 
       goto L99;
     end else begin
-      BEInvTyper.Code = IVp.BrazilEInvType;
-      if (ReadFirstMain(BEInvTyper,1,true)==false) then begin
-        RecordCheckError(1008,"",-1,"BrazilEInvType");      
-        res = -1; 
+      EInvTyper.Code = IVp.BrazilEInvType;
+      if (ReadFirstMain(EInvTyper,1,true)==false) then begin
+        RecordCheckError(1008,"",-1,"BrazilEInvType");
+        res = -1;
         goto L99;
       end;
     end;
   end;
-  if (HasModNL or HasIncomeAndExpenseBook) then begin
+  if (HasIntegratedNL) then begin
     if (nonblank(IVp.ARAcc)) then begin
       Accr.AccNumber = IVp.ARAcc;
       if (ReadFirstMain(Accr,1,true)==false) then begin
@@ -1348,7 +1387,7 @@ L12:;
     end;
   end;
   if (IVp.OKFlag!=0 or TouchScreenFinishButtonf) and (IV2p.OKFlag==0) then begin
-    if (HasModNL or HasIncomeAndExpenseBook) then begin
+    if (HasIntegratedNL) then begin
       if (IVp.InvType==kInvoiceTypeCash or IVp.InvType==kInvoiceTypeCashInvoiceReceiptPRT) and (TouchScreenInterface==false) then begin
         PDr.Code = IVp.PayDeal;
         if (ReadFirstMain(PDr,1,true)) then begin
@@ -1463,7 +1502,7 @@ L12:;
   if (IVTestCredMan(IVp,errcode)==false) then begin
     MessageBox(errcode,"");
   end;
-  if (HasLocalization("MEX")) then begin
+  if (HasLocalization("MEX") and IsEnterprise) then begin
     if (blank(IVp.PMCode)) then begin
       RecordCheckError(2210,"",-1,"PMCode");      
       res = -1; 
@@ -1471,22 +1510,45 @@ L12:;
     end;
   end;
   if (HasLocalization("PRT")) then begin
+    if (blank(IVp.SalesMan)) then begin
+      RecordCheckError(21455,"",-1,"SalesMan");   
+      res = -1; 
+      goto L99;
+    end;
     if (nonblankdate(IVp.PlanSendDate) or nonblanktime(IVp.PlanSendTime)) then begin
       if (IVp.PlanSendDate<IVp.InvDate) then begin
         RecordCheckError(1142,"",-1,"PlanSendDate");      
         res = -1; 
         goto L99;
       end;
-      if (blanktime(IVp.PlanSendTime)) then begin
-        RecordCheckError(20866,"",-1,"PlanSendTime");      
+      if (IVp.PlanSendDate==IVp.TransDate) then begin
+        if (IVp.PlanSendTime<CurrentTime) then begin
+          RecordCheckError(20866,"",-1,"PlanSendTime");            
+          res = -1; 
+          goto L99;
+        end;
+      end;
+      if (IVp.PlanSendDate>IVp.PlanArrDate and nonblankdate(IVp.PlanArrDate)) then begin
+        RecordCheckError(20866,"",-1,"PlanArrDate");
         res = -1; 
         goto L99;
       end;
-      if (IVp.PlanSendDate==IVp.InvDate) then begin
-        if (IVp.PlanSendTime<CurrentTime) then begin
-          RecordCheckError(20866,"",-1,"PlanSendTime");      
-          res = -1; 
-          goto L99;
+      if (nonblankdate(IVp.PlanArrDate) and blanktime(IVp.PlanArrTime)) then begin
+        RecordCheckError(20866,"",-1,"PlanArrTime");        
+        res = -1; 
+        goto L99;
+      end;
+      if (blanktime(IVp.PlanSendTime)) then begin
+        RecordCheckError(20866,"",-1,"PlanSendTime");       
+        res = -1; 
+        goto L99;
+      end else begin
+        if (IVp.PlanSendTime>IVp.PlanArrTime and nonblanktime(IVp.PlanArrTime)) then begin
+          if (IVp.PlanSendDate>=IVp.PlanArrDate) then begin
+            RecordCheckError(20866,"",-1,"PlanArrTime");        
+            res = -1; 
+            goto L99;
+          end;
         end;
       end;
     end;
@@ -1505,11 +1567,22 @@ L12:;
       end;
     end;
   end;
-  if (ValidEInvoiceData2(IVp,CUr,errcode2,tstr)==false) then begin
-    RecordCheckError(errcode2,"",-1,tstr);      
+  if (ValidEInvoiceData3(IVp,CUr,errcode2,errstr,tstr)==false) then begin
+    RecordCheckError(errcode2,errstr,-1,tstr);      
     res = -1; 
     goto L99;
   end;
+  
+  if (HasLocalization("MEX")) then begin
+    if (IVp.OKFlag!=0 and IV2p.OKFlag==0) then begin
+      if (ShouldSendMexEinvoice) then begin
+        RecordCheckError(33635,"",-1,"OfficialSerNr");
+        res = -1;
+        goto L99;
+      end;
+    end;
+  end;
+  
   if (HasLocalization("ARG")) then begin
     if (IVp.OKFlag!=0 and IV2p.OKFlag==0) then begin
       if (ShouldSendArgEinvoice(IVp)) then begin
@@ -1522,7 +1595,7 @@ L12:;
     end else begin
       if (Rs_insert==1 and (IV2p.OKFlag!=0)) then begin
         if (ShouldSendArgEinvoice(IVp)) then begin
-          if (blank(IVp.CAE)) and (IVp.CAEAFlag==0) then begin
+          if (blank(IVp.CAE)) and (IVp.CAEAFlag==0) then begin          
             RecordCheckError(2913,"",-1,"SerNr");
             res = -1;
             goto L99;
@@ -1551,7 +1624,10 @@ L12:;
 //  end;
   if (rwcnt>0) then begin
   switch (IVp.InvType) begin
-    case kInvoiceTypeCreditSpecialSales: goto LkInvoiceTypeCredit;
+    case kInvoiceTypeDebit:
+      goto LkInvoiceTypeCredit;
+    case kInvoiceTypeCreditSpecialSales: 
+      goto LkInvoiceTypeCredit;
     case kInvoiceTypeCredit:
 LkInvoiceTypeCredit:;
       MatRowGet(IVp,0,IVrw);
@@ -1601,7 +1677,14 @@ LkInvoiceTypeCredit:;
           res = -1;
           goto L99;
         end;
-        if (ARAccb.NoOverPayIV!=0) then begin
+        if (blank(locIVr.RvrsVAT)==false) then begin
+          if (locIVr.Sum4!=IVp.Sum4) then begin
+            RecordCheckError(24191,"",0,"OrdRow");
+            res = -1;
+            goto L99;
+          end;
+        end;
+        if (ARAccb.NoOverPayIV!=0 or blank(IVp.RvrsVAT)==false) then begin
         if (locIVr.InvType!=kInvoiceTypeCash and locIVr.InvType!=kInvoiceTypeCashInvoiceReceiptPRT) then begin
           ARr.InvoiceNr = IVp.CredInv;
           if (ReadFirstMain(ARr,1,true)==true) then begin
@@ -1636,7 +1719,7 @@ LkInvoiceTypeCredit:;
       end;
   end;
   end;
-  res = IVVcRecordCheckRows(IVp,IV2p,CUr,ORr,Ob,MSb,ARAccb,check,lightFlag,stat,cash);  
+  res = IVVcRecordCheckRows(IVp,IV2p,CUr,ORr,Ob,MSb,ARAccb,check,lightFlag,stat,cash);
   if (res!=0) then begin
     res = -1; 
     goto L99;
@@ -1673,19 +1756,25 @@ LkInvoiceTypeCredit:;
             basesum4 = IVp.BaseSum4;  
             SubCashRows_IVVc(IVp,false,sum4,basesum4);
             switch (CLb.Base) begin
-              case 0: bal = bal + basesum4;
-              case 1: 
+              case kCreditLimitBasedOnAllOpenInv: bal = bal + basesum4;
+              case kCreditLimitBasedOnOverDueInv: 
                 if (IVp.InvType==kInvoiceTypeCash or IVp.InvType==kInvoiceTypeCashInvoiceReceiptPRT) then begin//cash only
                   bal = bal + basesum4;
                 end;
-              case 2: 
+              case kCreditLimitBasedOnOpenInvSuspendOnOverdue: 
                 bal = bal + basesum4;
             end;
             if (bal>limit) then begin
               if (CLb.IVSave==1) then begin    
-                RecordCheckError(1164,"",-1,"CustCode");      
-                res = -1;
-                goto L99;
+                if (limit==0.001 and CLb.Base==kCreditLimitBasedOnOpenInvSuspendOnOverdue) then begin
+                  RecordCheckError(39600,"",-1,"CustCode");
+                  res = -1;
+                  goto L99;
+                end else begin
+                  RecordCheckError(1164,"",-1,"CustCode");      
+                  res = -1;
+                  goto L99;
+                end;
               end;
   //            if (CLb.IVPaste==1) then begin    
   //               Error0(1164);
@@ -1880,11 +1969,12 @@ LkInvoiceTypeCash:;
     end;
   end;  
 LIVVcRecordCheck_GenTrans:;
-//  if (HasModNL==false) then begin gentrans = false; end;
+//  if (HasSLIntegratedWithNL==false) then begin gentrans = false; end;
   if (gentrans==false) then begin transf = false; end;
   if (IsStandardProduct) then begin
-    transf = (HasModNL or HasIncomeAndExpenseBook) and transf;
+    transf = HasIntegratedNL and transf;
   end;
+
   if (transf) then begin
     errcode = MakeTransFromIV(gTRp,gSMp,IVp,false,false);
     if (errcode==0) then begin
@@ -1915,6 +2005,14 @@ LIVVcRecordCheck_GenTrans:;
         res = -1;
         goto L99;
       end;
+      if (HasLocalization("USA")) then begin
+        res = IVGetExternalTaxRates(IVp,tstr);
+        if (res>1) then begin
+          RecordCheckError(res,tstr,-1,"SerNr");   
+          res = -1; 
+          goto L99;
+        end;
+      end;
       switch (gRuniningMaint) begin    
         case "RecalcStockMn":
           UpdateTrans_Stock(gTRp);
@@ -1941,7 +2039,15 @@ LIVVcRecordCheck_GenTrans:;
         CreateRecordLink(IVp,curcomp,gSMp,curcomp);  
       end;    
     end;  
-  end;  
+  end else begin
+    if (HasLocalization("USA")) then begin
+      res = IVGetExternalTaxRates(IVp,tstr);
+      if (res>1) then begin
+        MessageBox(res," " & tstr);
+        res = -1;
+      end;
+    end;
+  end;
   if (HasLocalization("SVN")) then begin
     if (IVp.InvType==kInvoiceTypeCash) then begin
       if (IVp.OKFlag!=0 and IVp.Invalid==0 and blank(IVp.TaxAdminServSeal)) then begin

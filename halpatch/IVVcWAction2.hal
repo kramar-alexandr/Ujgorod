@@ -1,3 +1,4 @@
+external procedure AutomatedSalesOrderly(string);
 remote function Integer IVApprovalStatus(record IVVc,var record AcceptanceRulesVc);
 external function Boolean ArgEInvActiveField(record IVVc,integer,string,integer);
 external procedure PUCalcPerc(val,string,var val);
@@ -8,7 +9,7 @@ remote function Integer EditingAcceptanceRejectedAllowed(Integer,string,string,I
 external updating function Boolean IVDClassivcashcommandOnEnterKey(Integer,Integer);
 external function Integer ERecordStatus(string,string,LongInt,string,var string);
 external procedure SpecialVAT2(val,var val);
-external function Integer VATCalcRule(string);
+remote function Integer VATCalcRule(string);
 external procedure CalculateIVVcPoints(var record IVVc);
 external function val CalculateTotalVATFromTaxMatrix(record TaxMatrixVc,Integer);
 external procedure AddRowTaxMatrixToSumTaxMatrix(record TaxMatrixVc,var record TaxMatrixVc,Integer);
@@ -26,6 +27,7 @@ external procedure RecalcIVSubtotal(var record IVVc);
 external function val FindTAX1(string,val,Integer,Integer);
 external procedure SpecialVAT(string,var val);
 external procedure CalcVATBaseVAT(record SMVc,Integer,Integer,Integer,var val,var val);
+external procedure CalcVATBaseVAT2(record SMVc,Integer,Integer,Integer,Boolean,var val,var val);
 external procedure MulM4ProcVal(val,val,var val);
 external procedure GetCurncyRoundoff(string,string,string,var roundmode,var roundmode,var roundmode);
 external function val FindTAX2(val,val,Integer);
@@ -172,6 +174,24 @@ begin
   return;
 end;
 
+function Boolean AnyRowWithRvrsVATCode(record IVVc IVr)
+begin
+  Boolean res;
+  row IVVc IVrw;
+  Integer i,rwcnt;
+  
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (nonblank(IVrw.RvrsVATCode)) then begin    
+      i = rwcnt;
+      res = true;
+    end;
+  end;
+  AnyRowWithRvrsVATCode = res;
+  return;
+end;
+
 function Boolean ActiveField(record IVVc IVr,record IVVc IV2r,Integer rownr,string fieldname,Integer wnst,Boolean updatef)
 BEGIN
   Boolean res;
@@ -182,6 +202,7 @@ BEGIN
   row IVVc lastIVrw;
   record InternetEnablerBlock IEb;
   string 255 tstr;
+  record INVc INr;
   
   res = true;
   if (IVApprovalStarted(IVr) and UserCanChangePendingRecord(rownr)==false) then begin
@@ -191,6 +212,7 @@ BEGIN
   switch (fieldname) begin
 //    case "CreditedRow": res = false;
     case "TAX2Prc": res = false;
+    case "RvrsVATCode": res = false;
     case "TaxAuthID": res = HasLocalization("BOL")==false;
     case "VATNr": res = HasLocalization("PRT")==false;
     case "RecipientGLN": res = HasLocalization("PRT")==false;
@@ -201,6 +223,31 @@ BEGIN
     case "InvAddr3": res = HasLocalization("PRT")==false;
     case "InvAddr4": res = HasLocalization("PRT")==false;
     case "InvCountry": res = HasLocalization("PRT")==false;
+    case "GlobalTransportNr": 
+      if (wnst!=Rs_insert) then begin
+        res = HasLocalization("PRT")==false;
+        if (res==false) then begin
+          MessageBox(40884,"");
+        end;
+      end;
+    case "GlobalTransportDate": 
+      if (wnst!=Rs_insert) then begin
+        if (nonblank(IVr.GlobalTransportNr)) then begin
+          res = HasLocalization("PRT")==false;
+          if (res==false) then begin
+            MessageBox(40885,"");
+          end;
+        end;
+      end;
+    case "Location": 
+      if (wnst!=Rs_insert) then begin
+        if (nonblank(IVr.GlobalTransportNr)) then begin
+          res = HasLocalization("PRT")==false;
+          if (res==false) then begin
+            MessageBox(40886,"");
+          end;
+        end;
+      end;    
     case "CuAccCode":
       if (rownr>=0) then begin
         MatRowGet(IVr,rownr,IVrw);
@@ -283,6 +330,9 @@ BEGIN
         MatRowGet(IVr,rownr,IVrw);
         if (IVrw.stp==6) then begin res = false; end;
       end;
+      if (IVrw.OrdRow>=0) then begin 
+        if (AnyRowWithRvrsVATCode(IVr)) then begin res = false; end;
+      end;
       
       if (res) then begin 
         MatRowGet(IVr,rownr,IVrw);
@@ -304,6 +354,9 @@ BEGIN
         MatRowGet(IVr,rownr,IVrw);
         if (UserCanAction("ChangeUnitPrices",true)==false) then begin res = false; end;
       end;
+      if (IVrw.OrdRow>=0) then begin 
+        if (AnyRowWithRvrsVATCode(IVr)) then begin res = false; end;
+      end;
       if (res) then begin 
         MatRowGet(IVr,rownr,IVrw);
         if (IVrw.Quant<0) then begin 
@@ -322,6 +375,9 @@ BEGIN
         end;
       end;
       MatRowGet(IVr,rownr,IVrw);
+      if (nonblank(IVrw.RvrsVATCode)) then begin
+        if (IVrw.OrdRow>=0) then begin res = false; end;
+      end;
       if (TouchScreenInterface) then begin
         if (nonblank(IVrw.ArtCode)) then begin
           if (UserCanAction("AllowIVTSRowsDelete",true)==false) then begin
@@ -336,6 +392,13 @@ BEGIN
       switch (IVrw.stp) begin
         case kInvoiceRowTypeStructuredItemComponent:
           res = false;
+      end;
+      if (IVrw.OrdNr>0 or IVr.OrderNr>0) then begin 
+        if (AnyRowWithRvrsVATCode(IVr)) then begin 
+          if (ReadFirstItem(IVrw.ArtCode,INr,true,false)) then begin
+            if (nonblank(INr.RvrsVATCode)) then begin res = false; end;
+          end;
+        end;
       end;
       if (TouchScreenInterface) then begin
         if (nonblank(IVrw.ArtCode)) then begin
@@ -380,7 +443,7 @@ BEGIN
     case "AuthorizationCode":
       if (rownr>=0) then begin
         MatRowGet(IVr,rownr,IVrw);
-        if (IVrw.stp==kInvoiceRowTypeCreditCardPayment) then begin
+        if (IVrw.stp==kInvoiceRowTypeCreditCardPayment or IVrw.stp==kInvoiceRowTypeSwishPayment or IVrw.stp==kInvoiceRowTypeQRPayment) then begin
           //BlockLoad(Rahaxib);
           //res = (Rahaxib.TerminalType==kLocalCCTerminalNone);
           res = blank(IVrw.AuthorizationCode);
@@ -394,7 +457,7 @@ BEGIN
       if (IVrw.stp<kInvoiceRowTypeGiftVoucherSold) then begin
         if (UserCanAction("ChangeUnitPrices",true)==false) then begin res = false; end;
       end;
-      if (IVrw.stp==kInvoiceRowTypeCreditCardPayment) then begin
+      if (IVrw.stp==kInvoiceRowTypeCreditCardPayment or IVrw.stp==kInvoiceRowTypeSwishPayment or IVrw.stp==kInvoiceRowTypeQRPayment) then begin
         //BlockLoad(Rahaxib);
         //res = (Rahaxib.TerminalType==kLocalCCTerminalNone);
         if (rownr>=0) then begin
@@ -409,6 +472,9 @@ BEGIN
             res = false;
           end;
         end;
+      end;
+      if (IVrw.OrdRow>=0) then begin 
+        if (AnyRowWithRvrsVATCode(IVr)) then begin res = false; end;
       end;
       if (res) then begin 
         MatRowGet(IVr,rownr,IVrw);
@@ -565,6 +631,7 @@ BEGIN
         case "LastRemDate": res = true;
         case "InvComment": res = true;
         case "ReceiptInfo": res = true;
+        case "ExpectedClearingDate": res = true;
         case "ShipAddr0": res = HasLocalization("PRT")==false;
         case "ShipAddr1": res = HasLocalization("PRT")==false;
         case "ShipAddr2": res = HasLocalization("PRT")==false;
@@ -588,6 +655,17 @@ BEGIN
         case "IntCode": res = true;
         case "BankCode": res = true;
         case "Status": res = true;
+        case "GlobalTransportNr" : res = HasLocalization("PRT")==false;  if (res==false) then begin MessageBox(40883,""); end;
+        case "GlobalTransportDate" : 
+          if (nonblank(IVr.GlobalTransportNr)) then begin
+            res = HasLocalization("PRT")==false; 
+            if (res==false) then begin MessageBox(40885,""); end;
+          end;
+        case "Location" : 
+          if (nonblank(IVr.GlobalTransportNr)) then begin
+            res = HasLocalization("PRT")==false; 
+            if (res==false) then begin MessageBox(40886,""); end;
+          end;
       end;
     end else begin
       GetWindowRecord(wn,IVr);
@@ -595,7 +673,7 @@ BEGIN
       res = ActiveField(IVr,IV2r,rownr,fieldname,wnst,true);
     end;
     
-    if(fieldname=="CurncyCode" and rownr>-1)then begin
+    if(fieldname=="CurncyCode" and rownr>-1)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:08:29 PM
     	GetWindowRecord(wn,IVr);
     	matrowget(IVr,rownr,IVrw);
 			if(nonblank(IVrw.CurncyCode))then begin
@@ -619,12 +697,13 @@ begin
   if (changed!=0) and (rownr>=0) then begin  
     GetWindowRecord(wn,IVr);
     GetPrevWindowRecord(wn,IV2r);
-    DeselectWindow(wn,false);
+    DeselectWindow(wn,false);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:08:48 PM
     IVVc_PastePrice(IVr,IV2r,rownr,warning);
     PutWindowRecord(wn,IVr);
     if (nonblank(warning)) then begin
       MessageBox(0,warning);
     end;
+    AutomatedSalesOrderly("HasPriceLists+Edit_IVVc");
   end;  
   IVDClassPriceEFAfter = true;
   return;
@@ -880,6 +959,7 @@ function Boolean IVDClassServiceDelDateEFAfter(Integer wn,Integer changed)
 begin  
   record IVVc IVr;
   record OrdSettBlock OSb;
+  record AccBlock Accb;
 
   if (changed!=0) then begin  
     GetWindowRecord(wn,IVr);
@@ -888,7 +968,10 @@ begin
       IVr.TransDate = IVr.ServiceDelDate;
       IVVc_PasteCurncyCode(IVr,IVr.CurncyCode,-1,true,true);
     end;
-    IVVc_CalculatePayDate(IVr);
+    BlockLoad(Accb);
+    if (Accb.DueDateBasedOnServDelDate!=0) then begin
+      IVVc_CalculatePayDate(IVr);
+    end;
     PutWindowRecord(wn,IVr);
   end;  
   IVDClassServiceDelDateEFAfter = true;
@@ -985,11 +1068,11 @@ LAddTAX2Base:;
 END;
 
 global
-procedure IV2Sumup2(record IVVc IVp,record SMVc SMr,Integer vatcnt,record SMVc SMTax2r,Boolean calcperceppercuf,Integer inclVATCalcRuleSkip,var val s0,var val s1,var val s2,var val s3,var val s4,var val TotGP,var string cashpaymode)
+procedure IV2Sumup3(record IVVc IVp,record SMVc VATr,Integer vatcnt,record SMVc SMTax2r,record SMVc RvrsVATr,Boolean rvrsvatcodef,Boolean calcperceppercuf,Integer inclVATCalcRuleSkip,var val s0,var val s1,var val s2,var val s3,var val s4,var val TotGP,var string cashpaymode)
 begin
   Integer i,rwcnt;
   row IVVc IVrw;
-  val t,t1,rowsum,t2,tax1reb,tax1;
+  val t,t1,rowsum,t2,tax1reb,tax1,tmp;
   record Tax1RebVc Tax1Rebr;
   record TaxMatrixVc TMr;
 
@@ -1026,13 +1109,17 @@ begin
           if (t==0) then begin
             s2 = IVrw.Sum + s2;
           end;  
-          AddVATBase(SMr,IVrw.VATCode,IVrw.Sum - t,tax1reb,vatcnt,1,0);
+          if (blank(IVrw.RvrsVATCode)) then begin
+            AddVATBase(VATr,IVrw.VATCode,IVrw.Sum - t,tax1reb,vatcnt,1,0);
+          end;
 //          FindTAX2(IVrw.TAX2Prc,IVrw.Sum,1);          
         otherwise
           s4 = IVrw.Sum + s4;
           t = FindVAT(IVrw.VATCode,IVrw.Sum,IVp.InclVAT,IVp.NoTAXonVAT);
           s3 = s3 + t;
-          AddVATBase(SMr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+          if (blank(IVrw.RvrsVATCode)) then begin
+            AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+          end;
           if (t==0) then begin
             s2 = IVrw.Sum + s2;
             s1 = IVrw.Sum + s1;
@@ -1050,12 +1137,16 @@ begin
             s2 = IVrw.Sum + s2;
           end;  
           s3 = t + s3;
-          AddVATBase(SMr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);        
+          if (blank(IVrw.RvrsVATCode)) then begin
+            AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);        
+          end;
         otherwise
           s4 = IVrw.Sum + s4;
           t = FindVAT (IVrw.VATCode,IVrw.Sum,IVp.InclVAT,IVp.NoTAXonVAT);
           s3 = t + s3;
-          AddVATBase(SMr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+          if (blank(IVrw.RvrsVATCode)) then begin
+            AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+          end;
           if (t==0) then begin
             s2 = IVrw.Sum + s2;
             s1 = IVrw.Sum + s1;
@@ -1075,14 +1166,18 @@ begin
               s2 = IVrw.Sum + s2;
             end;  
             s3 = t + s3;
-            AddVATBase(SMr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            if (blank(IVrw.RvrsVATCode)) then begin
+              AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            end;
           end;
         otherwise/* 0-rndoff 1-sumvatdble(incl) 2-sumnondtbl 3-vat 4-sumtopay */
           if ((IVp.ExportFlag==0) or (IVp.ExportFlag==3) or (IVp.ExportFlag==4)) then begin
             s4 = IVrw.Sum + s4;
             t = FindVAT (IVrw.VATCode,IVrw.Sum,IVp.InclVAT,IVp.NoTAXonVAT);
             s3 = t + s3;
-            AddVATBase(SMr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            if (blank(IVrw.RvrsVATCode)) then begin
+              AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            end;
             if (t==0) then begin
               s1 = IVrw.Sum + s1;
               s2 = IVrw.Sum + s2;
@@ -1093,7 +1188,9 @@ begin
             s4 = IVrw.Sum + s4;
             t = FindVAT (IVrw.VATCode,IVrw.Sum,IVp.InclVAT,IVp.NoTAXonVAT);
             s3 = t + s3;
-            AddVATBase(SMr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            if (blank(IVrw.RvrsVATCode)) then begin
+              AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            end;
             s4 = s4 - t;
             if (t==0) then begin
               s1 = IVrw.Sum + s1;
@@ -1102,6 +1199,13 @@ begin
               s1 = IVrw.Sum + s1;
             end;    
           end;
+      end;
+      if (nonblank(IVrw.RvrsVATCode)) then begin
+        if (rvrsvatcodef) then begin
+          AddVATBase(RvrsVATr,IVrw.RvrsVATCode,IVrw.Sum,tmp,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+        end else begin
+          AddVATBase(RvrsVATr,IVrw.VATCode,IVrw.Sum,tmp,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+        end;
       end;
     end;
     if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin
@@ -1169,14 +1273,18 @@ retention change
               s2 = IVrw.Sum + s2;
             end;    
             s3 = t + s3;
-            AddVATBase(SMr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            if (blank(IVrw.RvrsVATCode)) then begin
+              AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            end;
           end;
         case 1:/* 0-rndoff 1-sumvatdble(incl) 2-sumnondtbl 3-vat 4-sumtopay */
           if ((IVp.ExportFlag==0) or (IVp.ExportFlag==3) or (IVp.ExportFlag==4)) then begin
             s4 = IVrw.Sum + s4;
             t = FindVAT (IVrw.VATCode,IVrw.Sum,IVp.InclVAT,IVp.NoTAXonVAT);
             s3 = t + s3;
-            AddVATBase(SMr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            if (blank(IVrw.RvrsVATCode)) then begin
+              AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            end;
             if (t==0) then begin
               s2 = IVrw.Sum + s2;
               s1 = IVrw.Sum + s1;//otherwise Sub-Total is 0, why do we need s2 at all?
@@ -1187,7 +1295,9 @@ retention change
             s4 = IVrw.Sum + s4;
             t = FindVAT(IVrw.VATCode,IVrw.Sum,IVp.InclVAT,IVp.NoTAXonVAT);
             s3 = t + s3;
-            AddVATBase(SMr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            if (blank(IVrw.RvrsVATCode)) then begin
+              AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            end;
             if (t==0) then begin
               s2 = IVrw.Sum + s2;
               s1 = IVrw.Sum + s1;//otherwise Sub-Total is 0
@@ -1200,7 +1310,9 @@ retention change
             s4 = IVrw.Sum + s4;
             t = FindVAT (IVrw.VATCode,IVrw.Sum,IVp.InclVAT,IVp.NoTAXonVAT);
             s3 = t + s3;
-            AddVATBase(SMr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            if (blank(IVrw.RvrsVATCode)) then begin
+              AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            end;
             if (t==0) then begin
               s2 = IVrw.Sum + s2;
               s1 = IVrw.Sum + s1;//otherwise Sub-Total is 0, why do we need s2 at all?
@@ -1211,7 +1323,9 @@ retention change
             s4 = IVrw.Sum + s4;
             t = FindVAT (IVrw.VATCode,IVrw.Sum,IVp.InclVAT,IVp.NoTAXonVAT);
             s3 = t + s3;
-            AddVATBase(SMr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            if (blank(IVrw.RvrsVATCode)) then begin
+              AddVATBase(VATr,IVrw.VATCode,IVrw.Sum,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+            end;
             if (t==0) then begin
               s2 = IVrw.Sum + s2;
               s1 = IVrw.Sum + s1;//otherwise Sub-Total is 0
@@ -1219,6 +1333,13 @@ retention change
               s1 = IVrw.Sum + s1;
             end;  
           end;
+      end;
+      if (nonblank(IVrw.RvrsVATCode)) then begin
+        if (rvrsvatcodef) then begin
+          AddVATBase(RvrsVATr,IVrw.RvrsVATCode,IVrw.Sum,tmp,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+        end else begin
+          AddVATBase(RvrsVATr,IVrw.VATCode,IVrw.Sum,tmp,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+        end;
       end;
     end;
     end;
@@ -1241,14 +1362,14 @@ retention change
           s2 = IVp.FrPrice + s2;
         end;  
         s3 = t + s3;
-        AddVATBase(SMr,IVp.FrVATCode,IVp.FrPrice,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+        AddVATBase(VATr,IVp.FrVATCode,IVp.FrPrice,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
       end;
     end else begin
       if ((IVp.ExportFlag==0) or (IVp.ExportFlag==3) or (IVp.ExportFlag==4)) then begin
         s4 = IVp.FrPrice + s4;
         t = FindVAT (IVp.FrVATCode,IVp.FrPrice,IVp.InclVAT,IVp.NoTAXonVAT);
         s3 = t + s3;
-        AddVATBase(SMr,IVp.FrVATCode,IVp.FrPrice,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+        AddVATBase(VATr,IVp.FrVATCode,IVp.FrPrice,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
         if (t==0) then begin
           s2 = IVp.FrPrice + s2;
         end else begin
@@ -1258,7 +1379,7 @@ retention change
         s4 = IVp.FrPrice + s4;      
         t = FindVAT (IVp.FrVATCode,IVp.FrPrice,IVp.InclVAT,IVp.NoTAXonVAT);
         s3 = t + s3;
-        AddVATBase(SMr,IVp.FrVATCode,IVp.FrPrice,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
+        AddVATBase(VATr,IVp.FrVATCode,IVp.FrPrice,tax1reb,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
         s4 = s4 - t;
         if (t==0) then begin
           s2 = IVp.FrPrice + s2;
@@ -1268,15 +1389,24 @@ retention change
       end;
     end;
   end;
-  RETURN;  
-END;
+  return;
+end;
 
 global
-procedure IV2Sumup(record IVVc IVp,record SMVc SMr,Integer vatcnt,record SMVc SMTax2r,Boolean calcperceppercuf,Integer inclVATCalcRuleSkip,var val s0,var val s1,var val s2,var val s3,var val s4,var val TotGP)
+procedure IV2Sumup2(record IVVc IVp,record SMVc VATr,Integer vatcnt,record SMVc SMTax2r,Boolean calcperceppercuf,Integer inclVATCalcRuleSkip,var val s0,var val s1,var val s2,var val s3,var val s4,var val TotGP,var string cashpaymode)
+begin
+  record SMVc RvrsVATr;
+  
+  IV2Sumup3(IVp,VATr,vatcnt,SMTax2r,RvrsVATr,false,calcperceppercuf,inclVATCalcRuleSkip,s0,s1,s2,s3,s4,TotGP,cashpaymode);
+  return;
+end;
+
+global
+procedure IV2Sumup(record IVVc IVp,record SMVc VATr,Integer vatcnt,record SMVc SMTax2r,Boolean calcperceppercuf,Integer inclVATCalcRuleSkip,var val s0,var val s1,var val s2,var val s3,var val s4,var val TotGP)
 begin
   string 255 cashpaymode;
 
-  IV2Sumup2(IVp,SMr,vatcnt,SMTax2r,calcperceppercuf,inclVATCalcRuleSkip,s0,s1,s2,s3,s4,TotGP,cashpaymode);
+  IV2Sumup2(IVp,VATr,vatcnt,SMTax2r,calcperceppercuf,inclVATCalcRuleSkip,s0,s1,s2,s3,s4,TotGP,cashpaymode);
   return;
 end;
 
@@ -1566,11 +1696,12 @@ end;
 global
 procedure IVSumup(var record IVVc IVp,Boolean roundof)
 begin
-  record SMVc SMr;/*VATBaseRowType*/
+  record SMVc VATr;/*VATBaseRowType*/
   record SMVc SMTax2r;
+  record SMVc RvrsVATr;/*VATBaseRowType*/
   Integer vatcnt;
   record FreightBlock FreightRec;
-  val s0,s1,s2,s3,s4,TotGP;
+  val s0,s1,s2,s3,s4,rvrsvat,TotGP;
   val tax1sum,tax2sum,t;
   roundmode roundlines,rndtotal,rndvat;
   string 255 tstr,cashpaymode;
@@ -1578,13 +1709,17 @@ begin
   val ts3,ttax1sum,tax2base;
   record RPCUTaxVc RPCUTaxr;
   Boolean calcperceppercuf;
+  record CUVc CUr;
   
   if (UseTaxTemplatesforTaxCalc) then begin
     IVSumup_TaxTemplate(IVp,roundof);
     goto LIVSumup;
   end;
+  CUr.Code = IVp.CustCode;
+  ReadFirstMain(CUr,1,true);
   BlockLoad(FreightRec);
-  SetupVATBase(SMr,vatcnt);
+  SetupVATBase(RvrsVATr,vatcnt);
+  SetupVATBase(VATr,vatcnt);
   s0 = IVp.Sum0;
   s1 = IVp.Sum1;
   s2 = IVp.Sum2;
@@ -1595,14 +1730,15 @@ begin
   if (HasLocalization("ARG")) then begin
     calcperceppercuf = FindRPCUTax(IVp.CustCode,IVp.InvDate,RPCUTaxr);
   end;
-  IV2Sumup2(IVp,SMr,vatcnt,SMTax2r,calcperceppercuf,0,s0,s1,s2,s3,s4,TotGP,cashpaymode);
+  IV2Sumup3(IVp,VATr,vatcnt,SMTax2r,RvrsVATr,false,calcperceppercuf,0,s0,s1,s2,s3,s4,TotGP,cashpaymode);
   IVp.Sum0 = s0;
   IVp.Sum1 = s1;
   IVp.Sum2 = s2;
   IVp.Sum3 = s3;
   IVp.Sum4 = s4;
-  IVp.TotGP = TotGP;  
-  CalcVATBaseVAT(SMr,IVp.InclVAT,IVp.NoTAXonVAT,vatcnt,s3,tax1sum);  
+  IVp.TotGP = TotGP;
+  CalcVATBaseVAT(VATr,IVp.InclVAT,IVp.NoTAXonVAT,vatcnt,s3,tax1sum);  
+  CalcVATBaseVAT2(RvrsVATr,IVp.InclVAT,IVp.NoTAXonVAT,vatcnt,CUr.RvrsVAT!=0,rvrsvat,t);  
   if (HasLocalization("ARG")) then begin
     if (IVp.NoTax2==0) then begin
       if (calcperceppercuf) then begin
@@ -1644,8 +1780,8 @@ begin
         case 1:
           t = s4;
           s4 = s4 + tax2sum;
-          if (IVp.TotalwoTAX==0) then begin
-            s4 = tax1sum + s4;
+          if (IVp.TotalwoTAX!=0) then begin
+            s4 = s4 - tax1sum;
           end;
           s4 = Round(s4,rndtotal);
           t = s4 - t;
@@ -1653,8 +1789,8 @@ begin
         case 2:
           t = s4;
           s4 = tax2sum + s4;
-          if (IVp.TotalwoTAX==0) then begin
-            s4 = tax1sum + s4;
+          if (IVp.TotalwoTAX!=0) then begin
+            s4 = s4 - tax1sum;
           end;
           s4 = Round(s4,rndtotal);
           t = s4 - t;
@@ -1666,7 +1802,7 @@ begin
           if (IVp.TotalwoTAX==0) then begin
             s4 = tax1sum + s4;
           end;
-          CalcVATBaseVAT(SMr,IVp.InclVAT,1,vatcnt,ts3,ttax1sum);  
+          CalcVATBaseVAT(VATr,IVp.InclVAT,1,vatcnt,ts3,ttax1sum);  
 //not working when per row          
           s4 = s4 + s3-ts3;
           s4 = tax2sum + s4;
@@ -1718,14 +1854,20 @@ begin
   IVp.Sum2 = s2;
   IVp.Sum3 = s3;
   IVp.Sum4 = s4;
+  IVp.RvrsVAT = rvrsvat;
   RecalculateIVWithholdings(IVp);
 LIVSumup:;  
   IVp.SumIncCom = IVp.Sum4 + IVp.Commision;
   CalculateIVCashBack(IVp);
+  s1 = MulRateToBase1(IVp.CurncyCode,IVp.Sum1,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2,DefaultCurRoundOff);
+  s3 = MulRateToBase1(IVp.CurncyCode,IVp.Sum3,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2,DefaultCurRoundOff);
   if (IVp.InclVAT==0) then begin
     t = IVp.TotGP/s1;
   end else begin
-    t = IVp.TotGP/(s1-s3);
+    t = s1-s3;
+    if (t!=0) then begin
+      t = IVp.TotGP/t;
+    end;
   end; 
   IVp.GPProc = t*100;
   RecalcIVSubtotal(IVp);

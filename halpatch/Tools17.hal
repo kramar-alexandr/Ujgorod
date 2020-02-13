@@ -269,8 +269,7 @@ begin
   return
 end;
 
-function
-Boolean GetITName(Integer tnr,var string tstr,record ITVc ITp,string langcod2,string deftext)
+function Boolean GetITName(Integer tnr,var string tstr,record ITVc ITp,string langcod2,string deftext)
 BEGIN
   Boolean res;
   Integer i,rwcnt;
@@ -328,15 +327,27 @@ BEGIN
   Integer tcnt;
   record ITVc ITr;
   row IVVc IVrw;
+  row INVc INrw;
+  Integer i,rwcnt;
  
   ITr.Code = INp.Group;
   if (ReadFirstMain(ITr,1,true)) then begin
-    tcnt = 0;
-    while (GetITName(tcnt,tstr,ITr,langcode,INp.Name)) begin
-      ClearRow(IVr,IVrw,1);
-      IVrw.Spec = tstr;
-      MatRowInsert(IVr,arow+tcnt-1,IVrw);
-      tcnt = tcnt + 1;
+  
+    rwcnt = MatRowCnt(INp);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(INp,i,INrw);
+      if (langcode==INrw.LangCode) then begin
+         tstr = INrw.Text;
+      end;
+    end;
+    if (blank(tstr)) then begin
+      tcnt = 0;
+      while (GetITName(tcnt,tstr,ITr,langcode,INp.Name)) begin
+        ClearRow(IVr,IVrw,1);
+        IVrw.Spec = tstr;
+        MatRowInsert(IVr,arow+tcnt-1,IVrw);
+        tcnt = tcnt + 1;
+      end;
     end;
   end;  
   RETURN;

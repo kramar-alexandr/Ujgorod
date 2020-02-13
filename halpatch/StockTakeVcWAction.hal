@@ -1,5 +1,4 @@
-SetLangMode(LangUkrainian,"UKR",0);
-
+remote function LongInt StockTakeVc_PasteLocation2(var record StockTakeVc,Integer,var string);
 external function Boolean TestForMATVARINS(Integer);
 external procedure WarnFutureDate(Boolean,Date);
 external function Boolean FindLocalSerialPortDevice(Integer,LongInt,string,var record LSerialPortDeviceVc);
@@ -15,11 +14,12 @@ external procedure SerialNrDimensions(string,string,var val,var val,var val);
 external function val CalculateSerialNrQuantity(string,string,string,Boolean,val,val,val,val);
 remote function Boolean GetSVOSerialItem(string,string,record SVOSerVc);
 remote function Boolean GetFirstItem(var string,var record INVc);
-remote function boolean GetPartFileToArea(string,var area);
-remote procedure DeleteXLSXJunk(string);
-remote procedure BackupXLSX(string);
-remote procedure RecoverXLSX(string,string);
+remote function boolean GetPartFileToArea(string,var area);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 13 02 2020 y. at 12:18:05 PM
+remote procedure DeleteXLSXJunk(string);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 13 02 2020 y. at 12:18:07 PM
+remote procedure BackupXLSX(string);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 13 02 2020 y. at 12:18:08 PM
+remote procedure RecoverXLSX(string,string);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 13 02 2020 y. at 12:18:10 PM
 
+SetLangMode(LangUkrainian,"UKR",0);
 
 global
 function Boolean StockTakeDClassSwitchRow(Integer wn,Integer rownr)
@@ -383,6 +383,27 @@ begin
   return;
 end;
 
+function Boolean StockTakeDClassLocationEFAfter(Integer wn,Integer rownr,Boolean changed)
+begin
+  record StockTakeVc StockTaker;
+  Boolean res;
+  string 255 errlocation;
+  LongInt err;
+  
+  res = true;
+  if (changed) then begin
+    GetWindowRecord(wn,StockTaker);
+    err = StockTakeVc_PasteLocation2(StockTaker,rownr,errlocation);
+    if (err!=0) then begin
+      MessageBox(err," " & errlocation);
+    end else begin
+      PutWindowRecord(wn,StockTaker);    
+    end;
+  end;
+  StockTakeDClassLocationEFAfter = res;
+  return;
+end;
+
 global
 function Boolean StockTakeRowDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
@@ -401,7 +422,7 @@ begin
   return;
 end;
 
-global updating
+global updating// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 13 02 2020 y. at 12:18:19 PM
 function Boolean StockTakeDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
   Boolean res;
@@ -415,6 +436,7 @@ begin
     case "ArtCode": res = StockTakeDClassArtCodeEFAfter(wn,fn,rownr,changed);if(res and changed!=0)then begin windowdook(wn,0); end;// Edit ************************** Wednesday, 10 May 2017 10:17:42
     case "FIFO": res = StockTakeDClassFIFOEFAfter(wn,fn,rownr,changed);
     case "FIFORowVal": res = StockTakeDClassFIFORowValEFAfter(wn,fn,rownr,changed);
+    case "Location": res = StockTakeDClassLocationEFAfter(wn,rownr,changed!=0);
   end;
   StockTakeDClassAfterEditField = res;
   return;

@@ -58,7 +58,7 @@ function Boolean CheckVATLaws()
 BEGIN  
   Boolean res;
     
-  if (HasLocalization("EST,LIT,LVA,RUS,")==false) then begin
+  if (HasLocalization("EST,LIT,LVA,RUS")==false) then begin
     res = true;
   end;      
   CheckVATLaws = res;
@@ -126,13 +126,17 @@ begin
   revacc = IVrw.SalesAcc;
   CUr.Code = IVp.CustCode; 
   cuf = ReadFirstMain(CUr,1,true);
-  switch (CUr.IPBookVAT) begin
-    case 1:
-      IPBookVAT = 1;
-    case 2:
-      IPBookVAT = 0;
-    otherwise
-      IPBookVAT = ARAccb.IPBookVAT;
+  if (HasLocalization("POL")) then begin
+    IPBookVAT = IVp.IPBookVAT;
+  end else begin
+    switch (CUr.IPBookVAT) begin
+      case 1:
+        IPBookVAT = 1;
+      case 2:
+        IPBookVAT = 0;
+      otherwise
+        IPBookVAT = ARAccb.IPBookVAT;
+    end;
   end;
   if (blank(revacc)) then begin
     if (cuf) then begin
@@ -499,7 +503,7 @@ BEGIN
 	
 	
   BlockLoad(bascur);
-  if(blank(poscur))then begin
+  if(blank(poscur))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:52:44 PM
   	poscur = bascur.BaseCur1;
   end;
   
@@ -520,6 +524,21 @@ BEGIN
         errstrno = 2191;
         goto LIVVc_CASHRow;
       end;
+    case kInvoiceRowTypeSwishPayment:
+      if (GetPMRow(IVrw.PayMode,PMrw)==false) then begin
+        errstrno = 2191;
+        goto LIVVc_CASHRow;
+      end;
+    case kInvoiceRowTypeQRPayment:
+      if (GetPMRow(IVrw.PayMode,PMrw)==false) then begin
+        errstrno = 2191;
+        goto LIVVc_CASHRow;
+      end;
+    case kInvoiceRowTypeCashWithdrawal:
+      if (GetPMRow(IVrw.PayMode,PMrw)==false) then begin
+        errstrno = 2191;
+        goto LIVVc_CASHRow;
+      end;
     case kInvoiceRowTypeChequePayment:
       if (GetPMRow(IVrw.PayMode,PMrw)==false) then begin
         errstrno = 2191;
@@ -530,19 +549,32 @@ BEGIN
     errstrno = 2191;
     goto LIVVc_CASHRow;
   end;
-  
-	if(blank(IVrw.CurncyCode))then begin
+/*  
+  if (GetAccName(IVrw.SalesAcc,tstr,60)==false) then begin
+    errstrno = 2191;
+    goto LIVVc_CASHRow;
+  end;
+*/  
+	if(blank(IVrw.CurncyCode))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:53:02 PM
 		IVrw.CurncyCode = poscur;
     GetFullCurncyRate(IVrw.CurncyCode,IVp.InvDate,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2);
 
 	end;
-	
+
   rs = MulRateToBase1(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
   rs2 = MulRateToBase2(IVrw.CurncyCode,IVrw.Sum,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,IVrw.BaseRate2,DefaultCurRoundOff);
-
+/*
+  if (IVp.ARonTR!=0) then begin
+    AddEuroCurncyNomARTrRow(gTRp,PMrw.AccNr,cuobj,"",tstr,rs,blankval,true,dc1,TotSum,
+                      IVrw.CurncyCode,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,
+                      IVrw.BaseRate2,IVrw.Sum,blankval,
+                      IVp.CustCode,IVp.SerNr,1,blankval,IVp.PayDate,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"","","");
+  end else begin
+*/
     AddEuroCurncyTrRow(gTRp,PMrw.AccNr,cuobj,"",tstr,rs,false,dc1,TotSum,
                        IVrw.CurncyCode,IVrw.FrRate,IVrw.ToRateB1,IVrw.ToRateB2,IVrw.BaseRate1,
                        IVrw.BaseRate2,IVrw.Sum,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"");
+//  end;      
     
   if (GetAccName(IVp.ARAcc,tstr,60)==false) then begin
     errstrno = 1908;
@@ -566,19 +598,22 @@ BEGIN
 	Logtext(0,"**********" & CheckTTRPerRow("IVVc",IVp.ARAcc,lcuobj,dc2,taccnumber,0));
   
   if (CheckTTRPerRow("IVVc",IVp.ARAcc,lcuobj,dc2,taccnumber,0)) then begin end;
+/*
+  if (IVp.ARonTR!=0) then begin
+    AddEuroCurncyNomARTrRow(gTRp,IVp.ARAcc,lcuobj,"",tstr,ors,blankval,true,dc2,TotSum,
+                            IVp.CurncyCode,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,
+                            IVp.BaseRate2,IVrw.Sum,blankval,
+                            IVp.CustCode,IVp.SerNr,1,blankval,IVp.PayDate,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber,"","");//0
+  end else begin
+*/  
+	if(IVp.InvType!=kInvoiceTypeCash)then begin// Edit ************************** Wednesday, 22 June 2016 18:33:19
 
-		if(IVp.InvType!=kInvoiceTypeCash)then begin// Edit ************************** Wednesday, 22 June 2016 18:33:19
-			if((IVrw.Sum>0 and IVp.Sum4>0) or (IVrw.Sum<0 and IVp.Sum4<0))then begin
-				AddEuroCurncyTrRow(gTRp,IVp.ARAcc,lcuobj,"",tstr,ors,true,dc2,TotSum,
-													 IVp.CurncyCode,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,
-													 IVp.BaseRate2,IVrw.Sum,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber);//0
-			end else begin
-				AddEuroCurncyTrRow(gTRp,IVp.ARAcc,lcuobj,"",tstr,ors,false	,dc2,TotSum,
-													 IVp.CurncyCode,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,
-													 IVp.BaseRate2,IVrw.Sum,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber);//0
-			end;
-    end;
-    
+    AddEuroCurncyTrRow(gTRp,IVp.ARAcc,lcuobj,"",tstr,ors,true,dc2,TotSum,
+                       IVp.CurncyCode,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,
+                       IVp.BaseRate2,IVrw.Sum,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,taccnumber);//0
+//  end;
+	end;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:54:24 PM
+
   mtrw = matrowcnt(gTRp);
   For(i=0;i<mtrw;i=i+1) begin
 	  matrowget(gTRp,i,TRrw);
@@ -586,7 +621,6 @@ BEGIN
 	end; 
 	
 	Logtext(0,"**********2");
-//  end;
 
   if (IVrw.stp==kInvoiceRowTypeCashPayment) then begin
     rd = ors - rs;
@@ -614,7 +648,28 @@ BEGIN
       end;
       AddEuroCurncyTrRow(gTRp,ARAccRec.RateLossAcc,"","",tstr,rateloss,true,dc2,TotSum,
                            bascur.BaseCur2,blankval,blankval,blankval,blankval,blankval,rateloss2,blankval,-1,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"");
-    end;  
+    end;
+/*
+    if (TotSum!=0) then begin
+      rs = TotSum;
+      if (TotSum>0) then begin
+        if (GetAccName(ARAccRec.BankRateGainAcc,tstr,60)) then begin
+          AddEuroTrRow(gTRp,ARAccRec.BankRateGainAcc,"","",tstr,rs,IVrw.BaseRate1,IVrw.BaseRate2,true,true,TotSum,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"","","");
+        end;
+      end else begin
+        if (GetAccName(ARAccRec.BankRateLossAcc,tstr,60)) then begin
+          AddEuroTrRow(gTRp,ARAccRec.BankRateLossAcc,"","",tstr,rs,IVrw.BaseRate1,IVrw.BaseRate2,true,false,TotSum,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"","","");
+        end;
+      end;
+      if (totsum!=0) then begin
+        if (GetAccName(ARAccRec.RateRndOffAcc,tstr,60)==false) then begin
+          errstrno = 1904;
+          goto LIVVc_CASHRow;
+        end;
+        AddEuroTrRow(gTRp,ARAccRec.RateRndOffAcc,"","",tstr,rs,IVrw.BaseRate1,IVrw.BaseRate2,true,dc2,TotSum,IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales,"","","");
+      end;  
+    end;
+*/    
   end;
     
   errstrno = 0;
@@ -634,6 +689,9 @@ BEGIN
     case kInvoiceRowTypeGiftVoucherPayment: errstrno = IVVc_GiftCertificateReceive(gTRp,ARAccRec,IVp,IVrw,cuobj,baserate1,baserate2,dc1,dc2,TotSum);
     case kInvoiceRowTypeCashPayment: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
     case kInvoiceRowTypeCreditCardPayment: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
+    case kInvoiceRowTypeSwishPayment: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
+    case kInvoiceRowTypeQRPayment: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
+    case kInvoiceRowTypeCashWithdrawal: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
     case kInvoiceRowTypeChequePayment: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
   end;
   IVVc_AddPaymentRows = errstrno;
@@ -911,6 +969,10 @@ begin
                  taccnumber,"","");
     switch (VATCbrw.InclinTotal) begin
       case kTaxTransInclinTotalNo:
+/*      
+this is crazy code isnt it? 
+we do not need to post it !
+
         if (GetAccName(VATCbrw.TaxMatrixVariance,tstr,60)==false) then begin 
           errstrno = 22046;
           goto LPostTaxMatrix_IVVc;
@@ -918,6 +980,7 @@ begin
         if (CheckTTRPerRow("IVVc",VATCbrw.TaxMatrixVariance,objstr,dc2,taccnumber,0)) then begin end;
         AddEuroTrRow(gTRp,VATCbrw.TaxMatrixVariance,objstr,AddVATCodeToVATAccRows(VATCbrw.VATCode),tstr,TMrw.VATSum,baserate1,baserate2,false,dc1,TotSum,NegativeAmountsOnIVTrans(IVp.InvType,TMrw.VATSum),
                      taccnumber,"","");
+*/                     
     end;
   end;
 LPostTaxMatrix_IVVc:;  

@@ -1,3 +1,4 @@
+external procedure GetItemTaxTemplateCode(string,Integer,var string,Boolean);
 external procedure QTSumup(var record QTVc);
 external function Boolean GetPD(var record PDVc);
 forward procedure AddPerceptionTaxesRows_IVVc(var record IVVc);
@@ -29,7 +30,7 @@ external procedure IVGetRate(var record IVVc);
 external procedure CalcSum(val,val,val,val,var val,Integer);
 external procedure CalculateFreightWeight(record IVVc,Boolean);
 external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
-external procedure GetPriceList(string,Date,Time,var string,var Integer);
+external procedure GetPriceList2(string,string,Date,Time,var string,var Integer);
 external procedure SetSalesMan(var string,string);
 external procedure RemoveOldCustObjects(string,var string);
 external procedure RemoveOldPersObjects(string,var string);
@@ -135,7 +136,7 @@ begin
   val percentage;
   Integer i,rwcnt,srw;
   string 255 tstr;
-  string 10 VATCode;
+  string 10 VATCode,taxtemplatecode;
   string 5 ipcurncy;
   record RoundBlock Roundb;
   record TaxMatrixVc TMr;
@@ -237,6 +238,10 @@ L20OrdDownPay:;
   IVp.BaseRate1 = ORr.BaseRate1;
   IVp.BaseRate2 = ORr.BaseRate2;
   IVp.Location = ORr.Location;
+  IVp.RefStr = ORr.RefStr;
+  if (HasLocalization("RUS")) then begin
+    IVp.OperationCode = "02";
+  end;
   BlockLoad(DPb);
   if (nonblank(DPb.PayDeal)) then begin
     IVp.PayDeal = DPb.PayDeal;
@@ -309,6 +314,7 @@ L20OrdDownPay:;
       IVrw.Spec = tstr;
     end;
     IVrw.Perceptions = INr.Perceptions;
+    IVrw.UnitCode = INr.Unittext;
     IVrw.Spec = IVrw.Spec & " ";
     IVrw.Spec = IVrw.Spec & ORr.SerNr;
     t = t - ORr.DownPaySent;
@@ -327,7 +333,8 @@ L20OrdDownPay:;
       t = t/IVrw.PriceFactor;
     end;
     IVrw.rowGP = t2 - t;    
-    IVrw.TaxTemplateCode = FillupTaxMatrix(0,IVp.BranchID,IVp.CustCode,IVp.CustCat,"",INr.TaxTemplateCode,TMr);
+    GetItemTaxTemplateCode(DPb.ArtCode,IVp.ExportFlag,taxtemplatecode,true);
+    IVrw.TaxTemplateCode = FillupTaxMatrix(0,IVp.BranchID,IVp.CustCode,IVp.CustCat,"",taxtemplatecode,TMr);
     PackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
     RowCalculateTaxMatrix_IVVc(IVp,srw,IVrw);
     MatRowPut(IVp,srw,IVrw);
@@ -392,11 +399,13 @@ L20OrdDownPay:;
         end;
         DownPayMul(ORrw.Price,percentage,price);
         
-        if (t!=0 or ORrw.stp==kInvoiceRowTypeStructuredItemComponent) then begin
+        if (blank(t)==false or ORrw.stp==kInvoiceRowTypeStructuredItemComponent) then begin
           ClearRow(IVp,IVrw,kInvoiceRowTypeDownpayment);
           IVrw.Sum = t;
           IVrw.ArtCode = ORrw.ArtCode;
+          IVrw.UnitCode = INr.Unittext;
           IVrw.Perceptions = INr.Perceptions;
+
           IVrw.Quant = ORrw.Quant;
           IVrw.Spec = ORrw.Spec;
           IVrw.SalesAcc = ORrw.SalesAcc;
@@ -878,6 +887,7 @@ begin
   record LoyaltyCardVc LoyaltyCardr;
   Boolean limitdaysf;
   record PDVc PDr;
+  record IVTBlock IVTb;
 
   warning = "";
   errstr = "";
@@ -906,8 +916,10 @@ begin
     goto LPasteCust2InInv;
   end;
   end;
+
   BlockLoad(GOb);
   BlockLoad(CLb);
+  BlockLoad(IVTb);
   if ((efstr!=IVp.CustCode) and (nonblank(efstr))) then begin
     tstr = IVp.Objects;
     RemoveOldCustObjects(efstr,tstr);
@@ -961,7 +973,14 @@ begin
       IVp.IntCode = CUr.IntRate;
     end;
     IVp.CurncyCode = CUr.CurncyCode;
-
+    switch (CUr.IPBookVAT) begin
+      case 1:
+        IVp.IPBookVAT = CUr.IPBookVAT;
+      case 2:
+        IVp.IPBookVAT = 0;
+      otherwise
+        IVp.IPBookVAT = ARAccRec.IPBookVAT;
+    end;
     IVp.Objects = AddObjectToObjectList(IVp.Objects,CUr.Objects);
     oldSalesMan = IVp.SalesMan;
     SetSalesMan(IVp.SalesMan,CUr.SalesMan);
@@ -998,7 +1017,13 @@ begin
     end;      
     if (iscred==false) then begin
       IVp.PayDeal = CUr.PayDeal;
+      if (blank(IVp.PayDeal)) then begin
+        IVp.PayDeal = IVTb.PayDeal;
+      end;
       PastePDInInv(IVp,"",true);
+    end;
+    if (CUr.ExpLatePayment!=-1) then begin
+      IVp.ExpectedClearingDate = AddDay(IVp.InvDate,CUr.ExpLatePayment);
     end;
     IVp.PriceList = CUr.PLCode;
     if (blank(IVp.PriceList)) then begin
@@ -1027,7 +1052,7 @@ begin
       end;
     end;
     if (HasPriceLists) then begin
-      GetPriceList(IVp.CustCat,IVp.TransDate,IVp.TransTime,IVp.PriceList,InclVAT);
+      GetPriceList2(IVp.CustCode,IVp.CustCat,IVp.TransDate,IVp.TransTime,IVp.PriceList,InclVAT);
       IVp.InclVAT = InclVAT;
     end else begin
       IVp.PriceList = "";
@@ -1058,6 +1083,7 @@ begin
     end;
     IVp.SelfBilling = CUr.SelfBilling;
     IVp.VATNr = CUr.VATNr;
+    IVp.RegNr1 = CUr.RegNr1;
     IVp.InvComment = CUr.OrderComment;
     IVp.ExportFlag = CUr.ExportFlag;
     IVp.Region = CUr.Region;
@@ -1114,7 +1140,11 @@ begin
       end;
       if (limit>0) then begin
         if (bal>limit) then begin
-          errstr = USetStr(1164);
+          if (limit==0.001 and CLb.Base==kCreditLimitBasedOnOpenInvSuspendOnOverdue) then begin
+            errstr = USetStr(39600);
+          end else begin
+            errstr = USetStr(1164);
+          end;
         end;
       end;
     end;
@@ -1601,8 +1631,10 @@ begin
         DSr.Quant = q;
         DSr.PICode = PIr.VEItemCode;
         DSr.VECode = PIr.VECode;
-        RecordStore(DSr,false);
-        StepForward(DSr,1);
+        if (DSr.Quant>0) then begin
+          RecordStore(DSr,false);
+          StepForward(DSr,1);
+        end;
       end;      
     end;
   end;
@@ -1628,6 +1660,30 @@ begin
     end;
   end;
   DfncyStockVcExists = res;
+  return;
+end;
+
+global
+function Boolean FindDfncyStock(string artcode,string location,var record DfncyStockVc aDSr)
+begin
+  Boolean found,res;
+  record DfncyStockVc DSr;
+
+  RecordClear(aDSr);
+  DSr.ArtCode = artcode;
+  DSr.Location = location;
+  found = true;
+  while (LoopKey("ActArtCode",DSr,1,found)) begin
+    if (DSr.ArtCode!=artcode) then begin found = false; end;
+    if (found) then begin
+      if (DSr.Location==location) and (DSr.FromSerNr<0) then begin
+        res = true;
+        found = false;
+        RecordCopy(aDSr,DSr);
+      end;
+    end;
+  end;
+  FindDfncyStock = res;
   return;
 end;
 

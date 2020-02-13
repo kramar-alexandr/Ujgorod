@@ -24,7 +24,7 @@ external updating procedure LockRecipe(string);
 external function Boolean ExpandStructItem(string,string,val,var record SHVc);
 external updating procedure UpdateSerStock(string,string,string,val,val);
 external updating procedure UpdateInternalSerStock(string,string,string,val,val);
-
+ 
 
 updating procedure SRPriceRowUpdateItemHist(record SRPriceVc SRPricep,string loc2,row SRPriceVc SRPricerw,Integer i,val qty,string serialnr,record INVc INr,record TempStockVc TSr,Boolean usetmpstkf)
 begin

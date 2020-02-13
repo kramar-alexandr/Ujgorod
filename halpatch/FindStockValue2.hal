@@ -1,3 +1,4 @@
+external procedure GetStockValue(string,string,var record ItemStatusVc);
 external function Boolean ConsigmentStock(string,string,Date);
 external function val QtyUsedBeforeDate(record ItemHistVc,Boolean,Date);
 external function roundmode SetRoundModeD(Integer);
@@ -302,15 +303,107 @@ BEGIN
   RETURN;
 END;
 
+procedure StructuredBackDatStockCalc(record INVc strINr,string location,string position,var val instockp,Date datp,Integer cosigstock)
+BEGIN
+  record SHVc SHr;
+  row SHVc SHrw;
+  record INVc INr;
+  record ItemStatusVc ISr;
+  record RecVc Recr;
+  row RecVc recrw;
+  Integer i;
+  Integer recrwcnt;
+  Integer shrwcnt,shi;
+  val mulfact,mulfact2;
+  val t;
+  val ord,t2;  
+  LongInt maxl;
+  val maxp;
+  string 255 theitemcode;
+  record MainStockBlock MSb;
+
+  BlockLoad(MSb);
+  RecordNew(SHr);
+  ord = 0;
+  mulfact2 = 1;
+  mulfact = 1;
+  Recr.Code = strINr.Recepy;
+  if (ReadFirstMain(Recr,1,true)) then begin
+    recrwcnt = MatRowCnt(Recr);
+    for (i=0;i<recrwcnt;i=i+1) begin
+      MatRowGet(Recr,i,recrw);
+      if (recrw.Item==strINr.Code) then begin
+        mulfact2 = recrw.OutQty;
+      end;
+    end;
+    shrwcnt = 0;
+    for (i=0;i<recrwcnt;i=i+1) begin
+      MatRowGet(Recr,i,recrw);
+      INr.Code = recrw.Item;
+      if (ReadFirstMain(INr,1,true)) then begin
+        if (INr.ItemType==kItemTypeStocked) then begin
+          shrwcnt = MatRowCnt(SHr);
+          ClearRow(SHr,SHrw,shrwcnt);       
+          SHrw.ArtCode = recrw.Item;
+          GetStockValue(SHrw.ArtCode,location,ISr);            
+          if (MSb.UpdateAvailable==0) then begin
+            SHrw.InStock = ISr.Instock;
+          end;  
+          if (MSb.UpdateAvailable==1) then begin
+            SHrw.InStock = ISr.Instock - ISr.InShipment;
+          end;
+          SHrw.Ship = SHrw.InStock;//curstock
+          SHrw.RowPackages = 0;//produce
+          SHrw.FIFO = recrw.InQty*mulfact;//inqty
+          SHrw.FIFORowVal = recrw.OutQty*mulfact;//outqty
+          MatRowPut(SHr,shrwcnt,SHrw);
+        end;
+      end;  
+    end;
+  end;
+  shrwcnt = MatRowCnt(SHr);
+  if (shrwcnt!=0) then begin
+    maxp = 0;
+    for (i=0;i<shrwcnt;i=i+1) begin
+      MatRowGet(SHr,i,SHrw);    
+      t = SHrw.InStock/SHrw.FIFO;
+      if (i==0) then begin
+        maxp = t;
+        theitemcode = SHrw.ArtCode;
+      end else begin
+        if ((SHrw.FIFO)!=0 and (nonblank(SHrw.FIFO))) then begin
+          if (t<maxp) then begin
+            maxp = t;
+            theitemcode = SHrw.ArtCode;
+          end;  
+        end;
+      end;
+    end;
+    maxl = maxp;
+    maxp = maxl;
+  end;  
+  BackDatStockCalc(false,theitemcode,location,position,instockp,datp,cosigstock);
+  RETURN;
+END;
+
 global
 procedure BackDatStock(string item,string location,string position,var val instockp,Date datp,Integer cosigstock)
 BEGIN
   Boolean varf;
   string 60 sz,msk,mskrep;  
   string 200 varsubset;
+  record INVc INr;
   
   varf = FindItemVAR(item,sz,msk,mskrep,varsubset);
-  BackDatStockCalc(varf,item,location,position,instockp,datp,cosigstock);
+  if (varf==false) then begin
+    INr.Code = item;
+    ReadFirstMain(INr,1,true);
+  end;
+  if ((INr.ItemType==kItemTypeStructured) and (nonblank(INr.Recepy))) then begin
+    StructuredBackDatStockCalc(INr,location,position,instockp,datp,cosigstock);
+  end else begin
+    BackDatStockCalc(varf,item,location,position,instockp,datp,cosigstock);
+  end;
   RETURN;
 END;
 
@@ -318,7 +411,7 @@ END;
 /* Beware though, make sure you test it A LOT before shipping it. */
 global
 procedure FindStockValue(string item,string location,var record ItemStatusVc ISp)
-BEGIN
+begin
   record ItemStatusVc ISr;
   record CostAccBlock CostAccRec;
   Boolean varf,testf;
@@ -831,8 +924,8 @@ BEGIN
 END;
 
 global
-procedure FindStockValue2(record INVc INp,string variety,string location,Integer curncytday,Date todatp,Integer printvals,Boolean manyloc,var val totcp,var val totq,var val totq2,Integer qty2,Integer CostModel,Integer ConsigStock,Integer repcalcwa,
-                          Boolean printlocqf,vector val vlocationtotals)
+procedure FindStockValue3(record INVc INp,string variety,string location,Integer curncytday,Date todatp,Integer printvals,Boolean manyloc,var val totcp,var val totq,var val totq2,Integer qty2,Integer CostModel,Integer ConsigStock,Integer repcalcwa,
+                          Boolean printlocqf,vector val vlocationtotals,record RcVc RepSpec)
 begin
   record LocationVc Locr;
   Boolean found;
@@ -883,6 +976,10 @@ begin
         if (printlocqf) then begin
           StartFormat(15);
           OutString(120,0,Locr.Code,false);
+          if (((RepSpec.Media==mtFile) or (RepSpec.Media==mtExcel)) and RepSpec.ArtMode==2) then begin
+            OutString(121,0,"",false);
+            OutString(121,0,"",false);
+          end;
           OutVal(3,0,instockwithconsig,M4UVal,true);
           if (qty2!=0) then begin
             instock2 = GetStockQty(INp.Code & variety,Locr.Code,todatp,true);
@@ -969,6 +1066,18 @@ begin
       end;
     end;
   end;
+  return;
+end;
+
+global
+procedure FindStockValue2(record INVc INp,string variety,string location,Integer curncytday,Date todatp,Integer printvals,Boolean manyloc,var val totcp,var val totq,var val totq2,Integer qty2,Integer CostModel,Integer ConsigStock,Integer repcalcwa,
+                          Boolean printlocqf,vector val vlocationtotals)
+begin
+  record RcVc RepSpec;
+
+  FindStockValue3(INp,variety,location,curncytday,todatp,printvals,manyloc,totcp,totq,totq2,qty2,CostModel,ConsigStock,
+                  repcalcwa,printlocqf,vlocationtotals,RepSpec);
+
   return;
 end;
 
@@ -1378,7 +1487,8 @@ begin
       if (IHr.ItemType!=kItemTypeStocked) then begin testf = false; end;
       if (IHr.Invalid!=0) then begin testf = false; end;
       if (IHr.FileName!="StockMovVc") then begin testf = false; end;
-      if (testf and IHr.Qty>0) then begin
+//      if (testf and IHr.Qty>0) then begin  // why only move in ?
+      if (testf) then begin
         qty = IHr.Qty;
         sum = IHr.TotCostPrice;
         if ((qcnt + qty)>instock) then begin

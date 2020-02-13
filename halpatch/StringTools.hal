@@ -1,4 +1,11 @@
 external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);
+external function Boolean IsEnterprise();
+external function Boolean HasContactClassification();
+external function Boolean HasOfficialSerNr();
+external function Boolean HasMultiCurrency();
+external function Boolean HasBase2();
+external function Boolean HasCategories();
+external function Boolean HasObjects();
 
 //replace all "findWord"s in "Source" to "newWord"
 global
@@ -196,4 +203,78 @@ format =
 	end;
 	ChangeCaseStr = res;
 return;
+end;
+
+global
+procedure ARS2RClass_ENG()
+begin
+  real h,v,vm,vs;
+
+  if (IsEnterprise()) then begin 
+    SetWRect(20,80,450,450);
+  end else begin
+    SetWRect(20,80,410,250);
+  end;  
+  
+  vs=20;
+  if (IsEnterprise) then begin
+    h = 180;
+  end else begin
+    h = 130;
+  end;
+  EditFieldTL(h,v=6, 150,"Customer",   M4UStr,Normal,30,f1,false,CUSClass);
+  if (HasCategories) then begin
+    EditFieldTL(h,v+=20,50, "Category",   M4UStr,Normal,5,f3,false,CCatSClass);
+  end;
+  if (HasObjects) then begin
+    EditFieldTL(h,v+=20,150, "Tag/Object",   M4UStr,Normal,20,ObjStr,false,ObjSClass);
+  end;
+  if (HasContactClassification) then begin
+    EditFieldTL(h,v+=20,50, "Classification",   M4UStr,Normal,30,f4,false,CClassSClass);
+  end;
+  if (IsEnterprise()) then begin
+    EditFieldTL(h,v+=20,20, "Days of delay (not less than)",   M4Int,Normal,5,Comparison,false,0);
+    // EditFieldTL(h,v+=vs ,80,"Min. Turnover",M4Val,Normal,0,vals0,true,0);// this is too slow
+    EditFieldTL(h,v+=20,80, "Main Partner",   M4UStr,Normal,20,LastAcc,false,CUSClass);
+    EditFieldTL(h,v+=vs ,80,"Min. Balance",M4Val,Normal,0,vals2,true,0);
+    EditFieldTL(h,v+=vs ,80,"Min. no. of Invoices",M4Long,Normal,0,long1,true,0);
+    EditFieldTL(h,v+=20,80,"On Date",M4Date,Normal,0,d1,false,PasteCurDate);
+    // CheckBox(20,v+=20,0,"Endast kunder med saldo",flags[1]);
+  end;
+  
+  ButtonFrame(h=30,vm=(v+=40),123,2,"Invoices");
+  RadioButton(h,v,0,0,"Open",flags[0]);
+  RadioButton(h,v+=16,2,0,"Overdue",flags[0]);
+
+  if (HasMultiCurrency or HasBase2) then begin
+    ButtonFrame(h,v+=40,123,2,"Amounts");
+    RadioButton(h,v,0,0,"Base Currency",flags[4]);
+    RadioButton(h,v+=16,1,0,"Currency",flags[4]);
+  end;
+  if (IsEnterprise()) then begin
+    CheckBox(h,v+=30,0,"Down payment Receipts Only",flags[10]);
+    CheckBox(h,v+=16,0,"Show Prepayment No.",flags[14]);
+    CheckBox(h,v+=16,0,"Show #Instalments#",flags[19]);
+    CheckBox(h,v+=16,0,"Include Open #Credit Notes#",flags[9]);
+  end;
+  if (HasOfficialSerNr) then begin
+    if (IsEnterprise) then begin 
+      v = v + 16;
+    end else begin
+      v = v + 25;
+    end;
+    CheckBox(h,v,0,"Show Official No.",flags[15]);
+  end;
+  ButtonFrame(h+=195,v=vm,125,3,"Function");
+  RadioButton(h,v,1,0,"Summary",flags[5]);
+  RadioButton(h,v+=16,2,0,"Per Customer",flags[5]);
+  RadioButton(h,v+=16,0,0,"Detailed",flags[5]);
+  
+  if (IsEnterprise()) then begin
+    ButtonFrame(h,v+=40,125,3,"Status");
+    CheckBox(h,v,0,"Skip Disputed",flags[11]);
+    CheckBox(h,v+=16,0,"Skip No Reminder",flags[12]);
+    CheckBox(h,v+=16,0,"Skip No Collection",flags[13]);
+  end;
+  return;
 end;

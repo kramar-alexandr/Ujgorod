@@ -1,3 +1,5 @@
+external function LongInt ReadLocation(string,var record LocationVc);
+external function Integer PayTermType(string);
 external updating procedure POCreateInterCompanyOR(record POVc);
 external function Integer POApprovalStatus(record POVc,var record AcceptanceRulesVc);
 external updating procedure CreateActFromPO(record POVc);
@@ -28,7 +30,7 @@ external function Integer CheckRates(string,val,val,val,val,val,var string);
 external updating procedure UpdateVARItemsPO(record POVc);
 external function Boolean CheckPDExists(string);
 //external updating procedure GenerateAcceptRec(string,LongInt,string,string,val);
-remote function Boolean POVc_PasteLocation(var record POVc);
+//remote function Boolean POVc_PasteLocation(var record POVc);
 external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
 external function Boolean ReadFirstItem(string,var record INVc,Boolean,Boolean);
 external function Boolean AllowThisItem(string,string,string,Integer);
@@ -225,6 +227,8 @@ begin
   POr.BaseRate1 = br1;
   POr.BaseRate2 = br2;  
   POr.OKPersons = "";
+  POr.AcceptanceBy = "";
+  POr.AcceptanceFYI = "";
   POr.DownPaySent = blankval;  
   POr.DownPayRedcd = blankval;  
 //  POr.InvBeforePU = MainStockRec.AllowInvBeforePU;//they want this to be copied
@@ -486,7 +490,7 @@ begin
       POr.OKPersons = POr.OKPersons & CurrentUser;
     end;
   end;
-  AssembleSerialNrPOVc(POr);  
+  AssembleSerialNrPOVc(POr);  // Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:32:00 PM
   POVcRecordSave = res; 
   return;
 end;
@@ -511,7 +515,7 @@ begin
       POr.OKPersons = POr.OKPersons & CurrentUser;
     end;
   end;
-  AssembleSerialNrPOVc(POr);    
+  AssembleSerialNrPOVc(POr);    // Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:32:10 PM
   POVcRecordUpdate = res; 
   return;
 end;
@@ -792,7 +796,7 @@ begin
   Boolean initotcheckf;    
   transaction string 255 gRuniningMaint;
   record AccVc Accr;
-  LongInt l;
+  LongInt l,err;
 
   res = 0;
   insertmode = 1;
@@ -874,6 +878,17 @@ begin
     res = 1256;
     goto LPOVcRecordCheck;        
   end; 
+  switch (PayTermType(POr.PayDeal)) begin
+    case kInvoiceTypeCredit:
+      RecordCheckError(1227,POr.PayDeal,-1,"PayDeal");      
+      res = -1;
+      goto LPOVcRecordCheck;
+    case kInvoiceTypeEmployee:
+      RecordCheckError(1958,"",-1,"PayDeal");      
+      res = -1;
+      goto LPOVcRecordCheck;
+  end;
+  
   if (CheckPOCQStatVECode(POr.POCQStatNr,POr.VECode,i)==false) then begin
     if (disperrf) then begin
       RecordCheckError(i,"",-1,"POCQStatNr");      
@@ -931,9 +946,9 @@ begin
     end;        
   end;  
   if (nonblank(POr.Location)) then begin
-    Locationr.Code = POr.Location;
-    if (ReadFirstMain(Locationr,1,true)==false) then begin
-      RecordCheckError(1290,"",-1,"Location");      
+    err = ReadLocation(POr.Location,Locationr);
+    if (err!=0) then begin
+      RecordCheckError(err,"",-1,"Location");      
       res = -1;
       goto LPOVcRecordCheck;
     end;
@@ -1005,9 +1020,18 @@ begin
   prevvt = -1;
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(POr,i,POrw);
+    if (IsStandardProduct) then begin
+      if (HasLocalization("POL")) then begin
+        if (len(POrw.Spec)>35) then begin
+          RecordCheckError(22139,"",i,"Spec");      
+          res = -1;
+          goto LPOVcRecordCheck;
+        end;
+      end;
+    end;
     switch (POrw.stp) begin
       case 1:
-        if (HasLocalization("LVA")==false) then begin
+        if (HasLocalization("FIN,GBR,LTU,LVA,PRT,SVK")==false and nonblank(POrw.VATCode)) then begin
           curvt = VATType(POrw.VATCode);
           if (curvt==kVATTypeReversed) or (prevvt==kVATTypeReversed) then begin
             if (curvt!=prevvt) and (prevvt!=-1) then begin
@@ -1066,13 +1090,15 @@ begin
             res = 21447; 
             goto LPOVcRecordCheck;
           end;
-          if (POrw.Quant<POrw.Shipd1) then begin
-            if ((INr.ItemType!=kItemTypePlain) and (INr.ItemType!=kItemTypeService)) then begin
-              if (disperrf) then begin
-                RecordCheckError(1302,"",i,"Quant");      
+          if (long4!=10) then begin
+            if (POrw.Quant<POrw.Shipd1) then begin
+              if ((INr.ItemType!=kItemTypePlain) and (INr.ItemType!=kItemTypeService)) then begin
+                if (disperrf) then begin
+                  RecordCheckError(1302,"",i,"Quant");      
+                end;
+                res = 1302;
+                goto LPOVcRecordCheck;
               end;
-              res = 1302;
-              goto LPOVcRecordCheck;
             end;
           end;
           switch (INr.SerNrf) begin

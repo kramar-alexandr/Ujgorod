@@ -1,7 +1,9 @@
+external function string 255 FindPositionWithSerialNr(string,string,string,string);
 external function Boolean SetInSet2(string,string);
 external procedure CheckFlush(var Integer,Integer);
 external function Boolean ReadFirstItem(string,var record INVc,Boolean,Boolean);
 
+// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:17:15 PM
 updating procedure AddISToStockTak(record RcVc RepSpec,var record StockTakeVc STr,record ItemStatusVc ISr,string ingroup,string location,string shelfcode,string itemclass,
                    var string lastlocation,string position,var Integer flushcnt)
 begin
@@ -13,8 +15,8 @@ begin
   integer rwcnt;
   record LocationVc Locr;
   record PISVc PISr;
-  Record BarcodeVc BCr;
-  record PLVc PLr;
+  record BarCodeVc BCr;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:28:17 PM
+	record PLVc PLr;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:28:27 PM  
 
   addrowf = true;
   if (lastlocation!=ISr.Location) then begin
@@ -108,6 +110,11 @@ begin
           STrw.UnitYval = INr.Height;
           STrw.UnitZval = INr.Depth;
           STrw.Coefficient = INr.UnitCoefficient;
+          Locr.Code = SerBalr.Location;
+          ReadFIrstMain(Locr,1,true);
+          if (Locr.RequirePos!=0) then begin
+            STrw.Position = FindPositionWithSerialNr(SerBalr.Location,STrw.ArtCode,STrw.SerialNr,SerBalr.Location);
+          end;
           MatRowPut(STr,rwcnt,STrw);
           rwcnt = rwcnt + 1;
           addrowf = false;
@@ -281,7 +288,7 @@ begin
         if (vvarietyf[ISr.Code & ISr.Variety & ISr.Location]==true) then begin testf = false; end;
         if (testf) then begin
           vvarietyf[ISr.Code & ISr.Variety & ISr.Location] = true;
-          AddISToStockTak(RepSpec,STr,ISr,RepSpec.FirstAcc,ISr.Location,RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);
+          AddISToStockTak(RepSpec,STr,ISr,RepSpec.FirstAcc,ISr.Location,RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:17:23 PM
         end;
       end;
     case 1:
@@ -318,12 +325,22 @@ begin
               if (ISr.Code>toin) then begin testf = false; end;
             end;
             if (testf) then begin
+              foundf = true;
+              ResetLoop(ISr);
               ISr.Code = INr.Code;
               ISr.Location = alocstr[apos];
-              if (ReadFirstMain(ISr,2,true)) then begin
-                testf = true;
-                if (ISr.Instock>0) then begin
-                  AddISToStockTak(RepSpec,STr,ISr,INr.Group,alocstr[apos],RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);
+              while (LoopKey("Location",ISr,2,foundf)) begin
+                if (ISr.Code!=INr.Code) then begin foundf = false; end;
+                if (ISr.Location!=alocstr[apos]) then begin foundf = false; end;
+                if (foundf) then begin
+                  testf = true;
+                  if (vvarietyf[ISr.Code & ISr.Variety & ISr.Location]==true) then begin testf = false; end;
+                  if (testf) then begin
+                    if (ISr.Instock>0) then begin
+                      vvarietyf[ISr.Code & ISr.Variety & ISr.Location] = true;
+                      AddISToStockTak(RepSpec,STr,ISr,INr.Group,alocstr[apos],RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:17:43 PM
+                    end;
+                  end;
                 end;
               end;
             end;
@@ -365,12 +382,22 @@ begin
               if (ISr.Code>toin) then begin testf = false; end;
             end;
             if (testf) then begin
+              foundf = true;
+              ResetLoop(ISr);
               ISr.Code = INr.Code;
               ISr.Location = alocstr[apos];
-              if (ReadFirstMain(ISr,2,true)) then begin
-                testf = true;
-                if (ISr.Instock>0) then begin
-                  AddISToStockTak(RepSpec,STr,ISr,INr.Group,alocstr[apos],RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);
+              while (LoopKey("Location",ISr,2,foundf)) begin
+                if (ISr.Code!=INr.Code) then begin foundf = false; end;
+                if (ISr.Location!=alocstr[apos]) then begin foundf = false; end;
+                if (foundf) then begin
+                  testf = true;
+                  if (ISr.Instock>0) then begin
+                    if (vvarietyf[ISr.Code & ISr.Variety & ISr.Location]==true) then begin testf = false; end;
+                    if (testf) then begin
+                      vvarietyf[ISr.Code & ISr.Variety & ISr.Location] = true;
+                      AddISToStockTak(RepSpec,STr,ISr,INr.Group,alocstr[apos],RepSpec.LastAcc,RepSpec.f6,lastlocation,RepSpec.AccStr,flushcnt);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:17:57 PM
+                    end;
+                  end;
                 end;
               end;
             end;

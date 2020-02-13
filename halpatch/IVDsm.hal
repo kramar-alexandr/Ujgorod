@@ -1,3 +1,4 @@
+external function Boolean HasModCO();
 remote function Integer IVTestApprovalStatus(record IVVc);
 remote updating function LongInt CancelApprovalRequest(string,string,var Integer);
 remote updating function Integer RequestApproval_IVVc(record IVVc,var record RcVc,var Integer);
@@ -6,6 +7,7 @@ remote function Boolean GetNextItemNr(var string);
 remote function Boolean GetNextCustNr(var string);
 external procedure ActVcRecordDefClient(var record ActVc);
 external function string 255 LocalMachinePaymentMode(string,Integer,string,string,string);
+external function string 255 LocalMachinePaymentMode2(string,Integer,string,string,string,var string);
 remote updating function Boolean MakeActFromIV(var record IVVc,var record ActVc);
 external function Integer TestEinvoiceinQueue(LongInt);
 external function integer GetSelectedPOSItemRowIndex(integer);
@@ -20,6 +22,7 @@ remote function Boolean TestSeparateVATIVFromIVForNoVAT(record IVVc);
 external function Integer OpenArtStat(Integer,record RcVc,Boolean);
 external procedure OpenCCPayIngenicoOClass(Integer,string,string,LongInt,val,val,string);
 external procedure OpenCCPayYomaniBanksysOClass(Integer,string,string,LongInt,val,val,string);
+external procedure OpenCCPayVerifoneBanksysOClass(Integer,string,string,LongInt,val,val,string);
 external function LongInt IVDefaultsClient(var record IVVc,record IVVc,LongInt,LongInt);
 external function Boolean FindLocalSerialPortDevice(Integer,LongInt,string,var record LSerialPortDeviceVc);
 external updating function Boolean IVVc_PrintToFiscalControlUnit(var record IVVc);
@@ -69,6 +72,7 @@ remote function Boolean GetItemPriceDiscount3(string,val,var record INVc,string,
                                                 var val,var string,var val,var string,var val,var string,Integer,var Boolean,Date,Time,
                                                 string,Boolean,var Boolean,string,var string,var val,string,string,var string);
 external updating function Boolean CCPayIVDWithCardDataAndPM(Integer,string,Integer,string);
+external procedure POSAudit_LogIVCashVcRow(record IVCashVc,row IVCashVc,Integer);
 
 global
 procedure DoMgrsDiscOverrideIVDsm(Integer wn,Integer rownr)
@@ -120,12 +124,13 @@ begin
   wn = CurWindow;
   GetWindowRecord(wn,IVCashr);
   rownr = WindowActiveRow(wn);
+  rownr = GetSelectedPOSItemRowIndex(wn);
   if (rownr>=0) then begin
-    MatRowGet(IVCashr,WindowActiveRow(wn),IVCashrw);
+    MatRowGet(IVCashr,rownr,IVCashrw);
     RepSpec.f1 = IVCashrw.ArtCode;
     RepSpec.AccStr = "";
     RepSpec.FirstAcc = "";
-    RepSpec.long1 = WindowActiveRow(wn);
+    RepSpec.long1 = rownr;
     nwn = OpenWindow("MgrsDiscOverrideOClass",0,wn,"","",RepSpec);
   end else begin
     MessageBox(0,USetStr(22057));
@@ -202,7 +207,10 @@ begin
         end;
         MatRowPut(IVr,RepSpec.long1,IVrw);
       end;
+    case "NPTSIVCashDClass":
+      goto LIVCashDClass;
     case "IVCashDClass":
+LIVCashDClass:;    
       GetWindowRecord(mwn,IVCashr);
       rwcnt = MatRowCnt(IVCashr);
       if (RepSpec.long1>=0) and (RepSpec.long1<MatRowCnt(IVCashr)) then begin
@@ -243,6 +251,7 @@ begin
           end;
         end;
         MatRowPut(IVCashr,RepSpec.long1,IVCashrw);
+        POSAudit_LogIVCashVcRow(IVCashr,IVCashrw,kPOSEventTypeModifyRow);
       end;
     case "ORDClass":
       GetWindowRecord(mwn,ORr);
@@ -571,6 +580,10 @@ begin
       MessageBox(20938,"");
       goto LVATCorrectionIVsm;
     end;
+    if (IVr.IPBookVAT!=0) then begin
+      MessageBox(24071,"");
+      goto LVATCorrectionIVsm;
+    end;
     err = TestVATIVCorrectionAllowed(IVr);
     if (err!=0) then begin
       MessageBox(err,"");
@@ -637,7 +650,9 @@ begin
   if (err!=0) then begin
     goto LIVDClassPrintErr;
   end;
-  err = IVTestApprovalStatus(IVr);
+  if (UserCanAction("PrintPreviewNotApproved",false)==false) then begin
+    err = IVTestApprovalStatus(IVr);
+  end;
 LIVDClassPrintErr:;
   if (err!=0) then begin errf = true; end;
   if (err==22402) then begin
@@ -733,6 +748,22 @@ begin
 end;
 
 global
+procedure EIVStatIVDsm()
+begin
+  record IVVc IVr;
+  record RcVc RepSpec;
+  Integer wn;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,IVr);
+  RepSpec.repname = "EIVStatRn";
+  RepSpec.long1 = IVr.SerNr;
+  RepSpec.Media = mtScreen;
+  RunReport(RepSpec,0);
+  return;
+end;
+
+global
 procedure PrintProformaIVDsm()
 begin
   record IVVc IVr;
@@ -781,7 +812,7 @@ begin
   Integer r;
 
   wn = CurWindow;
-  if (WindowState(wn)==0) then begin//Rs_normal
+  if (WindowState(wn)==Rs_normal and HasModCO) then begin
     GetWindowRecord(wn,IVr);
     COr.InvoiceNr = IVr.SerNr;
     if (UserCanAction("InvToCO",true)) then begin
@@ -862,9 +893,9 @@ begin
   wn = CurWindow;
   KeyPadEnter(wn);
   GetWindowRecord(wn,IVr);
+  rownr = WindowActiveRow(wn);
   DeselectWindow(wn,false);
   if (IVr.OKFlag==0) then begin
-    rownr = WindowActiveRow(wn);
     if (rownr<0) then begin rownr = 0; end;
     ClearRow(IVr,IVrw,kInvoiceRowTypePrepayment);
     IVrw.Spec = USetStr(1288);
@@ -976,17 +1007,24 @@ begin
   record IVVc IVr;
   row IVVc IVrw;
   Integer wn,rownr,rwcnt;
+  string 255 label;
   
   wn = CurWindow;
   rownr = arownr;
+  if (rownr<0) then begin
+    rownr = WindowActiveRow(wn);
+  end;
   switch (t) begin
     case kInvoiceRowTypeCashPayment:
       DeselectWindow(wn,false);
     case kInvoiceRowTypeCreditCardPayment:
       DeselectWindow(wn,false);
-  end;
-  if (rownr<0) then begin
-    rownr = WindowActiveRow(wn);
+    case kInvoiceRowTypeSwishPayment:
+      DeselectWindow(wn,false);
+    case kInvoiceRowTypeQRPayment:
+      DeselectWindow(wn,false);
+    case kInvoiceRowTypeCashWithdrawal:
+      DeselectWindow(wn,false);
   end;
   GetWindowRecord(wn,IVr);
   if (IVr.OKFlag==0) then begin
@@ -1006,9 +1044,15 @@ begin
     IVrw.Spec = "";
     switch (t) begin
       case kInvoiceRowTypeCashPayment:
-        IVrw.PayMode = LocalMachinePaymentMode("",kInvoiceRowTypeCashPayment,IVrw.CurncyCode,IVr.MachineName,IVr.DrawerCode);
+        IVrw.PayMode = LocalMachinePaymentMode2("",kInvoiceRowTypeCashPayment,IVrw.CurncyCode,IVr.MachineName,IVr.DrawerCode,IVrw.Spec);
       case kInvoiceRowTypeCreditCardPayment:
-        IVrw.PayMode = LocalMachinePaymentMode("",kInvoiceRowTypeCreditCardPayment,IVrw.CurncyCode,IVr.MachineName,IVr.DrawerCode);
+        IVrw.PayMode = LocalMachinePaymentMode2("",kInvoiceRowTypeCreditCardPayment,IVrw.CurncyCode,IVr.MachineName,IVr.DrawerCode,IVrw.Spec);
+      case kInvoiceRowTypeSwishPayment:
+        IVrw.PayMode = LocalMachinePaymentMode2("",kInvoiceRowTypeSwishPayment,IVrw.CurncyCode,IVr.MachineName,IVr.DrawerCode,IVrw.Spec);
+      case kInvoiceRowTypeQRPayment:
+        IVrw.PayMode = LocalMachinePaymentMode2("",kInvoiceRowTypeQRPayment,IVrw.CurncyCode,IVr.MachineName,IVr.DrawerCode,IVrw.Spec);
+      case kInvoiceRowTypeCashWithdrawal:
+        IVrw.PayMode = LocalMachinePaymentMode2("",kInvoiceRowTypeQRPayment,IVrw.CurncyCode,IVr.MachineName,IVr.DrawerCode,IVrw.Spec);
     end;
 
     MatRowInsert(IVr,rownr,IVrw);
@@ -1023,6 +1067,15 @@ begin
       case kInvoiceRowTypeCreditCardPayment:
         WindowFieldGoto(wn,IVr,rownr,"Sum",true);
         WindowFieldGoto(wn,IVr,rownr,"Spec",true);
+      case kInvoiceRowTypeSwishPayment:
+        WindowFieldGoto(wn,IVr,rownr,"Sum",true);
+        WindowFieldGoto(wn,IVr,rownr,"Spec",true);
+      case kInvoiceRowTypeQRPayment:
+        WindowFieldGoto(wn,IVr,rownr,"Sum",true);
+        WindowFieldGoto(wn,IVr,rownr,"Spec",true);
+      case kInvoiceRowTypeCashWithdrawal:
+        WindowFieldGoto(wn,IVr,rownr,"Sum",true);
+        WindowFieldGoto(wn,IVr,rownr,"Spec",true);
     end;
   end;
 end;
@@ -1030,7 +1083,9 @@ end;
 global
 procedure HiddenLineIVDsm()
 begin
-  AddInvoiceLineType(-1,kInvoiceRowTypeHidden,false);
+  if (UserCanAction("HiddenLine",true)) then begin
+    AddInvoiceLineType(-1,kInvoiceRowTypeHidden,false);
+  end;
   return;
 end;
 
@@ -1052,6 +1107,20 @@ global
 procedure CreditCardLineIVDsm()
 begin
   AddInvoiceLineType(-1,kInvoiceRowTypeCreditCardPayment,false);
+  return;
+end;
+
+global
+procedure SwishLineIVDsm()
+begin
+  AddInvoiceLineType(-1,kInvoiceRowTypeSwishPayment,false);
+  return;
+end;
+
+global
+procedure QRLineIVDsm()
+begin
+  AddInvoiceLineType(-1,kInvoiceRowTypeQRPayment,false);
   return;
 end;
 
@@ -1515,6 +1584,20 @@ begin
           pmcodelabel = GetWindowString(wn,"PMCodeLabel" & btnNr);
         end;
         OpenCCPayIngenicoOClass(wn,pmcode,pmcodelabel,IVr.SerNr,IVr.RetnValue,t,IVr.CurncyCode);
+      case kLocalCCTerminalVerifoneBanksys: 
+        pmcode = GetWindowString(wn,"IVPMCode" & btnNr);
+        if (blank(pmcode)) then begin
+          pmcode = GetWindowString(wn,"PMCode" & btnNr);
+        end;
+        if (blank(pmcode)) then begin
+          BlockLoad(DefCashRec);
+          pmcode =  DefCashRec.DefCCPayMode;
+        end;
+        pmcodelabel = GetWindowString(wn,"IVPMCodeLabel" & btnNr);
+        if (blank(pmcodelabel)) then begin
+          pmcodelabel = GetWindowString(wn,"PMCodeLabel" & btnNr);
+        end;
+        OpenCCPayVerifoneBanksysOClass(wn,pmcode,pmcodelabel,IVr.SerNr,IVr.RetnValue,t,IVr.CurncyCode);
     end;
   end;
   if (IsWebClient) then begin
@@ -1546,6 +1629,7 @@ begin
       case kLocalCCTerminalSteriaIP: OpenCCPaySteriaDClass(wn,1,IVr.SerNr,IVr.RetValue,IVr.Sum4,IVr.CurncyCode);
       case kLocalCCTerminalYomaniBanksys: OpenCCPayYomaniBanksysOClass(wn,paymode,label,IVr.SerNr,IVr.RetValue,IVr.Sum4,IVr.CurncyCode);
       case kLocalCCTerminalIngenico6550: OpenCCPayIngenicoOClass(wn,paymode,label,IVr.SerNr,IVr.RetValue,IVr.Sum4,IVr.CurncyCode);
+      case kLocalCCTerminalVerifoneBanksys: OpenCCPayVerifoneBanksysOClass(wn,paymode,label,IVr.SerNr,IVr.RetValue,IVr.Sum4,IVr.CurncyCode);
     end;
   end;
   return;
@@ -1816,6 +1900,10 @@ begin
             otherwise
               switch (rowstp) begin
                 case kInvoiceRowTypeCreditCardPayment:
+                  donef = CCPayIVDWithCardDataAndPM(mwn,"",rowstp,pmcode);
+                case kInvoiceRowTypeSwishPayment:
+                  donef = CCPayIVDWithCardDataAndPM(mwn,"",rowstp,pmcode);
+                case kInvoiceRowTypeQRPayment:
                   donef = CCPayIVDWithCardDataAndPM(mwn,"",rowstp,pmcode);
               end;
               if (donef==false) then begin
@@ -2307,7 +2395,7 @@ begin
         if (WindowDoOK(wn,0)) then begin
         end;
         PutWindowString(wn,"AcceptanceStatusFlag",StringFromSet(443,ApprovalStatusFlag));  
-        MessageBox(37501,"");
+        CheckmarkBox(37501,"");
       otherwise
         MessageBox(err,"");
     end;
@@ -2594,14 +2682,27 @@ global
 procedure AddCustomerIVDsm()
 begin
   record CUVc CUr;
-  Integer nwn;
+  record IVVc IVr;
+  Integer wn,nwn;
   
   RecordNew(CUr);
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,IVr);
   nwn = OpenWindow("CUDClass",0,CurWindow,"","",CUr);
   PutWindowString(nwn,"OperationMenuAction","AddContact");
+  DeselectWindow(nwn,true);
+  CUr.PayDeal = IVr.PayDeal;
+  CUr.Name = IVr.Addr0;
+  CUr.InvAddr0 = IVr.Addr1;
+  CUr.InvAddr1 = IVr.Addr2;
+  CUr.InvAddr2 = IVr.Addr3;
+  CUr.InvAddr3 = IVr.InvAddr3;
+  CUr.InvAddr4 = IVr.InvAddr4;
   if (blank(CUr.Code)) then begin
     GetNextCustNr(CUr.Code);
   end;
+  PutWindowRecord(nwn,CUr);
   return;
 end;
 
@@ -2609,13 +2710,60 @@ global
 procedure AddItemIVDsm()
 begin
   record INVc INr;
-  Integer nwn;
+  record IVVc IVr;
+  row IVVc IVrw;
+  Integer wn,nwn,rownr;
   
   RecordNew(INr);
+  wn = CurWindow;
+  rownr = WindowActiveRow(wn);
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,IVr);
   nwn = OpenWindow("INDClass",0,CurWindow,"","",INr);
   PutWindowString(nwn,"OperationMenuAction","AddItem");
+  DeselectWindow(nwn,true);
+  if (rownr>=0) then begin
+    MatRowGet(IVr,rownr,IVrw);
+    INr.Code = IVrw.ArtCode;
+    INr.Name = IVrw.Spec;
+    INr.SalesAcc = IVrw.SalesAcc;
+    INr.VATCode = IVrw.VATCode;
+    INr.TaxTemplateCode = IVrw.TaxTemplateCode;
+    INr.UPrice1 = IVrw.Price;
+    INr.InPrice = IVrw.BasePrice;
+  end;
   if (blank(INr.Code)) then begin
     GetNextItemNr(INr.Code);
+  end;
+  PutWindowRecord(nwn,INr);
+  return;
+end;
+
+global
+procedure AddVATCodeIVDsm()
+begin
+  record VATCodeBlock VATCb;
+  row VATCodeBlock VATCbrw;
+  record IVVc IVr;
+  row IVVc IVrw;
+  Integer wn,nwn,rownr;
+
+  wn = CurWindow;
+  rownr = WindowActiveRow(wn);
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,IVr);
+  BlockLoad(VATCb);
+  nwn = OpenWindow("VATCodeTClass",0,wn,"","",VATCb);
+  PutWindowString(nwn,"OperationMenuAction","AddVATCode");
+  DeselectWindow(nwn,true);
+  if (rownr>=0) then begin
+    MatRowGet(IVr,rownr,IVrw);
+    ClearRow(VATCb,VATCbrw,1);
+    VATCbrw.VATCode = IVrw.VATCode;
+    rownr = MatRowCnt(VATCb);
+    MatRowPut(VATCb,rownr,VATCbrw);
+    PutWindowRecord(nwn,VATCb);
+    WindowFieldGoto(nwn,VATCb,rownr,"ExVatpr",true);
   end;
   return;
 end;

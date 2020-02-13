@@ -16,7 +16,6 @@ external procedure GTrans2EClass_Tool(Integer,var real,var real,var real);
 external procedure GBaseEClass_Tool(Integer,var real,var real);
 external procedure TransGenVClass_Tool(Integer,var real,var real);
 remote procedure GetCurUser(var record UserVc);
-external procedure JobRClass_UKR();
 external function string 60 UserDefined(string,string);
 external outer function string 255 MasterBannerURL();
 external procedure ItemStatusUserSettings(string,var Boolean,var Boolean,var Boolean,var Boolean,var Boolean,var Boolean,var Boolean,var Boolean,var Boolean,var Boolean,var Boolean,var Boolean,var Boolean,var Boolean);
@@ -24,7 +23,7 @@ external function Boolean AllowedInCountry(integer);
 external function Integer ResourceWindowResourceType();
 external function Boolean ResPlan_Rental();
 external function Boolean ResPlan_ProdOperations();
-remote function Boolean ReadPOSButtons(string,string,longint,var string,var string,var string,var record POSButtonsVc,var Integer);
+//remote function Boolean ReadPOSButtons(string,string,longint,var string,var string,var string,var record POSButtonsVc,var Integer);
 external function Boolean TouchScreenLook();
 external procedure ExtractObj(string,var Integer,var string);
 external function Boolean IsSessionOpen(string,string,Date,Time);
@@ -63,7 +62,7 @@ external function Integer CountCountries();
 
 // Language functions UKR
 external function Boolean DisplayLoginKeyPad_UKR();
-external function string 255 VATZoneEditFieldLabelUKR(Integer);
+//external function string 255 VATZoneEditFieldLabelUKR(Integer);
 external function real VATZoneButtonsLabelsUKR(real,real,real,real);
 external procedure LoginButtons2_UKR(Real,Real);
 external procedure FORMDEF_UKR();
@@ -76,7 +75,7 @@ external procedure TSERWTouch_UKR();
 external procedure TSERWTEST_UKR();
 external procedure INVFORM_UKR(Boolean);
 external procedure DisplayRecordDetails_UKR(LongInt,LongInt,string,date,time,string,string,string,string,string,string,string,string,string,string,string,Integer,string,string,string,val,string,Boolean,string,string);
-external procedure DrawPOSInterface_UKR(string,string,record POSButtonsVc,Integer,string,Integer);
+//external procedure DrawPOSInterface_UKR(string,string,record POSButtonsVc,Integer,string,Integer);
 external procedure DisplayRecordDetailsCustDisplay_UKR(LongInt,LongInt,string,date,time,string,string,string,string,string,string,Integer,string,string,string,val);
 external function string 255 ResDayWClassWindowTitle_UKR();
 external function string 255 ResMonWClassWindowTitle_UKR();
@@ -1116,7 +1115,7 @@ end else begin
       page = 1;
     end;
     //stopalert("about to call ReadPOSButtons, page:" & page);
-    ReadPOSButtons("IVDClass",LMb.POSButtonGroup,page,bc1,bc2,compname,POSBr,acnt); 
+    //ReadPOSButtons("IVDClass",LMb.POSButtonGroup,page,bc1,bc2,compname,POSBr,acnt); 
     SetWRect(lt,tp,rt,bm); 
     AbsoluteWindowSize;
     if (TestEnablerFile("EnNoFullscreenWindow")==false) then begin 
@@ -1180,7 +1179,7 @@ end else begin
 
         SoftEditField(2000,-22,200,""  ,Normal ,"ivcashcommandlastitemsernrf",false,0,M4Str,255); 
 
-        DrawPOSInterface_UKR(bc1,bc2,POSBr,acnt,"",100); 
+        //DrawPOSInterface_UKR(bc1,bc2,POSBr,acnt,"",100); 
       end else begin
 
         v = 20;
@@ -1224,7 +1223,7 @@ end else begin
 
         SoftEditField(2000,-22,200,""  ,Normal ,"ivcashcommandlastitemsernrf",false,0,M4Str,255); 
 
-        DrawPOSInterface_UKR(bc1,bc2,POSBr,acnt,"",100); 
+        //DrawPOSInterface_UKR(bc1,bc2,POSBr,acnt,"",100); 
       end;
       BottomBar;
     end else begin
@@ -1266,7 +1265,7 @@ end else begin
         SoftEditField(-260,-22,200,"Товар/Команда"  ,Normal ,"ivcashcommand",false,0,M4Str,255); 
     end;
     SoftEditField(2000,-22,200,""  ,Normal ,"ivcashcommandlastitemsernrf",false,0,M4Str,255);         
-    DrawPOSInterface_UKR(bc1,bc2,POSBr,acnt,"",100); 
+    //DrawPOSInterface_UKR(bc1,bc2,POSBr,acnt,"",100); 
     BottomBar;
   end;
 end;

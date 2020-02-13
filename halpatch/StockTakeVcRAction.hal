@@ -1,3 +1,4 @@
+external function LongInt ReadLocation(string,var record LocationVc);
 external procedure B1ToB2ValRM(val,val,val,var val,roundmode);
 external function roundmode GetCostRoundModeRB();
 external function Boolean IsDigit(string);
@@ -109,10 +110,11 @@ BEGIN
   record PISVc PISr;
   Date dat;
   record PosVc Posr;
-  Integer errcode,errorrow;
+  Integer errorrow;
+  LongInt errcode;
   string 255 errorfield;
   record SerNrTrackBlock SNrb;
-  record SerBalVc SBr;
+  record SerBalVc SBr;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:52:51 PM
   
   res = 0;
   insertmode = 1;//Rs_insert
@@ -167,9 +169,9 @@ BEGIN
     location = MSb.MainStock;
   end;
   if (nonblank(location)) then begin
-    LocRec.Code = location;
-    if (ReadFirstMain(LocRec,1,true)==false) then begin
-      RecordCheckError(1120,location,-1,"Location");      
+    errcode = ReadLocation(location,LocRec);
+    if (errcode!=0) then begin
+      RecordCheckError(errcode,location,-1,"Location");      
       res = -1; 
       goto LStockTakeVcRecordCheck;
     end;
@@ -210,8 +212,9 @@ BEGIN
     end;
     if (nonblank(loc2)) then begin
       LocRec.Code = loc2;
-      if (ReadFirstMain(LocRec,1,true)==false) then begin
-        RecordCheckError(1120,loc2,i,"Location");      
+      errcode = ReadLocation(loc2,LocRec);
+      if (errcode!=0) then begin
+        RecordCheckError(errcode,loc2,i,"Location");      
         res = -1; 
         goto LStockTakeVcRecordCheck;
       end;
@@ -249,7 +252,12 @@ BEGIN
                 goto LStockTakeVcRecordCheck;
               end;
             end else begin
-              if (StockTakerw.Qty>1) then begin
+              if (StockTakerw.InStock!=0 and StockTakerw.InStock!=1) then begin
+                RecordCheckError(1242,"",i,"SerialNr");      
+                res = -1; 
+                goto LStockTakeVcRecordCheck;
+              end;
+              if (StockTakerw.Qty!=0 and StockTakerw.Qty!=1) then begin
                 RecordCheckError(1242,"",i,"SerialNr");      
                 res = -1; 
                 goto LStockTakeVcRecordCheck;
@@ -315,7 +323,7 @@ BEGIN
         end;
       end;
     end;
-    if (stat==updatemode) then begin
+    if (stat==updatemode) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:53:31 PM
       if (StockTakep.OKFlag!=0) and (StockTake2p.OKFlag==0) then begin
         if !IsMaintenance then begin
           if StockTakerw.MyInStock==blankval then begin
@@ -329,7 +337,7 @@ BEGIN
           end;
         end;
       end;
-    end;
+    end;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:53:33 PM
   end;  
   if (check!=0) then begin 
     if (updatefifof) then begin
@@ -339,5 +347,248 @@ BEGIN
 LStockTakeVcRecordCheck:;
   if (res!=0) then begin StockTakep.SerNr = oldnr; end;
   StockTakeVcRecordCheck = res;
+  RETURN;
+END;
+
+updating procedure StockTakeUpdateCostPrice(record StockTakeVc StockTakep)
+BEGIN
+  record INVc oldINr;
+  record INVc INr;
+  record ItemStatusVc ISr;
+  row StockTakeVc StockTakerw;
+  Boolean found;
+  Integer i,rwcnt,outrows;
+  val q,t,t2,rs,rsb2;
+  record RoundBlock RoundRec;
+  
+  BlockLoad(RoundRec);
+  outrows = 0;
+  i = -1;
+  rwcnt = MatRowCnt(StockTakep);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(StockTakep,i,StockTakerw);
+    if (StockTakerw.Qty!=0) then begin
+      INr.Code = StockTakerw.ArtCode;
+      found = ReadFirstMain(INr,1,true);
+      RecordCopy(oldINr,INr);
+      if ((found) and (StockTakerw.FIFO!=0)) then begin
+        switch (INr.UpdateCost) begin
+          case 2:
+            rs = StockTakerw.FIFO;
+            Base1ToBase2(rs,StockTakep.TransDate,rsb2);
+            FindStockValue(StockTakerw.ArtCode,"",ISr);
+            q = ISr.Instock - StockTakerw.Qty;
+            t = q*INr.WeighedAvPrice;
+            if (INr.PriceFactor!=0) then begin
+              rs = rs*INr.PriceFactor;
+            end;
+            t2 = StockTakerw.Qty*rs;
+            t = t + t2;
+            q = q + StockTakerw.Qty;
+            rs = t/q;
+            if (q>=0) then begin
+              INr.WeighedAvPrice = rs;
+            end;
+
+            t = q*INr.InPriceB2;
+            if (INr.PriceFactor!=0) then begin
+              rsb2 = rsb2*INr.PriceFactor;
+            end;
+            t2 = StockTakerw.Qty*rsb2;
+            t = t + t2;
+            q = q + StockTakerw.Qty;
+            rsb2 = t/q;
+            if (q>=0) then begin
+              INr.WeighedAvPriceB2 = rsb2;
+            end;
+      //?      UpdateLocationWeightedAv(INr.Code
+            if ((INr.InPrice!=INr.WeighedAvPrice) and (rs!=0)) then begin  //? inprice has changed 
+              INr.InPrice = INr.WeighedAvPrice;
+              INr.LastPriceChange = CurrentDate;
+            end else begin
+              found = false;
+            end;
+            if ((INr.InPriceB2!=INr.WeighedAvPriceB2) and (rsb2!=0)) then begin  //? inprice has changed 
+              INr.InPriceB2 = INr.WeighedAvPriceB2;
+            end;
+          otherwise 
+            found = false;
+         end;
+        if (found) then begin
+          INr.WeighedAvPrice = Round(INr.WeighedAvPrice,GetCostRoundMode(RoundRec));
+          INr.WeighedAvPriceB2 = Round(INr.WeighedAvPriceB2,GetCostRoundMode(RoundRec));
+          switch(INr.UpdateCost) begin
+            case 0:;
+            otherwise
+              INr.InPrice = Round(INr.InPrice,GetCostRoundMode(RoundRec));
+              INr.InPriceB2 = Round(INr.InPriceB2,GetCostRoundMode(RoundRec));
+              INr.LastPriceChange = CurrentDate;
+          end;
+          if (RecordUpdate(oldINr,INr,false)==0) then begin end;
+        end;
+      end;
+    end;
+  end;
+  RETURN;
+END;
+
+global
+updating function LongInt StockTakeVcRecordUpdateAfter(var record StockTakeVc StockTaker,record StockTakeVc StockTake2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  val LocOKNr;
+
+  if ((StockTaker.OKFlag!=0) and (StockTake2r.OKFlag==0)) then begin
+    StockTakeUpdateInstock(StockTaker);
+    StockTakeUpdateCostPrice(StockTaker);
+    StockTakeUpdateItemHist(StockTaker);
+  end;
+  if ((StockTaker.OKFlag==0) and (StockTake2r.OKFlag!=0)) then begin
+    StockTakeRemoveItemHist(StockTaker);
+  end;
+  StockTakeVcRecordUpdateAfter = res;
+  RETURN;
+END;
+
+global
+function LongInt StockTakeVcRecordRemoveTest(var record StockTakeVc StockTaker,record StockTakeVc StockTake2r,LongInt long3,LongInt long4)
+BEGIN
+  LongInt res;
+  record DBLockBlock DBLockRec;
+
+  res = 1;
+  BlockLoad(DBLockRec);
+  if (StockTaker.TransDate<=DBLockRec.DeleteBeforeDate) then begin        
+    res = 1;
+    goto LStockTakeVcRecordRemoveTest;
+  end;  
+  if (StockTaker.OKFlag!=0) then begin
+    if (long3>0) then begin
+      MessageBox(1544,"");
+    end;
+    res = 0;
+  end;
+LStockTakeVcRecordRemoveTest:;
+  StockTakeVcRecordRemoveTest = res; 
+  RETURN;
+END;
+
+global
+function LongInt StockTakeVcRecordReset(var record StockTakeVc StockTaker,record StockTakeVc StockTake2r,LongInt long3,LongInt long4)
+begin
+  LongInt res;
+  
+  StockTaker.OKFlag = 0;
+  StockTakeVcRecordReset = res;
+  RETURN;
+END;
+
+procedure StockTakeVcConvertB1ToB2Date(record StockTakeVc StockTakep,string curp,Date datp)
+BEGIN
+  row StockTakeVc StockTakerw;
+  val fr,to1,to2,br1,br2,t;
+  Integer rwcnt,i;
+  string 20 curncy;
+  
+  curncy = curp;
+  GetFullCurncyRate(curncy,datp,fr,to1,to2,br1,br2);
+  rwcnt = MatRowCnt(StockTakep);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(StockTakep,i,StockTakerw);
+    B1ToB2ValRM(StockTakerw.FIFO,br1,br2,t,GetCostRoundModeRB);
+    StockTakerw.FIFO = t;
+    B1ToB2ValRM(StockTakerw.FIFORowVal,br1,br2,t,GetCostRoundModeRB);
+    StockTakerw.FIFORowVal = t;
+    MatRowPut(StockTakep,i,StockTakerw);
+  end;
+//  StockTakeSumUp(StockTakep);
+  RETURN;
+END;
+
+global
+updating function LongInt StockTakeVcRecordImport(var record StockTakeVc StockTaker,record StockTakeVc StockTake2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record ConvMasterBlock cvm;
+  Boolean gBase1ToBase2;
+
+  BlockLoad(cvm);
+  if (cvm.Base1ToBase2Flag!=0) then begin gBase1ToBase2 = true; end;
+  if (gBase1ToBase2) then begin
+    StockTakeVcConvertB1ToB2Date(StockTaker,"",StockTaker.TransDate);
+  end;
+  StockTakeVcRecordImport = res;
+  RETURN;
+END;
+
+global
+updating function LongInt StockTakeVcRecordImportAfter(var record StockTakeVc StockTaker,record StockTakeVc StockTake2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record ConvMasterBlock cvm;
+  Boolean gBase1ToBase2;
+
+  if (StockTaker.OKFlag!=0) then begin
+    if (StockTaker.SetStockValue!=0) then begin
+      StockTakeUpdateInstock(StockTaker);
+    end;
+  end;
+  StockTakeVcRecordImportAfter = res;
+  RETURN;
+END;
+
+global
+function LongInt StockTakeVcRecordDefaults(var record StockTakeVc StockTaker,record StockTakeVc StockTake2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record UserVc USr;
+  
+  StockTaker.SerNr = -1;
+  StockTaker.TransDate = CurrentDate;
+  StockTaker.OKFlag = 0;
+  if (SingleUserMode) then begin
+    StockTaker.SerNr = NextSerNr("StockTakeVc",StockTaker.TransDate,-1,false,"");
+  end;
+  GetCurUser(USr);
+  StockTaker.Location = USr.Location;
+  StockTakeVcRecordDefaults = res; 
+  RETURN;
+END;
+
+global
+function LongInt StockTakeVcRecordDuplicate(var record StockTakeVc StockTaker,record StockTakeVc StockTake2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  Integer i,rwcnt;
+  row StockTakeVc StockTakerw;
+
+  StockTaker.SerNr = -1;
+  StockTaker.OKFlag = 0;
+  if (SingleUserMode) then begin
+    StockTaker.SerNr = NextSerNr("StockTakeVc",StockTaker.TransDate,-1,false,"");
+  end;
+  rwcnt = MatRowCnt(StockTaker);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(StockTaker,i,StockTakerw);
+    StockTakerw.FIFO = blankval;
+    StockTakerw.FIFORowVal  = blankval;
+    MatRowPut(StockTaker,i,StockTakerw);
+  end;
+  WarnFutureDate(true,StockTaker.TransDate);
+  StockTakeVcRecordDuplicate = res; 
+  RETURN;
+END;
+
+global
+updating function LongInt StockTakeVcRecordSaveAfter(var record StockTakeVc StockTaker,record StockTakeVc StockTake2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+
+  if (StockTaker.OKFlag!=0) then begin
+    StockTakeUpdateInstock(StockTaker);
+    StockTakeUpdateCostPrice(StockTaker);
+    StockTakeUpdateItemHist(StockTaker);
+  end;
+  StockTakeVcRecordSaveAfter = res;
   RETURN;
 END;

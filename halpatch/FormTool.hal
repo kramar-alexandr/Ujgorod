@@ -1,3 +1,5 @@
+external function Integer InString2(string,string);
+external function roundmode SetRoundModeD(Integer);
 
 global
 procedure PrintValue(string fieldname,val vp,Integer typ,record LangNrVc LangNrr,record SysFormatBlock SysFormatRec,Boolean negf)
@@ -15,19 +17,62 @@ BEGIN
 END;
 
 global
-procedure PrintValueInclZero(string fieldname,val vp,Integer typ,record LangNrVc LangNrr,record SysFormatBlock SysFormatRec,Boolean negf)
-BEGIN
+procedure PrintFormulaDiscount(string fieldname,string vp,record LangNrVc LangNrr,record SysFormatBlock SFb,Boolean negf)
+begin
+  string 255 tstr;
+  val v;
+  
+  tstr = vp;
+  if (nonblank(tstr)) then begin
+    if (InString2(tstr,"+")>=0 or InString2(tstr,"*")>=0) then begin
+      OutFormField(fieldname,tstr);  
+    end else begin
+      if (Mid(tstr,len(tstr)-1,1)=="%") then begin
+        tstr = Left(tstr,len(tstr)-1);
+      end;
+      v = EvalToVal(tstr);
+      if (negf) then begin v = -v; end;
+      PrintValue(fieldname,v,M41Val,LangNrr,SFb,false);
+    end;
+  end;
+  return;
+end;
+
+global
+function string 255 FormulaDiscountString(string vreb)
+begin
+  string 255 res;
+  val v;
+
+  res = vreb; 
+  if (InString(res,"+")>=0 or InString(res,"*")>=0) then begin
+    res = vreb;
+  end else begin
+    if (Mid(res,len(res)-1,1)=="%") then begin
+      res = Left(res,len(res)-1);
+    end;
+    v = EvalToVal(res);
+    res = ValToString(v,M41Val,ThousandSeparator,DEcimalSeparator,0);
+  end;
+  FormulaDiscountString = res;
+  return;
+end;
+
+
+global
+procedure PrintValueInclZero(string fieldname,val vp,Integer typ,record LangNrVc LangNrr,record SysFormatBlock SFb,Boolean negf)
+begin
   string 255 tstr;
   val v;
   
   v = vp;
   if (nonblank(v)) then begin
     if (negf) then begin v = -v; end;
-    tstr = ValToString(v,typ,SysFormatRec.thousSep,SysFormatRec.decimalPt,LangNrr.CutDecimals);
+    tstr = ValToString(v,typ,SFb.thousSep,SFb.decimalPt,LangNrr.CutDecimals);
     OUTFORMFIELD(fieldname,tstr);  
   end;
-  RETURN;
-END;
+  return;
+end;
 
 global
 procedure PrintValueInclZeroWithSign(string currency,string fieldname,val vp,Integer typ,record LangNrVc LangNrr,record SysFormatBlock SysFormatRec,Boolean negf)

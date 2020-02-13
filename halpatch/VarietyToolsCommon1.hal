@@ -1,3 +1,4 @@
+external procedure FillMaskVAR(string,string,string,Array string,Array string);
 external procedure SplitVars(string,Array string,Array string,Array string);
 external function string 255 GetNextValue(var string);
 external function string 255 removenextlistitem(var string,string);
@@ -64,6 +65,7 @@ begin
       end else begin
         INr.Code = Left(itemcode,l);
       end;
+
       if (ReadFirstMain(INr,1,true)) then begin
         //if (INr.Group==VARrw.ItemGroup) then begin// Edit ************************** Wednesday, 22 June 2016 17:00:00
         
@@ -369,4 +371,17 @@ begin
   
   GetItemVarietiesForGroup = i;
   return;
+end;
+
+global
+procedure RemoteFindAndFillMaskVAR(string itemcode,var string itemsize,var string mask,var Array string maskvar,var Array string maskvarsz)
+begin
+  boolean testvarf;
+  string 60 mskrep;
+  string 200 varsubset;
+
+  FindItemVAR(itemcode,itemsize,mask,mskrep,varsubset);
+  if (nonblank(mask)) then begin 
+    FillMaskVAR(itemcode,itemsize,mask,maskvar,maskvarsz);
+  end; 
 end;

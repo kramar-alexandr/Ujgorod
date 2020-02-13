@@ -1,3 +1,5 @@
+external procedure IVCashDClass_RefreshStringList(Integer,record IVCashVc);
+remote procedure RemoveInvalidVarietyItems_IVCashVc(var record IVCashVc,var integer);
 forward function Boolean ReadFirstItem(string,var record INVc,Boolean,Boolean);
 external function Boolean CheckVARSubsets(record VARVc,string,string);
 external function Boolean FindItemVAR(string,var string,var string,var string,var string);
@@ -7,11 +9,32 @@ external procedure ExtractObj(string,var Integer,var string);
 external function string 255 removenextlistitem(var string,string);
 external function string 255 GetNextValue(var string);
 external function string 255 AddStr(string,string,string);
+
 remote procedure POVc_VARColorSClass(record POVc,integer,Integer,Integer,Integer,var Array string,var Integer);// Edit ************************** Tuesday, 21 June 2016 16:13:14
 external procedure PasteFromSysList(Integer,Integer);// Edit ************************** Tuesday, 21 June 2016 16:29:16
 external function string 255 StringFromSysList(Integer,Integer);// Edit ************************** Tuesday, 21 June 2016 16:30:17
 remote function Time GetCurTimeOnServ();
 external procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);
+
+
+function Integer VarietiesMax()
+begin
+  VarietiesMax = 20;
+  return;
+end;
+
+function integer Min(integer a,integer b)
+begin
+  integer res;
+  
+  if (a<=b) then begin
+    res = a;
+  end else begin
+    res = b;
+  end;
+  Min = res;
+  return;
+end;
 
 procedure ExtractSemicolStr(string ostr,var Integer pos,var string rstr)
 begin
@@ -54,52 +77,75 @@ LExtractSemColStrNr:;
   return;
 end;
 
+function string 255 SplitOneVariety(string vars,string maskvar,string maskvarsz,var Integer pos,var Boolean loopf)
+begin
+  string 255 tstr,res;
+  LongInt l;
+  
+  if (nonblank(maskvar)) then begin
+    l = FirstInRange(maskvarsz,2);
+  end;    
+  if (nonblank(maskvar) and (l>0)) then begin
+    res = mid(vars,pos,l);
+    pos = pos + l;
+  end else begin
+    // switch away from using ExtractObj() to cause proper error codes to happen
+    ExtractObj(vars,pos,tstr);
+    if (nonblank(tstr)) then begin
+      res = tstr;
+    end else begin
+      loopf = false;
+    end;
+  end;
+
+  SplitOneVariety = res;
+  return;
+end;
+
 global
 procedure SplitVars(string vars,Array string maskvar,Array string maskvarsz,Array string resclass)
-BEGIN
-  Integer i,j,k;
-  Integer pos,posnlen;
-  string 255 tstr;
-  LongInt l,itemlen;
-
-  l = 0;
-  for (i=0;i<20;i=i+1) begin
-    resclass[i] = "";
+begin
+  Integer i,al,pos;
+  Boolean loopf;
+  
+  loopf = true;
+  ClearArray(resclass);
+  al = Min(maskvar.length,VarietiesMax);
+  
+  for (i = 0; ((i<al) and loopf); i = i + 1) begin
+    resclass[i] = SplitOneVariety(vars,maskvar[i],maskvarsz[i],pos,loopf);
   end;
-  pos = 0;
-  for (i=0;i<20;i=i+1) begin
-    if (nonblank(maskvar[i])) then begin
-      l = FirstInRange(maskvarsz[i],2);
-    end;    
-    if ((nonblank(maskvar[i])) and (l>0)) then begin
-      if (nonblank(maskvar[i])) then begin
-        tstr = Left(tstr,l);
-        tstr = "";
-        posnlen = pos + l;
-        for (j=pos;j<posnlen;j=j+1) begin
-          tstr = tstr & Mid(vars,pos,1);
-          pos = pos + 1;
-        end;
-        resclass[i] = tstr;
-      end else begin
-        i = 20;
-      end;
-    end else begin
-      // switch away from using ExtractObj() to cause proper error codes to happen
-      ExtractObj(vars,pos,tstr);
-      if (nonblank(tstr)) then begin
-        resclass[i] = tstr;
-      end else begin
-        i = 20;
-      end;
-    end;
-    if (i==0) then begin 
-      itemlen = l; 
-      if (l>0) then begin pos = itemlen; end;
+  while (loopf and i<VarietiesMax) begin
+    resclass[i] = SplitOneVariety(vars,"","",pos,loopf);
+    i = i + 1;
+  end;
+end;
+  
+procedure SplitVarsWithSize(string vars,Array string maskvar,Array string maskvarsz,Array string resclass,string size)
+begin
+  Integer i,al,pos,masksize;
+  Boolean loopf;
+  
+  loopf = true;
+  ClearArray(resclass);
+  al = Min(maskvar.length,VarietiesMax);
+  if (size!=".") then begin
+    masksize = StringToInt(size);
+  end;
+  for (i = 0; ((i<al) and loopf); i = i + 1) begin
+    resclass[i] = SplitOneVariety(vars,maskvar[i],maskvarsz[i],pos,loopf);
+    if (size!=".") then begin
+      resclass[i] = left(resclass[i],masksize);
     end;
   end;
-  RETURN;
-END;
+  while (loopf and i<VarietiesMax) begin
+    resclass[i] = SplitOneVariety(vars,"","",pos,loopf);
+    if (size!=".") then begin
+      resclass[i] = left(resclass[i],masksize);
+    end;
+    i = i + 1;
+  end;
+end;
 
 procedure ClearVARclass(Array string maskvar,Array string maskvarsz)
 BEGIN
@@ -181,7 +227,8 @@ BEGIN
     FindItemVAR(frartcode,sz2,mask2,mskrep2,varsubset2);
     FindItemVAR(toartcode,sz3,mask3,mskrep3,varsubset3);
 
-    SplitVars(teststr,maskvar,maskvarsz,amsk);
+    //SplitVars(teststr,maskvar,maskvarsz,amsk);
+    SplitVarsWithSize(teststr,maskvar,maskvarsz,amsk,sz);
     SplitVars(frartcode,maskvar2,maskvarsz2,amsk2);
     SplitVars(toartcode,maskvar3,maskvarsz3,amsk3);
 
@@ -205,7 +252,7 @@ begin
   Array string 20 amsk;
   record VARVc VARp;
   string 255 tstr;
-  Integer i,j;
+  Integer i,j,al;
   Integer pos;
   Boolean thisvar,firstf;
   Boolean res;
@@ -221,16 +268,18 @@ begin
         VARp.Code = tstr;
         if (ReadFirstMain(VARp,1,true)) then begin
           if (VARp.TerminateFlag==0) then begin
-            for (j=0;j<20;j=j+1) begin
+            al = amsk.length;
+            Min(al,VarietiesMax);
+            for (j=0;j<al;j=j+1) begin
               if (nonblank(amsk[j])) then begin
                 if (amsk[j]==VARp.Code) then begin
                   if (maskvar[j]==VARp.VARGCode) then begin
                     thisvar = true;
-                    j = 20;
+                    j = al;
                   end;
                 end;
               end else begin
-                j = 20;
+                j = al;
               end;
             end;
           end;
@@ -436,7 +485,6 @@ BEGIN
   i = 1;
   
   while (nonblank(amsk[i])) begin
-  	//LogText(0,"msk  " & amsk[i]   & "       " & maskvar[i+1]);
     VARr.Code = amsk[i];
     VARr.VARGCode = maskvar[i];	//Edit----------------------Dima  22.04.2016    Extension for the same variants codes with the different variant groups.        
     if (ReadFirstMain(VARr,2,true)) then begin		//Edit----------------------Dima  22.04.2016
@@ -445,11 +493,9 @@ BEGIN
         comment = comment & ", ";
         comment = comment & tstr;
         VARGr.Code = VARr.VARGCode;
-        //LogText(0,"comment    " & comment);
         if (ReadFirstMain(VARGr,1,true)) then begin
           varp[i] = VARGr.Code;
           varpsz[i] = VARGr.VarSize;
-          //LogText(0,"group:   " & varp[i] & "   __    " & varpsz[i]);
         end;
       end;
     end;
@@ -467,7 +513,7 @@ begin
   Array string 20 vars;
   Array string 2 varssz;
   string 255 mask;
-  Integer i,pos;
+  Integer i,pos,al;
   LongInt varpos;
   string 10 itemsize;
   string 60 sz,msk,mskrep,subset,variety;  
@@ -482,19 +528,19 @@ begin
     itemsize = sz;
     FillMaskVAR(itemcode,itemsize,mask,maskvar,maskvarsz);
     FillThisItemVAR(itemcode,"",itemsize,maskvar,maskvarsz,vars,varssz,comment);
-    
     if (nonblank(vars[0])) then begin
       theitemcode = vars[0];
     end;
-    for (i=0;i<20;i=i+1) begin    
+    al = maskvar.length;
+    Min(al,VarietiesMax);
+    for (i=0;i<al;i=i+1) begin    
       if ((nonblank(maskvar[i])) or (nonblank(vars[i]))) then begin
-      	//LogText(0,"before last check   " & vars[i] & "   msk " & maskvar[i]);
         if (maskvar[i]!=vars[i]) then begin
           res = false;
-          i = 20;
+          i = al;
         end;
       end else begin
-        i = 20;
+        i = al;
       end;
     end;
     varf = true;
@@ -573,21 +619,19 @@ begin
     INr.Code = ItemCode;
     res = ReadFirstMain(INr,1,true);
   end;
-  if (res==false) then begin
+  if (res==false or (INr.Terminated!=0 and !Importing)) then begin
     if (nonblank(ItemCode)) then begin
       tstr = ItemCode;
       if (ISb.BarCodeLength>0) then begin
         if ( len(tstr) < ISb.BarCodeLength ) then begin
-          AddCharsToString(tstr,'0',ISb.BarCodeLength-len(tstr));
+          AddCharsToString(tstr,"0",ISb.BarCodeLength-len(tstr));
         end;  
       end;
-      ItemCode = tstr;
-      INr.BarCode = ItemCode;
+      INr.BarCode = tstr;
       res = ReadFirstKey("BarCode",INr,1,true);
       if (res) then begin ItemCode = INr.Code; end;
-      if (res==false) then begin
-//        ItemCode = tstr;
-        INr.AlternativeCode = ItemCode;
+      if (res==false or (INr.Terminated!=0 and !Importing)) then begin
+        INr.AlternativeCode = tstr;
         res = ReadFirstKey("AlternativeCode",INr,1,true);
         if (res) then begin ItemCode = INr.Code; end;
       end;
@@ -608,7 +652,7 @@ begin
       end;
     end;
   end;
-  if (res==false and nonblank(ItemCode)) then begin
+  if ((res==false or (INr.Terminated!=0 and !Importing)) and nonblank(ItemCode)) then begin
     record PIVc PIr;
 
     PIr.VEItemCode = ItemCode;
@@ -743,16 +787,14 @@ begin
       tstr = ItemCode;
       if (ISb.BarCodeLength>0) then begin
         if ( len(tstr) < ISb.BarCodeLength ) then begin
-          AddCharsToString(tstr,'0',ISb.BarCodeLength-len(tstr));
+          AddCharsToString(tstr,"0",ISb.BarCodeLength-len(tstr));
         end;  
       end;
-      ItemCode = tstr;
-      LocalINr.BarCode = ItemCode;
+      LocalINr.BarCode = tstr;
       res = ReadFirstKey("BarCode",LocalINr,1,true);
       if (res) then begin ItemCode = LocalINr.Code; end;
       if (res==false) then begin
-        ItemCode = tstr;
-        LocalINr.AlternativeCode = ItemCode;
+        LocalINr.AlternativeCode = tstr;
         res = ReadFirstKey("AlternativeCode",LocalINr,1,true);
         if (res) then begin ItemCode = LocalINr.Code; end;
       end;
@@ -808,7 +850,6 @@ BEGIN
   if (CorrectItemVAR(artcode,theitemcode,comment,false)) then begin
 //    res = GetFirstItem(theitemcode,INp);// what if alternative code used oon another item? 
     INp.Code = theitemcode;
-   
     res = ReadFirstMain(INp,1,true);
     if (addname) then begin
       if (artcode!=theitemcode) then begin
@@ -961,6 +1002,53 @@ begin
   GetItemVARDescription = res;
   return;
 end;
+
+global
+function Boolean UpdateExistingVarietyRowsf()
+begin
+  record VarietyBlock VBb;
+  
+  BlockLoad(VBb);
+  UpdateExistingVarietyRowsf = VBb.UseInfoFromRow==1;
+end;
+
+global
+procedure RemoveInvalidVARItemsNPTSIVCashDClass(integer wn)
+begin
+  record IVCashVc IVCashr;
+  integer rwcnt,rwcnt2;
+  
+  if (wn>0) then begin 
+    GetWindowRecord(wn,IVCashr);
+    rwcnt = MatRowCnt(IVCashr); 
+    rwcnt2 = rwcnt;
+    RemoveInvalidVarietyItems_IVCashVc(IVCashr,rwcnt);
+    if (rwcnt2!=rwcnt) then begin 
+      PutWindowRecord(wn,IVCashr);
+      IVCashDClass_RefreshStringList(wn,IVCashr);
+    end; 
+  end;     
+end;
+
+global
+procedure RemoveInvalidVARItemsIVCashDClass(integer wn)
+begin
+  record IVCashVc IVCashr;
+  integer rwcnt,rwcnt2;
+  
+  if (wn>0) then begin 
+    GetWindowRecord(wn,IVCashr);
+    rwcnt = MatRowCnt(IVCashr); 
+    rwcnt2 = rwcnt;
+    RemoveInvalidVarietyItems_IVCashVc(IVCashr,rwcnt);
+    if (rwcnt2!=rwcnt) then begin 
+      PutWindowRecord(wn,IVCashr);
+      DeselectWindow(wn,false);
+      WindowFieldGoto(wn,IVCashr,rwcnt,"ArtCode",true);
+    end; 
+  end;     
+end;
+
 
 global
 function Boolean VARColorSClassOnOpenWindow(Integer wn)

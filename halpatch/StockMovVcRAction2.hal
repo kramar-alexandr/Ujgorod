@@ -1,3 +1,4 @@
+external procedure AutomatedSalesOrderly(string);
 external function string 255 GetLegalInvoiceNrSerie(row LegalInvNrBlock,string);
 external procedure GetLegalInvNrRow(string,var row LegalInvNrBlock);
 external procedure B1ToB2StrValRM(string,val,val,var string,roundmode);
@@ -151,9 +152,16 @@ BEGIN
   StockMovr.HashKeyVersion = 0;
   StockMovr.TaxAdminServSeal = "";    
   StockMovr.OfficialSerNrSerie = "";
+  StockMovr.InvoiceNr = -1;
   if (HasLocalization("PRT")) then begin
     StockMovr.PlanSendTime = "";
     StockMovr.PlanSendDate = "";
+    StockMovr.InvDate = "";
+    StockMovr.InvoiceOfficialSerNr = "";
+    StockMovr.InvRegTime = "";
+    StockMovr.InvOfficialSerNrSerie = "";
+    StockMovr.InvOfficialSerNr2 = "";
+    StockMovr.InvOfficialSerNr2Serie = "";
   end;  
   StockMovVcRecordDuplicate = res; 
   RETURN;
@@ -488,6 +496,8 @@ BEGIN
   Boolean gBase1ToBase2,gToDualBase;
   record ConvMasterBlock cvm;
   row LegalInvNrBlock LINrbrw;
+  record StockMovVc cStockMovr;
+  transaction Boolean gStockMovVcRecordImport_RecordExists;
       
   BlockLoad(cvm);
   if (cvm.DualBaseCurrencyFlag!=0) then begin gToDualBase = true; end;
@@ -554,6 +564,8 @@ BEGIN
     GetLegalInvNrRow(StockMovr.OfficialSerNr,LINrbrw);
     StockMovr.OfficialSerNrSerie = GetLegalInvoiceNrSerie(LINrbrw,StockMovr.OfficialSerNr);
   end;
+  cStockMovr.SerNr = StockMovr.SerNr;
+  gStockMovVcRecordImport_RecordExists = ReadFirstMain(cStockMovr,1,true);
   StockMovVcRecordImport = res;
   RETURN;
 END;
@@ -563,18 +575,23 @@ updating function LongInt StockMovVcRecordImportAfter(var record StockMovVc Stoc
 BEGIN
   LongInt res;
   Integer err;
+  transaction Boolean gStockMovVcRecordImport_RecordExists;
       
-  StockMovUpdateSerialNr(StockMovr,StockMov2r,false);
-  UpdateInStockMovFromStockMov(StockMovr,false);
+  if (gStockMovVcRecordImport_RecordExists==false) then begin
+    StockMovUpdateSerialNr(StockMovr,StockMov2r,false);
+    UpdateInStockMovFromStockMov(StockMovr,false);
+  end;
   if (StockMovr.OKFlag==0) then begin
     StockMovUpdateStock(StockMovr,StockMov2r,false,false,false);  
   end else begin
-    if (ImportingTextBackup==false and CanOKStockRecord(err)==true) then begin
-      StockMovUpdateStock(StockMovr,StockMov2r,true,false,false);
-      StockMovUpdateCostPrice(StockMovr,StockMov2r);
-      StockMovUpdateItemHist(StockMovr,StockMov2r);
-    end else begin
-      StockMovUpdateStock(StockMovr,StockMov2r,false,false,false);  
+    if (gStockMovVcRecordImport_RecordExists==false) then begin
+      if (ImportingTextBackup==false and CanOKStockRecord(err)==true) then begin
+        StockMovUpdateStock(StockMovr,StockMov2r,true,false,false);
+        StockMovUpdateCostPrice(StockMovr,StockMov2r);
+        StockMovUpdateItemHist(StockMovr,StockMov2r);
+      end else begin
+        StockMovUpdateStock(StockMovr,StockMov2r,false,false,false);  
+      end;
     end;
   end;
   
@@ -623,7 +640,7 @@ global
 updating function LongInt StockMovVcRecordRemove(var record StockMovVc StockMovr,record StockMovVc StockMov2r,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;
-  record ActVc Actr;
+  record ActVc Actr;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:48:44 PM
 
   if (StockMovr.IntORNo!=-1) then begin
     if (UpdateIntOrderFromStockMov(StockMov2r,StockMovr,false)) then begin end;
@@ -638,11 +655,11 @@ BEGIN
     DeleteOffSerNr(StockMovr.SerNr,"StockMovVc");
   end;
   
-  Actr.FromFileName = "StockMovVc";
+  Actr.FromFileName = "StockMovVc";// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:48:35 PM
   Actr.FromSerNr = StockMovr.SerNr;
   if (readfirstkey("FromFileName",Actr,2,true)) then begin
     RecordDelete(Actr);
-  end;
+  end;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:48:39 PM
   
   StockMovVcRecordRemove = res;
   RETURN;
@@ -665,7 +682,7 @@ updating function LongInt StockMovVcRecordUpdate(var record StockMovVc StockMovr
 BEGIN
   LongInt res;
   Boolean ihef;
-  record ActVc Actr;
+  record ActVc Actr;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:48:57 PM
 
   ihef = ItemHistExists("StockMovVc",StockMovr.SerNr);
   if ((StockMovr.SentOKFlag==0)) then begin
@@ -723,7 +740,11 @@ global
 updating function LongInt StockMovVcRecordSaveAfter(var record StockMovVc StockMovr,record StockMovVc StockMov2r,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;
+  record UserVc Userr;
 
+  Userr.Code = StockMovr.Sign;
+  ReadFirstMain(Userr,1,true);
+  StockMovr.SalesGroup = Userr.SalesGroup;  
   StockMovUpdateStock(StockMovr,StockMov2r,true,false,false);
   StockMovUpdateCostPrice(StockMovr,StockMov2r);//Cost Price before history
   StockMovUpdateItemHist(StockMovr,StockMov2r);
@@ -732,6 +753,7 @@ BEGIN
   if (StockMovr.OKFlag!=0) then begin
     StockMovSetPositionStatus(StockMovr,1);
     CreateAutoProduction(StockMovr);
+    AutomatedSalesOrderly("HasIntegratedNL");
   end else begin
     StockMovSetPositionStatus(StockMovr,2);
   end;
@@ -787,3 +809,17 @@ BEGIN
   RETURN;
 END;
 
+global
+function LongInt StockMovVcRecordInIndex(record StockMovVc StockMovr,string indexname)
+begin
+  LongInt res;
+  
+  res = 1;
+  if (StockMovr.InvoiceNr==-1) then begin 
+    if (indexname=="InvDate") then begin res = 0; end;
+    if (indexname=="InvoiceOfficialSerNr") then begin res = 0; end;
+    if (indexname=="InvoiceNr") then begin res = 0; end;
+  end;
+  StockMovVcRecordInIndex = res;
+  return;
+end;

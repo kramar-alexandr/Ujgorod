@@ -339,7 +339,7 @@ BEGIN
             goto LIsUnOKAllowed_VIVc;
           end;
         end;
-        if (VIp.InvType==kInvoiceTypeCash or VIp.InvType==kInvoiceTypeCashInvoiceReceiptPRT) then begin
+        if (VIp.InvType==kInvoiceTypeEmployee or VIp.InvType==kInvoiceTypeCash or VIp.InvType==kInvoiceTypeCashInvoiceReceiptPRT) then begin
           goto LIsUnOKAllowed_VIVc;
         end;
         if (VIp.PayVal!=0) then begin
@@ -640,11 +640,11 @@ BEGIN
   record INVc INr;
   record IPrsVc IPrsr;
   record MainStockBlock MSb;
-  val tempsum;
-  record BaseCurBlock BCr;
+  val tempsum;// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 13 02 2020 y. at 12:25:22 PM
+  record BaseCurBlock BCr;// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 13 02 2020 y. at 12:25:25 PM
   roundmode rnd;// Edit ************************** Tuesday, 21 June 2016 11:30:35
   
-  blockload(BCr);
+  blockload(BCr);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 13 02 2020 y. at 12:25:26 PM
   
   res = TestArgEInvoiceStatus(IVp);
   if (res!=0) then begin
@@ -717,12 +717,18 @@ BEGIN
           ivsum = ivsum - IVrw.Sum;
         case kInvoiceRowTypeCreditCardPayment:
           ivsum = ivsum - IVrw.Sum;
+        case kInvoiceRowTypeSwishPayment:
+          ivsum = ivsum - IVrw.Sum;
+        case kInvoiceRowTypeQRPayment:
+          ivsum = ivsum - IVrw.Sum;
+        case kInvoiceRowTypeCashWithdrawal:
+          ivsum = ivsum - IVrw.Sum;
         case kInvoiceRowTypeChequePayment:
           ivsum = ivsum - IVrw.Sum;
       end;
     end;
     
-    if ((IVp.RetnValue>0 and IVp.Sum4>0) or (IVp.RetnValue<0 and IVp.Sum4<0)) then begin
+    if ((IVp.RetnValue>0 and IVp.Sum4>0) or (IVp.RetnValue<0 and IVp.Sum4<0)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 13 02 2020 y. at 12:25:42 PM
 			ivsum = ivsum + IVp.RetnValue;
 		end;
     

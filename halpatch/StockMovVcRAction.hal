@@ -470,7 +470,7 @@ BEGIN
   Integer i,rwcnt,j,orwcnt;
   Integer insertmode,updatemode;
   Boolean transreceivef,gentrans,transsendf,testf,test2f,checksendf,checkreceivef;
-  val prev,orsrv;
+  val prev,orsrv,t;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:25:38 PM
   Integer errcode;
   LongInt sernr;
   string 20 frlocation,tolocation;

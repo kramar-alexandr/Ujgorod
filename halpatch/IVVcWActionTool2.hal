@@ -1,3 +1,4 @@
+external function Boolean INVc_AllowSales(record INVc,var LongInt);
 external procedure GetSerialNumberCountryOfOrg(string,LongInt,LongInt,string,string,var string,var string);
 external procedure B1ToB2ValRM(val,val,val,var val,roundmode);
 external function roundmode GetCostRoundModeRB();
@@ -60,12 +61,12 @@ BEGIN
     MatRowPut(IVp,rownr,IVrw);
     IVSumup(IVp,true);
   end;
-  RETURN;
-END;
+  return;
+end;
 
 global
 procedure PasteARPayInIV(record IVVc IVp,row IVVc IVrwp,Integer rownr)
-BEGIN
+begin
   record ARPayVc ARPayr;
   record RoundBlock RBr;
   row IVVc IVrw;
@@ -73,12 +74,14 @@ BEGIN
   val compv,coff;
   record ARPayHistVc ARPayHistr;
   Boolean found;
+  record BaseCurBlock BCb;
   
   if (IVrwp.CUPNr!=-1) then begin
     ARPayr.CUPNr = IVrwp.CUPNr;
     if (ReadFirstMain(ARPayr,1,true)) then begin
 //      IVrwp.Sum = blankval;?? we do not allow changing prepaid amount?
-      if (IVp.CurncyCode==ARPayr.CurncyCode) then begin
+      BlockLoad(BCb);
+      if (IVp.CurncyCode==ARPayr.CurncyCode) or (blank(IVp.CurncyCode) and ARPayr.CurncyCode==BCb.BaseCur1) then begin
         if (IVp.CustCode==ARPayr.CustCode) then begin
             if (IVrwp.Sum!=0) then begin
               compv = IVrwp.Sum;
@@ -158,7 +161,7 @@ BEGIN
   rwcnt = MatRowCnt(IVr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IVr,i,IVrw);
-    if ((IVrw.stp==kInvoiceRowTypeGiftVoucherPayment) or (IVrw.stp==kInvoiceRowTypeCreditCardPayment) or (IVrw.stp==kInvoiceRowTypeChequePayment)) then begin
+    if ((IVrw.stp==kInvoiceRowTypeGiftVoucherPayment) or (IVrw.stp==kInvoiceRowTypeCreditCardPayment) or (IVrw.stp==kInvoiceRowTypeSwishPayment) or (IVrw.stp==kInvoiceRowTypeQRPayment) or (IVrw.stp==kInvoiceRowTypeCashWithdrawal) or (IVrw.stp==kInvoiceRowTypeChequePayment)) then begin
       cash = cash + IVrw.Sum;
     end;
     if ((IVrw.stp==kInvoiceRowTypeCashPayment) or (IVrw.stp==kInvoiceRowTypeLoyaltyPointsPayment)) then begin 
@@ -209,6 +212,9 @@ BEGIN
       case kInvoiceRowTypeCashPayment: chsum = true;
       case kInvoiceRowTypeLoyaltyPointsPayment: chsum = true;
       case kInvoiceRowTypeCreditCardPayment: chsum = true;
+      case kInvoiceRowTypeSwishPayment: chsum = true;
+      case kInvoiceRowTypeQRPayment: chsum = true;
+      case kInvoiceRowTypeCashWithdrawal: chsum = true;
       case kInvoiceRowTypeChequePayment: chsum = true;
     end;
   end;
@@ -230,6 +236,27 @@ BEGIN
           res = true;
         end; 
       case kInvoiceRowTypeCreditCardPayment:
+        if (IVrw.Sum==0) then begin 
+          IVrw.Sum = IVp.Sum4 - CalculateIVCashAmount(IVp); 
+          MatRowPut(IVp,rownr,IVrw);
+          chsum = true;
+          res = true;
+        end; 
+      case kInvoiceRowTypeSwishPayment:
+        if (IVrw.Sum==0) then begin 
+          IVrw.Sum = IVp.Sum4 - CalculateIVCashAmount(IVp); 
+          MatRowPut(IVp,rownr,IVrw);
+          chsum = true;
+          res = true;
+        end; 
+      case kInvoiceRowTypeQRPayment:
+        if (IVrw.Sum==0) then begin 
+          IVrw.Sum = IVp.Sum4 - CalculateIVCashAmount(IVp); 
+          MatRowPut(IVp,rownr,IVrw);
+          chsum = true;
+          res = true;
+        end; 
+      case kInvoiceRowTypeCashWithdrawal:
         if (IVrw.Sum==0) then begin 
           IVrw.Sum = IVp.Sum4 - CalculateIVCashAmount(IVp); 
           MatRowPut(IVp,rownr,IVrw);
@@ -598,20 +625,22 @@ begin
 end;
 
 global
-function Boolean IVVc_PasteSerialNr(var record IVVc IVr,Integer rownr,Boolean TouchScreenLookf)
-BEGIN
+function Boolean IVVc_PasteSerialNr2(var record IVVc IVr,Integer rownr,Boolean TouchScreenLookf,var string inwarning,var string warning)
+begin
   Boolean res;
   row IVVc IVrw,lastIVrw;
   val UnitXval,UnitYval,UnitZval,t,prevquant;
   string 255 tstr,location;
   Boolean chsum;
   record SerBalVc SBr;
-  string 255 inwarning;
   string 30 serial;
   record INVc INr;
   Integer sernrf;
   record SerNrTrackBlock SNrb;
+  LongInt err;
   string 50 tempartcode;
+	
+	logtext(0,"IVVc_PasteSerialNr2 01");
 
   BlockLoad(SNrb);
   MatRowGet(IVr,rownr,IVrw);
@@ -621,7 +650,7 @@ BEGIN
     location = IVr.Location;
   end;
 	
-	if(nonblank(IVrw.ArtCode))then begin
+	if(nonblank(IVrw.ArtCode))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:14:42 PM
 		tempartcode = IVrw.ArtCode;
 	end;
   if (blank(IVrw.ArtCode)) then begin 
@@ -640,7 +669,7 @@ BEGIN
         serial = IVrw.SerialNr;
         IVrw.PosCode = FindPositionWithSerialNr(IVr.Location,IVrw.ArtCode,IVrw.SerialNr,IVrw.Location);
         MatRowPut(IVr,rownr,IVrw);
-        if (IVVc_PasteArtCode(IVr,rownr,inwarning,inwarning,TouchScreenLookf,sernrf)) then begin 
+        if (IVVc_PasteArtCode(IVr,rownr,inwarning,warning,TouchScreenLookf,sernrf)) then begin 
         end;
         MatRowGet(IVr,rownr,IVrw);
         IVrw.SerialNr = serial;
@@ -649,6 +678,7 @@ BEGIN
       end;  
     end;
   end;
+  logtext(0,"IVVc_PasteSerialNr2 02");
   if (blank(IVrw.ArtCode)) then begin 
     if (FindLastInvoiceRowForSerial(IVr.SerNr,IVr.CustCode,IVrw.SerialNr,lastIVrw)) then begin 
       if (nonblank(lastIVrw.ArtCode)) and (nonblank(IVrw.SerialNr)) and (IVrw.SerialNr==lastIVrw.SerialNr) then begin 
@@ -668,8 +698,7 @@ BEGIN
       end;
     end;
   end;
-  
-  
+  logtext(0,"IVVc_PasteSerialNr2 03");
   MatRowGet(IVr,rownr,IVrw);
   if ((SNrb.BulkSerialNos==0) or (InString(IVrw.SerialNr,":")==0)) then begin
     SerialNrDimensions(IVrw.ArtCode,IVrw.SerialNr,UnitXval,UnitYval,UnitZval);
@@ -686,10 +715,7 @@ BEGIN
     end;
     IVrw.Quant = CalculateSerialNrQuantity(IVrw.ArtCode,IVrw.SerialNr,location,true,IVrw.UnitXval,IVrw.UnitYval,IVrw.UnitZval,IVrw.Quant);  
   end;
-  
-  
-  
-  
+  logtext(0,"IVVc_PasteSerialNr2 04");
   GetSerialNumberCountryOfOrg("IVVc",IVr.SerNr,rownr,IVrw.ArtCode,IVrw.SerialNr,IVrw.CountryOfOrg,tstr);
   MatRowPut(IVr,rownr,IVrw);
   if (IVrw.Quant!=prevquant) then begin
@@ -700,13 +726,23 @@ BEGIN
     IVSumup(IVr,true);
   end;
   
+  logtext(0,"IVVc_PasteSerialNr2 05");
   IVVc_PasteArtCode(IVr,rownr,inwarning,inwarning,TouchScreenLookf,sernrf);// Edit ************************** Wednesday, 15 June 2016 14:50:43
   
-  
+  logtext(0,"IVVc_PasteSerialNr2 06");
 LIVVc_PasteSerialNr:;
-  IVVc_PasteSerialNr = res;
-  RETURN;
-END;
+  IVVc_PasteSerialNr2 = res;
+  return;
+end;
+
+global
+function Boolean IVVc_PasteSerialNr(var record IVVc IVr,Integer rownr,Boolean TouchScreenLookf)
+begin
+  string 255 inwarning,warning;
+  
+  IVVc_PasteSerialNr = IVVc_PasteSerialNr2(IVr,rownr,TouchScreenLookf,inwarning,warning);;
+  return;
+end;
 
 global
 function Boolean IVVc_PasteOrdRow(var record IVVc IVr,Integer rownr,var string warning)
@@ -815,9 +851,11 @@ begin
   rwcnt = MatRowCnt(IVr);
   theIVrw.ArtCode = RBr.RepaItem;
   if (blank(theIVrw.ArtCode)) then begin
-    theIVrw.Spec = USetStr(20792);
+    StopAlert(USetStr(20792));
+    //theIVrw.Spec = USetStr(20792);
+  end else begin
+    theIVrw.Quant = 1;
   end;
-  theIVrw.Quant = 1;
   MatRowPut(IVr,rwcnt,theIVrw);
   if (IVVc_PasteArtCode(IVr,rwcnt,inwarning,inwarning,touchscl,sernrf)) then begin
     MatRowGet(IVr,rwcnt,theIVrw);
@@ -881,7 +919,7 @@ end;
 
 global
 procedure IVDUpdatePrices(var record IVVc IVr,Boolean readf)
-BEGIN
+begin
   Integer i,rwcnt;
   row IVVc IVrw;
   record INVc INr;
@@ -920,7 +958,7 @@ BEGIN
         IVrw.vRebate = vreb;
         IVrw.SalesAcc = salesacc;
         IVrw.VATCode = vatcode;
-        if (INr.ItemType==kItemTypeStructured and blank(IVr.PriceList)) then begin
+        if (INr.ItemType==kItemTypeStructured) then begin
           IVrw.BasePrice = blankval;
         end else begin
           IVrw.BasePrice = baseprice;

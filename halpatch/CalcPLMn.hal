@@ -5,7 +5,7 @@ external function val MulWithRateToBase1(var string,Date,val,roundmode);
 external function Boolean GetPurchaseItem(string,string,var record PIVc);
 
 
-/*function roundmode SetRoundModeD(Integer decimals)
+/*function roundmode SetRoundModeD(Integer decimals) 
 begin
   roundmode res;
 

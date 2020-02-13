@@ -1,3 +1,4 @@
+remote updating procedure RemotePrintStockMovInvoices(var record StockMovVc,var longint,var string,var record RcVc);
 remote function Boolean GetSVOSerialItem(string,string,record SVOSerVc);
 remote function Boolean GetFirstItem(var string,var record INVc);
 remote procedure StockMovVc_PasteThrouLocation(var record StockMovVc);
@@ -11,6 +12,7 @@ remote procedure StockMovVc_PasteSerialNr(var record StockMovVc,Integer,var arra
 remote function Integer CreateQualConFromStockMov(record StockMovVc,Integer,var record QualConVc,Integer);
 remote procedure PasteStockMovProdSerNr(var record StockMovVc);
 external function Boolean TestForMATVARINS(Integer);
+external procedure StockMovSumUp(var record StockMovVc);
 remote function Boolean StockMovVc_PasteToPosCode(var record StockMovVc,string,string,val,Integer,var string);
 remote updating function Boolean RecordAction_rlStockMovLOK(var record StockMovVc,Boolean);
 external procedure RecordActionStockMov_Print(var record StockMovVc,string,string,Boolean);
@@ -24,7 +26,7 @@ external function Boolean AllowCurChange(string,Boolean);
 external procedure SendArtStat(string,string,string,val,val,val,Date,Integer);
 remote procedure RecordAction_raStockMovFillFIFO(var record StockMovVc);
 external function val CalculateSerialNrQuantity(string,string,string,Boolean,val,val,val,val);
-remote external procedure StockMovSumUp(var record StockMovVc);
+remote external procedure StockMovSumUp(var record StockMovVc);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:50:00 PM
 external procedure SerialNrDimensions(string,string,var val,var val,var val);
 external function LongInt TimeToMinutes(Time);
 external function LongInt AddTime(Time,LongInt,var Time);
@@ -43,7 +45,7 @@ BEGIN
     newprice = oldprice;
     goto LCalcNewPrice;
   end;
-  if (oldprice==blankval) then begin
+  if (blank(oldprice)) then begin
     goto LCalcNewPrice;
   end;
   tstr = extra;
@@ -93,7 +95,7 @@ begin
   return;
 end;
 
-updating function Boolean StockMovDClassArtCodeEFAfter(Integer wn,Integer rownr,Integer changed)
+updating function Boolean StockMovDClassArtCodeEFAfter(Integer wn,Integer rownr,Integer changed)// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:50:13 PM
 BEGIN
   record StockMovVc StockMovr;
   row StockMovVc StockMovrw;
@@ -577,7 +579,7 @@ BEGIN
   RETURN;
 END;
 
-global updating
+global updating// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:50:26 PM
 function Boolean StockMovDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 BEGIN
   Boolean res;
@@ -786,7 +788,7 @@ BEGIN
       if (StockMovr.OKFlag!=0) then begin res = false; end;
       if (StockMovr.SentOKFlag!=0) then begin res = false; end;
     case "SerialNr": 
-      if (wnst==Rs_update) then begin 
+      if (wnst==Rs_update) then begin
         if (StockMov2r.OKFlag!=0) then begin res = false; end;
         if (StockMov2r.SentOKFlag!=0) then begin res = false; end;
         /*if (res and StockMov2r.OrdFlag!=0) then begin
@@ -814,8 +816,11 @@ BEGIN
       if (StockMovr.OKFlag!=0) then begin res = false; end;
       if (StockMovr.SentOKFlag!=0) then begin res = false; end;
       if (blank(StockMovr.ThrouLocation)) then begin
-        MessageBox(20080,"");
-        res = false;
+        MatRowGet(StockMovr,rownr,StockMovrw);
+        if (blank(StockMovrw.SentQuant)==false) then begin
+          MessageBox(20080,"");
+          res = false;
+        end;
       end;
     case "OldPrice": 
       if (res) then begin res = UserCanAction("ChangingCostOnStockMov",true); end;
@@ -982,9 +987,6 @@ begin
     MessageBox(20080,"");
     res = false;
   end;
-  if(StockMovr.OrdFlag==0)then begin// Edit ************************** Tuesday, 23 May 2017 14:24:40
-  	res = false;
-  end;
   StockMovDClassSentOKFlagButtonAction = res;
   return;
 end;
@@ -993,17 +995,17 @@ global
 function Boolean StockMovDClassOrdFlagButtonAction(Integer wn,Integer value)
 begin
   Boolean res;
-  Integer normalmode,updatemode;
   record StockMovVc StockMovr;
   record StockMovVc StockMov2r;
 
   res = true;
-  normalmode = 0;//Rs_normal
-  updatemode = 2;//Rs_update
   GetWindowRecord(wn,StockMovr);
-  if (WindowState(wn)==normalmode) then begin
+  if (WindowState(wn)==Rs_normal) then begin
     if (StockMovr.OrdFlag!=0) then begin
       res = false;
+    end;
+    if (UserCanAction("StockMovOrdFlagOff",false)) then begin
+      res = true;
     end;
     if (StockMovr.OKFlag!=0) then begin
       res = false;
@@ -1012,7 +1014,7 @@ begin
       res = false;
     end;
   end;  
-  if (WindowState(wn)==updatemode) then begin
+  if (WindowState(wn)==Rs_update) then begin
     GetPrevWindowRecord(wn,StockMov2r);
     if (StockMov2r.SentOKFlag!=0) then begin
       res = false;
@@ -1024,6 +1026,15 @@ begin
       res = false;
     end;
   end;  
+  if (StockMovr.OrdFlag!=0) then begin
+    if (UserCanAction("StockMovOrdFlagOff",true)==false) then begin
+      res = false;
+    end;   
+  end else begin
+    if (UserCanAction("StockMovOrdFlag",true)==false) then begin
+      res = false;
+    end;   
+  end;
   StockMovDClassOrdFlagButtonAction = res;
   return;
 end;
@@ -1329,5 +1340,71 @@ LStockMovDClassBarcodeDataDo:;
 //  StockMovDClassEditRow(wn,rows);
   
 LStockMovDClassBarcodeDataOut:;
+  return;
+end;
+
+global
+updating procedure PrintStockMovInvoices()
+begin
+  record StockMovVc SMr;
+  record RcVc RepSpec;
+  boolean res;
+  Integer wn;
+  longint errorlongint;
+  string 255 errormsg;
+  
+  res = true;
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_normal) then begin
+    DeselectWindow(wn,true);
+    GetWindowRecord(wn,SMr);
+    if (HasLocalization("PRT")) then begin
+      switch (SMr.StockMovType) begin
+        case kStockMovTypeConsigment: res = true;
+        otherwise
+          MessageBox(39194,": " & StringFromSet(564,SMr.StockMovType) & chr(13) & chr(10) & USetStr(8329) & ": " & StringFromSet(564,kStockMovTypeConsigment));
+          res = false;
+          goto LPrintStockMovInvoices;
+      end;
+    end;
+    if (SMr.OrderNr==-1) then begin 
+      res = false;
+      MessageBox(39197,"");
+      goto LPrintStockMovInvoices;
+    end;
+    if (SMr.InvoiceNr!=-1 ) then begin
+      res = PrintDocument(SMr,"StockMovInvForm",false);
+      res = false;
+      goto LPrintStockMovInvoices;
+    end;
+    if (nonblank(SMr.ThrouLocation)) then begin 
+      if (SMr.SentOKFlag==0) then begin
+        res = false;
+        MessageBox(39191,"");
+        goto LPrintStockMovInvoices;
+      end;
+    end;
+    if (SMr.OKFlag==0) then begin
+      res = false;
+      MessageBox(39191,"");
+      goto LPrintStockMovInvoices;
+    end;
+    if (res) then begin
+      RemotePrintStockMovInvoices(SMr,errorlongint,errormsg,RepSpec);
+      if (errorlongint==0) then begin 
+        SetWindowState(wn,Rs_update);
+        PutWindowRecord(wn,SMr);
+        SetWindowState(wn,Rs_normal);
+        if (res) then begin   
+          res = PrintDocument(SMr,"StockMovInvForm",false);
+        end;       
+      end else begin
+        MessageBox(errorlongint,errormsg);
+      end; 
+    end;
+  end else begin
+    MessageBox(39193,"");
+  end;
+LPrintStockMovInvoices:;  
   return;
 end;

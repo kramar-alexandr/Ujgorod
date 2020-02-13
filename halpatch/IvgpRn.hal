@@ -18,7 +18,7 @@ external procedure CurValToOtherCurWithRate(Date,string,val,val,val,val,val,val,
 external procedure Base1ToOther(var string,val,val,val,val,val,val,var val,roundmode);
 external procedure CurValToOtherCur(Date,string,val,string,var val,roundmode);
 external procedure ExtractObj(string,var Integer,var string);
-
+ 
 function val IVGetFIFO(record IVVc IVp,Integer rownr,val FIFORowVal,val FIFO,val qty)
 begin
   val res,shqty;

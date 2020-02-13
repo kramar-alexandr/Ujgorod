@@ -1,3 +1,4 @@
+external procedure AutomatedSalesOrderly(string);
 remote function Integer POApprovalStatus(record POVc,var record AcceptanceRulesVc);
 remote function Integer POTestApprovalStatus(record POVc);
 remote procedure PODClassOnOpenWindowRemote(var record POVc,var Integer);
@@ -14,7 +15,8 @@ remote procedure POVc_PasteCurncyCode(var record POVc,string,Boolean);
 // The sumup functions are remote, they should be able to NOT be remote...then some of these functions would not be remote...
 external function Boolean DateWarned(Date,string);
 remote updating function Integer CreateVIFromPO(LongInt,record RcVc,var record VIVc);
-remote function Boolean POVc_PasteLocation(var record POVc);
+remote updating function Integer CreateVIFromPO2(LongInt,record RcVc,var record VIVc,var string,var LongInt);
+remote function LongInt POVc_PasteLocation2(var record POVc);
 external function Boolean TestForMATVARINS(Integer);
 external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
 remote procedure POVc_PasteVATCode(var record POVc,Integer);
@@ -194,7 +196,9 @@ begin
   testf = true;
   DeselectWindow(wn,false);
   GetWindowRecord(wn,POr); 
-  err = POTestApprovalStatus(POr);
+  if (UserCanAction("PrintPreviewNotApproved",false)==false) then begin
+    err = POTestApprovalStatus(POr);
+  end;
   if (err!=0) then begin
     MessageBox(err,"");
     testf = false;
@@ -386,13 +390,16 @@ END;
 */
 
 global
-updating procedure VIFromPODExecute(LongInt PONr)
+updating procedure VIFromPODExecute2(Integer mwn,LongInt PONr)
 begin
   Integer nwn;
   record RcVc RepSpec;
   record POSettingBlock POSb;
   record VIVc VIr;
+  record POVc POr;
   Integer r;
+  string 255 fieldgoto;
+  LongInt rowgoto;
 
   if (UserCanAction("POToVI",true)) then begin
     BlockLoad(POSb);
@@ -413,9 +420,13 @@ begin
       RepSpec.flags[5] = 1;
       RepSpec.flags[6] = 1;
       RepSpec.flags[7] = 1;
-      r = CreateVIFromPO(RepSpec.FirstVer,RepSpec,VIr);
+      r = CreateVIFromPO2(RepSpec.FirstVer,RepSpec,VIr,fieldgoto,rowgoto);
       if (r!=0) begin
         if (r>0) then begin
+          switch (GetWindowFileName(mwn)) begin
+            case "POVc":
+              WindowFieldGoto(mwn,POr,rowgoto,fieldgoto,true);
+          end;
           MessageBox(r,"");
         end else begin
           Beep;
@@ -436,6 +447,15 @@ begin
 end;
 
 global
+updating procedure VIFromPODExecute(LongInt PONr)
+begin
+  Integer mwn;
+  
+  VIFromPODExecute2(mwn,PONr);
+  return;
+end;
+
+global
 updating procedure VIFromPODsm()
 begin
   Integer wn;
@@ -444,7 +464,7 @@ begin
   wn = CurWindow;
   if (WindowState(wn)==Rs_normal) then begin
     GetWindowRecord(wn,POr);
-    VIFromPODExecute(POr.SerNr);
+    VIFromPODExecute2(wn,POr.SerNr);
   end else begin
     Beep;
   end;
@@ -1194,13 +1214,16 @@ end;
 function Boolean PODClassLocationEFAfter(Integer wn,Boolean changedf)
 BEGIN
   record POVc POr;
+  LongInt err;
 
   if (changedf) then begin
     GetWindowRecord(wn,POr);    
-    if (POVc_PasteLocation(POr)==false) then begin
-      Beep;
+    err = POVc_PasteLocation2(POr);
+    if (err!=0) then begin
+      MessageBox(err,"");
+    end else begin
+      PutWindowRecord(wn,POr);
     end;
-    PutWindowRecord(wn,POr);
   end;
   PODClassLocationEFAfter = true;
   return;
@@ -1254,6 +1277,7 @@ BEGIN
       MatRowPut(POr,rownr,POrw);
     end; 
     PutWindowRecord(wn,POr);   
+    AutomatedSalesOrderly("HasModTS+Edit_POVc");
   end;
   PODClassPRCodeEFAfter = true;
   return;
@@ -1531,7 +1555,7 @@ BEGIN
     case "Size":     
       GetWindowRecord(wn,POr);      
       MatRowGet(POr,rownr,POrw);
-      if (blank(POrw.Quant)) then begin
+      if (POrw.Quant==0) then begin
         if (TestForMATVARINS(wn)) then begin end;
       end;
   end;

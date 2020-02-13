@@ -1,3 +1,5 @@
+external procedure IVApplyPromotions(record IVVc);
+external procedure IVPasteRvrsVATCode(var record IVVc,Boolean);
 external function boolean INInvRecepyExists(string);
 external procedure AddPerceptionTaxesRows_IVVc(var record IVVc);
 external procedure IVVc_PasteDelCountry(var record IVVc,string);
@@ -5,7 +7,7 @@ external function Boolean CostPriceForGP(string,string,string,string,var val);
 external function val CalcUnitFactor(string,val);
 external function string 255 CustArtCode(string,string);
 external function Boolean BulkSerialNos_CalculateQuantityAndSerialNr(record SerNrTrackBlock,Boolean,string,var string,var val);
-external procedure GetPriceList(string,Date,Time,var string,var Integer);
+external procedure GetPriceList2(string,string,Date,Time,var string,var Integer);
 external procedure GetVATCodeRow(string,row VATCodeBlock);
 external function Boolean FindItemVAR(string,var string,var string,var string,var string);
 external procedure IVVc_ChangeQuantityRecepy(string,val,Integer,var record IVVc);
@@ -67,7 +69,7 @@ external function Boolean GetItemPriceDiscount3ser(var string,string,val,var rec
                                                 var val,var string,var val,var string,var val,var string,Integer,var Boolean,Date,Time,
                                                 string,Boolean,var Boolean,string,var string,var val,string,string,var string);// Edit ************************** Wednesday, 15 June 2016 14:22:37
 external function Boolean INVc_AllowSales(record INVc,var LongInt);
-external procedure ExtractObj(string,var Integer,var string);
+external procedure ExtractObj(string,var Integer,var string);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:10:55 PM
 
 global
 function Integer VATCalcRule(string VATCode)
@@ -334,12 +336,12 @@ BEGIN
     IVrw.vRebate = vreb;
     IVrw.RepaExVAT = CalcItemRepa(INr.RepaPricePerWeight,INr.Weight,IVrw.Quant,IVr.CurncyCode,
                                   IVr.FrRate,IVr.ToRateB1,IVr.ToRateB2,IVr.BaseRate1,IVr.BaseRate2,DefaultCurRoundOff);
-    if (INr.ExplodeRec==0) then begin
+    if (INr.ExplodeRec==0) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:11:25 PM
       if (baseprice<>0) then begin
         IVrw.BasePrice = baseprice;
       end;
     end;
-    t = IVrw.BasePrice;
+    t = IVrw.BasePrice;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:11:27 PM
     chsum = CostPriceForGP(IVrw.ArtCode,IVrw.SerialNr,IVr.PriceList,IVr.CustCode,t);
     IVrw.BasePrice = t;
     if (blank(IVrw.PeriodCode)) then begin
@@ -386,12 +388,16 @@ BEGIN
     IVDchsum(IVr,rownr);
   end;
   AddMultiBuyDiscountItems_IVVc(IVr);
-  RETURN;    
-END;    
+  if (nonblank(INr.RvrsVATCode)) then begin
+    IVPasteRvrsVATCode(IVr,false);
+  end;
+  IVApplyPromotions(IVr);
+  return;    
+end;    
 
 global
 function Boolean IVVc_PasteArtCode(var record IVVc IVr,Integer rownr,var string inwarning,var string warning,Boolean touchscreenf,var Integer sernrf)
-BEGIN
+begin
   Boolean chsum,res;
   Boolean chrsum;
   record INVc INr;
@@ -410,11 +416,13 @@ BEGIN
   string 60 sz,msk,mskrep;
   string 200 varsubset;
   record AccVc Accr;
-  string 100 serial,curClass;
-  record BarcodeVc Barcoder;
-  record DIVc DIr;
-  integer pos;
+  record CUVc CUr;
+  string 100 serial,curClass;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:11:46 PM
+  record BarcodeVc Barcoder;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:11:47 PM
+  record DIVc DIr;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:11:48 PM
+  integer pos;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:11:50 PM
 
+  
   pritemf = true;
   MatRowGet(IVr,rownr,IVrw);  
   IVrw.Price = BlankVal;
@@ -448,6 +456,8 @@ BEGIN
                             exportflag,calcprice,IVr.TransDate,IVr.TransTime,IVr.CustCode,true,dummyf,IVr.PayDeal,
                             tax2code,tax2prc,IVr.Region,location,taxtemplatecode)) then begin
     IVrw.TaxTemplateCode = FillupTaxMatrix(0,IVr.BranchID,IVr.CustCode,IVr.CustCat,IVr.DelAddrCode,taxtemplatecode,TMr);
+    CUr.Code = IVr.CustCode;
+    ReadFirstMain(CUr,1,true);
     if (vreb==0) then begin
       vreb = blankval;
     end;
@@ -456,9 +466,11 @@ BEGIN
       warning = USetStr(ErrorCode);
     end;
     IVrw.Price = price;
-    
     IVrw.Spec = curitemname;
     IVrw.vRebate = vreb;
+    if (CUr.RvrsVAT!=0) then begin
+      IVrw.RvrsVATCode = INr.RvrsVATCode;
+    end;
     IVrw.VATCode = vatcode;
     IVrw.BasePrice = baseprice;
     IVrw.BasePriceB2 = INr.InPriceB2;
@@ -573,7 +585,7 @@ done below
         IVVc_ChangeQuantityRecepy(IVrw.ArtCode,IVrw.Quant,rownr,IVr);
       end;
     end;
-    if (INInvRecepyExists(INr.InvRecepy)) then begin //moved to qty
+    if (INInvRecepyExists(INr.InvRecepy)) then begin//moved to qty
       Do_InvoiceRecepy(IVr,INr,rownr+1);
       IVDUpdatePrices(IVr,false);
     end;    
@@ -613,6 +625,10 @@ done below
   sernrf = INr.SerNrf;
   AddItemWithholdingTaxesRows_IVVc(IVr,rownr,INr);
   AddMultiBuyDiscountItems_IVVc(IVr);
+  if (nonblank(INr.RvrsVATCode) and IVrw.Quant>0) then begin
+    IVPasteRvrsVATCode(IVr,false);
+  end;
+  IVApplyPromotions(IVr);
   IVSumup(IVr,true); 
   IVVc_PasteArtCode = res;
   RETURN;
@@ -664,12 +680,14 @@ BEGIN
   record VATCodeBlock VATRec;
   row VATCodeBlock vatrw;
   Integer i,rwcnt;
+  record APAccBlock APAb;
 
+  BlockLoad(APAb);
   BlockLoad(VATRec);
   svatacc = "";  
   pvatacc = "";  
   corsvatacc = "";  
-  corpvatacc = "";  
+  corpvatacc = APAb.CorPurchVATAcc;  
   rwcnt = MatRowCnt(VATRec);  
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(VATRec,i,vatrw);
@@ -677,7 +695,9 @@ BEGIN
       svatacc = vatrw.SalesVATAcc;
       pvatacc = vatrw.PurchVATAcc;
       corsvatacc = vatrw.CorSalesVATAcc;
-      corpvatacc = vatrw.CorPurchVATAcc;
+      if (blank(corpvatacc)) then begin
+        corpvatacc = vatrw.CorPurchVATAcc;
+      end;
       i = rwcnt;
     end;  
   end;  
@@ -773,6 +793,7 @@ BEGIN
   VATIVr.Sorting = IVr.Sorting;
   VATIVr.InvType = IVr.InvType;
   VATIVr.ORCONr = IVr.ORCONr;
+  VATIVr.RvrsVAT = IVr.RvrsVAT;
   RETURN;
 END;
 
@@ -972,6 +993,7 @@ BEGIN
       VATIVrw.Spec = IVrw.Spec;
       VATIVrw.SalesAcc = IVrw.SalesAcc;
       VATIVrw.VATCode = IVrw.VATCode;
+      VATIVrw.RvrsVATCode = IVrw.RvrsVATCode;
       switch (IVrw.stp) begin     
         case 5:
           VATIVrw.Sum = sum1;
@@ -1358,7 +1380,7 @@ BEGIN
   string 10 crncy;
   record ItemSettingBlock ISb;
   Boolean testf;
-  val timesum;
+  val timesum;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 3:12:39 PM
   
   testf = true;
   if (df) then begin
@@ -1393,7 +1415,6 @@ BEGIN
 	
       crncy = IVrw.CurncyCode;
       GetFullCurncyRate(crncy,IVp.TransDate,fr,to1,to2,br1,br2);
-            
       IVrw.CurncyCode = crncy;
       IVrw.FrRate = fr;
       IVrw.ToRateB1 = to1;
@@ -1431,7 +1452,7 @@ begin
     err2 = 2020;
   end;
   WarnFutureDate(true,IVp.TransDate);
-  GetPriceList(IVp.CustCat,IVp.TransDate,IVp.TransTime,IVp.PriceList,IVp.InclVAT);
+  GetPriceList2(IVp.CustCode,IVp.CustCat,IVp.TransDate,IVp.TransTime,IVp.PriceList,IVp.InclVAT);
   IVVc_PasteCurncyCode(IVp,IVp.CurncyCode,-1,true,true);
   RETURN;
 END;
@@ -1529,7 +1550,7 @@ BEGIN
 END;
 
 global
-procedure IVVc_PastePayDeal(var record IVVc IVp,string prevpaydeal,string defreturnlocation)
+procedure IVVc_PastePayDeal2(var record IVVc IVp,string prevpaydeal,string defreturnlocation,Boolean serf)
 BEGIN
   string 2 pd;
   record AccBlock ARb;
@@ -1543,7 +1564,7 @@ BEGIN
   string 255 salesacc;
   row WHTaxBlock WHTaxrw;
   Boolean testf;
-        
+
   BlockLoad(PDSb);
   pd = IVp.PayDeal;
   PastePDInInv(IVp,prevpaydeal,true);
@@ -1561,7 +1582,7 @@ BEGIN
 LkInvoiceTypeCash:;    
       BlockLoad(SRRec);
       newnr = SRRec.LastCashInvNr;
-      if (newnr>0) then begin
+      if (newnr>0 and serf) then begin
         IVp.SerNr = NextSerNr("IVVc",IVp.TransDate,newnr,false,IVp.LangCode);
       end;
       IVp.pdays = 0;
@@ -1603,13 +1624,13 @@ LkInvoiceTypeCredit:;
           end;
         end;
       end;
-      if (newnr>0) then begin
+      if (newnr>0 and serf) then begin
         IVp.SerNr = NextSerNr("IVVc",IVp.TransDate,newnr,true,IVp.LangCode);
       end;
     case kInvoiceTypeInterest:
       BlockLoad(SRRec);
       newnr = SRRec.LastIntNr;
-      if (newnr>0) then begin
+      if (newnr>0 and serf) then begin
         IVp.SerNr = NextSerNr("IVVc",IVp.TransDate,newnr,false,IVp.LangCode);
       end;
     otherwise
@@ -1618,7 +1639,7 @@ LkInvoiceTypeCredit:;
         BlockLoad(SRRec);
         newnr = SRRec.LastInvNr;
       end;
-      if (newnr>0) and (IVp.SerNr<=0) then begin
+      if ((newnr>0) and (IVp.SerNr<=0) and serf) then begin
         IVp.SerNr = NextSerNr("IVVc",IVp.TransDate,newnr,true,IVp.LangCode);
       end;
   end;
@@ -1691,6 +1712,15 @@ LkInvoiceTypeCredit:;
 END;
 
 global
+procedure IVVc_PastePayDeal(var record IVVc IVp,string prevpaydeal,string defreturnlocation)
+begin
+
+  IVVc_PastePayDeal2(IVp,prevpaydeal,defreturnlocation,true);
+  
+  return;
+end;
+
+global
 procedure IVVc_PastePriceList(var record IVVc IVp)
 BEGIN
   record PLDefVc PLDefR;
@@ -1707,6 +1737,47 @@ global
 procedure IVVc_PasteRebCode(var record IVVc IVp)
 begin
   IVDUpdatePrices(IVp,false);
+  return;
+end;
+
+global
+procedure IVVc_PastevRebate(var record IVVc IVr,Integer rownr)
+begin
+  row IVVc IVrw;
+  record INVc INr;
+
+  MatRowGet(IVr,rownr,IVrw);
+  if (nonblank(IVrw.ArtCode)) then begin
+    if (GetFirstItem(IVrw.ArtCode,INr)==false) then begin
+      ReadFirstItem(IVrw.ArtCode,INr,true,false);
+    end;
+  end;
+  if (IVrw.vRebate>100.00) then begin
+    IVrw.vRebate = blankval;
+    MatRowPut(IVr,rownr,IVrw);
+    MessageBox(1019,"");
+  end;
+  switch (IVrw.stp) begin
+    case kInvoiceRowTypeInterest: 
+      if (IVDchrsum(IVr,rownr)) then begin
+        IVDchsum(IVr,rownr);
+      end;
+    case kInvoiceRowTypeStructuredItemComponent:
+      goto LkInvoiceRowTypeNormal2;
+    case kInvoiceRowTypeNormal:
+LkInvoiceRowTypeNormal2:;
+      if (IVDchrsum(IVr,rownr)) then begin
+        IVDchsum(IVr,rownr);
+      end;
+    case kInvoiceRowTypeCorrection: 
+      if (IVDchrsum(IVr,rownr)) then begin
+        IVDchsum(IVr,rownr);
+      end;
+  end;
+  if (nonblank(INr.RvrsVATCode)) then begin
+    IVPasteRvrsVATCode(IVr,false);
+  end;
+  IVSumup(IVr,true);
   return;
 end;
 

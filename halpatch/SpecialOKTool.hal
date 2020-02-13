@@ -1,3 +1,19 @@
+external function Boolean StockMovVc_PasteQuant(var record StockMovVc,Integer);
+external function boolean UpdateExistingVarietyRowsf();
+external procedure RemoveInvalidVarietyItemAfterPasting_RecVc(var record RecVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_ProdVc(var record ProdVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_ORVc(var record ORVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_IVVc(var record IVVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_IVCashVc(var record IVCashVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_StockMovVc(var record StockMovVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_StockTakeVc(var record StockTakeVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_QTVc(var record QTVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_PUVc(var record PUVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_POVc(var record POVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_IntORVc(var record IntORVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_POQTVc(var record POQTVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_SDVc(var record SDVc,var integer);
+external procedure RemoveInvalidVarietyItemAfterPasting_SRVc(var record SRVc,var integer);
 external procedure POQTVc_PasteQuant(var record POQTVc,Integer);
 external procedure POVc_PasteQuant(var record POVc,Integer);
 external procedure IVSumup(var record IVVc,Boolean);
@@ -58,38 +74,73 @@ begin
   row IVVc IVrw;
   Integer i,ri,rwcnt;
   string 255 warning;
-  record VarietyBlock VBr;
+  record VarietyBlock VBr;// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:12:19 PM
   record INVc INr;
   Integer sernrf;
   vector Boolean vfound;
+  string 255 lastartcode;
+  record INVc IN2r;
+  row IVVc IVprevrw;
+
+  MatRowGet(IVr,currow,IVrw);
+  if (UpdateExistingVarietyRowsf) then begin 
+    MatRowGet(IVr,currow,IVprevrw);
+    if (nonblank(IVrw.ArtCode) and (ReadFirstItem(IVrw.ArtCode,INr,true,true)==false)) then begin 
+      MatRowDelete(IVr,currow);
+    end;
+    ReadFirstItem(IVrw.ArtCode,INr,true,false);
+  end else begin
+    MatRowDelete(IVr,currow);
+  end;   
   
-  BlockLoad(VBr);
+  BlockLoad(VBr);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:12:22 PM
   rwcnt = MatRowCnt(IVr);
-  for (ri=0;ri<rwcnt;ri=ri+1) begin
-    MatRowGet(IVr,ri,IVrw);
-    for (i=0;i<pos;i=i+1) begin
-      if (IVrw.ArtCode==incode[i]) then begin
-        IVrw.Quant = qty[i];
-        MatRowPut(IVr,ri,IVrw);
-        if (IVDchrsum(IVr,ri)) then begin end;
-        IVDchsum(IVr,ri);
-        vfound[IVrw.ArtCode] = true;
+  if (UpdateExistingVarietyRowsf) then begin 
+    for (ri=0;ri<rwcnt;ri=ri+1) begin
+      MatRowGet(IVr,ri,IVrw);
+      for (i=0;i<pos;i=i+1) begin
+        if (nonblank(IVrw.ArtCode) and nonblank(incode[i]) and (IVrw.ArtCode==incode[i])) then begin
+          IVrw.Quant = qty[i];
+          MatRowPut(IVr,ri,IVrw);
+          if (IVDchrsum(IVr,ri)) then begin end;
+          IVDchsum(IVr,ri);
+          vfound[IVrw.ArtCode] = true;
+        end;
+        if (ReadFirstItem(IVrw.ArtCode,IN2r,true,true)) then begin
+          if (INr.Code==IN2r.Code) then begin 
+            lastartcode = IN2r.Code;
+            MatRowGet(IVr,ri,IVprevrw);
+          end;
+        end; 
       end;
     end;
+    RemoveInvalidVarietyItemAfterPasting_IVVc(IVr,rwcnt);  
+    currow = rwcnt;
   end;
-  currow = rwcnt;
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       IVrw.ArtCode = incode[i];
       IVrw.Quant = qty[i];
       if (ReadFirstItem(IVrw.ArtCode,INr,true,true)) then begin
         IVrw.Spec = INr.Name;
       end;
-      MatRowPut(IVr,currow,IVrw);
-      if (VBr.UseInfoFromRow==0) then begin
+      MatRowInsert(IVr,currow,IVrw);
+      if (UpdateExistingVarietyRowsf==false) then begin
         if (IVVc_PasteArtCode(IVr,currow,warning,warning,TouchScreenLookf,sernrf)) then begin end;
       end else begin
+        if (nonblank(lastartcode)) then begin
+         if (ReadFirstItem(lastartcode,IN2r,true,false)) then begin 
+            if (INr.Code==IN2r.Code) then begin 
+              IVprevrw.ArtCode = IVrw.ArtCode;
+              IVprevrw.Quant = IVrw.Quant;
+              IVprevrw.Spec = IVrw.Spec;
+              MatRowPut(IVr,currow,IVprevrw);
+            end;          
+         end;  
+        end else begin
+          if (IVVc_PasteArtCode(IVr,currow,warning,warning,TouchScreenLookf,sernrf)) then begin end;
+        end;
         if (IVDchrsum(IVr,currow)) then begin end;
         IVDchsum(IVr,currow);
       end;
@@ -107,36 +158,69 @@ begin
   row ORVc ORrw;
   Integer i,ri,rwcnt;
   string 255 warning;
-  record VarietyBlock VBr;
   vector Boolean vfound;
+  string 255 lastartcode;
+  record INVc IN2r;
+  row ORVc ORprevrw;
   
-  BlockLoad(VBr);
-  rwcnt = MatRowCnt(ORr);
-  for (ri=0;ri<rwcnt;ri=ri+1) begin
-    MatRowGet(ORr,ri,ORrw);
-    for (i=0;i<pos;i=i+1) begin
-      if (ORrw.ArtCode==incode[i]) then begin
-        ORrw.Quant = qty[i];
-        MatRowPut(ORr,ri,ORrw);
-        if (ORDchrsum(ORr,ri)) then begin end;
-        ORDchsum(ORr,ri);
-        vfound[ORrw.ArtCode] = true;
+  MatRowGet(ORr,currow,ORrw);
+  if (UpdateExistingVarietyRowsf) then begin
+    MatRowGet(ORr,currow,ORprevrw);
+    if (nonblank(ORrw.ArtCode) and (ReadFirstItem(ORrw.ArtCode,INr,true,true)==false)) then begin 
+      MatRowDelete(ORr,currow);
+    end;  
+    ReadFirstItem(ORrw.ArtCode,INr,true,false);
+  end else begin
+    MatRowDelete(ORr,currow);
+  end;        
+
+  if (UpdateExistingVarietyRowsf) then begin   
+    rwcnt = MatRowCnt(ORr);
+    for (ri=0;ri<rwcnt;ri=ri+1) begin
+      MatRowGet(ORr,ri,ORrw);
+      for (i=0;i<pos;i=i+1) begin
+        if (nonblank(ORrw.ArtCode) and nonblank(incode[i]) and (ORrw.ArtCode==incode[i])) then begin
+          ORrw.Quant = qty[i];
+          MatRowPut(ORr,ri,ORrw);
+          if (ORDchrsum(ORr,ri)) then begin end;
+          ORDchsum(ORr,ri);
+          vfound[ORrw.ArtCode] = true;
+        end;
+        if (ReadFirstItem(ORrw.ArtCode,IN2r,true,true)) then begin
+          if (INr.Code==IN2r.Code) then begin 
+            lastartcode = IN2r.Code;
+            MatRowGet(ORr,ri,ORprevrw);
+          end;
+        end;         
       end;
     end;
+    RemoveInvalidVarietyItemAfterPasting_ORVc(ORr,rwcnt);
+    currow = rwcnt;
   end;
-  currow = rwcnt;
-    
+  
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       ORrw.ArtCode = incode[i];
       ORrw.Quant = qty[i];
       if (ReadFirstItem(ORrw.ArtCode,INr,true,true)) then begin
         ORrw.Spec = INr.Name;
       end;
-      MatRowPut(ORr,currow,ORrw);
-      if (VBr.UseInfoFromRow==0) then begin
+      MatRowInsert(ORr,currow,ORrw);
+      if (UpdateExistingVarietyRowsf==false) then begin
         if (ORVc_PasteArtCode(ORr,currow,warning,warning,true)) then begin end;
       end else begin
+        if (nonblank(lastartcode)) then begin
+         if (ReadFirstItem(lastartcode,IN2r,true,false)) then begin 
+            if (INr.Code==IN2r.Code) then begin 
+              ORprevrw.ArtCode = ORrw.ArtCode;
+              ORprevrw.Quant = ORrw.Quant;
+              ORprevrw.Spec = ORrw.Spec;
+              MatRowPut(ORr,currow,ORprevrw);
+            end;          
+         end;  
+        end else begin
+          if (ORVc_PasteArtCode(ORr,currow,warning,warning,true)) then begin end;
+        end;      
         if (ORDchrsum(ORr,currow)) then begin end;
         ORDchsum(ORr,currow);
       end;
@@ -160,44 +244,55 @@ begin
 end;
 
 global
-procedure PasteRowsToIVCashRemote(var record IVCashVc IVCashr,var Integer currow,array string incode,array val qty,Integer pos)
+procedure PasteRowsToIVCashRemote2(var record IVCashVc IVCashr,var Integer currow,array string incode,array val qty,Integer pos,var Integer sernrf)
 begin
   record INVc INr;
   row IVCashVc IVCashrw;
   Integer i,ri,rwcnt;
   string 255 warning;
-  record VarietyBlock VBr;
   record GeneralOptionBlock GenOptRec;
-  Integer sernrf;
   vector Boolean vfound;
+  string 255 lastartcode;
+  record INVc IN2r;
+  row IVCashVc IVprevrw;
 
   BlockLoad(GenOptRec);
-  BlockLoad(VBr);
+
+  MatRowGet(IVCashr,currow,IVCashrw);
+  if (UpdateExistingVarietyRowsf) then begin 
+    if (nonblank(IVCashrw.ArtCode) and (ReadFirstItem(IVCashrw.ArtCode,INr,true,true)==false)) then begin 
+      MatRowDelete(IVCashr,currow);
+    end;  
+  end else begin
+    MatRowDelete(IVCashr,currow);
+  end;
 
   rwcnt = MatRowCnt(IVCashr);
-  for (ri=0;ri<rwcnt;ri=ri+1) begin
-    MatRowGet(IVCashr,ri,IVCashrw);
-    for (i=0;i<pos;i=i+1) begin
-      if (IVCashrw.ArtCode==incode[i]) then begin
-        IVCashrw.Quant = qty[i];
-        MatRowPut(IVCashr,ri,IVCashrw);
-        if (IVCashDchrsum(IVCashr,ri,GenOptRec.UseDiscount)) then begin end;
-        IVCashDchsum(IVCashr,ri);
-        vfound[IVCashrw.ArtCode] = true;
+  if (UpdateExistingVarietyRowsf) then begin 
+    for (ri=0;ri<rwcnt;ri=ri+1) begin
+      MatRowGet(IVCashr,ri,IVCashrw);
+      for (i=0;i<pos;i=i+1) begin
+        if (nonblank(IVCashrw.ArtCode) and nonblank(incode[i]) and (IVCashrw.ArtCode==incode[i])) then begin
+          IVCashrw.Quant = qty[i];
+          MatRowPut(IVCashr,ri,IVCashrw);
+          if (IVCashDchrsum(IVCashr,ri,GenOptRec.UseDiscount)) then begin end;
+          IVCashDchsum(IVCashr,ri);
+          vfound[IVCashrw.ArtCode] = true;
+        end;
       end;
     end;
-  end;
-  currow = rwcnt;
-
+    RemoveInvalidVarietyItemAfterPasting_IVCashVc(IVCashr,rwcnt);
+    currow = rwcnt;
+  end;  
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       IVCashrw.ArtCode = incode[i];
       IVCashrw.Quant = qty[i];
       if (ReadFirstItem(IVCashrw.ArtCode,INr,true,true)) then begin
         IVCashrw.Spec = INr.Name;
       end;
       MatRowPut(IVCashr,currow,IVCashrw);
-      if (VBr.UseInfoFromRow==0) then begin
+      if (UpdateExistingVarietyRowsf==false) then begin
         if (IVCashVc_PasteArtCode(IVCashr,currow,false,warning,sernrf)) then begin end;
       end else begin
         if (IVCashDchrsum(IVCashr,currow,GenOptRec.UseDiscount)) then begin end;
@@ -212,42 +307,62 @@ begin
 end;
 
 global
+procedure PasteRowsToIVCashRemote(var record IVCashVc IVCashr,var Integer currow,array string incode,array val qty,Integer pos)
+begin
+  Integer sernrf;
+  
+  PasteRowsToIVCashRemote2(IVCashr,currow,incode,qty,pos,sernrf);
+  return;
+end;
+
+global
 procedure PasteRowsToStockMovRemote(var record StockMovVc StockMovr,var Integer currow,array string incode,array val qty,Integer pos,var array string aWarning)
 begin
   row StockMovVc StockMovrw;
   Integer i,ri,rwcnt;
   string 255 warning;
-  record VarietyBlock VBr;
   record INVc INr;
   vector Boolean vfound;
+  record VarietyBlock VBr;  
   
   BlockLoad(VBr);
+  MatRowGet(StockMovr,currow,StockMovrw);
+  if (nonblank(StockMovrw.ArtCode) and (ReadFirstItem(StockMovrw.ArtCode,INr,true,true)==false)) then begin 
+    MatRowDelete(StockMovr,currow);
+  end;
+  
   rwcnt = MatRowCnt(StockMovr);
   for (ri=0;ri<rwcnt;ri=ri+1) begin
     MatRowGet(StockMovr,ri,StockMovrw);
     for (i=0;i<pos;i=i+1) begin
-      if (StockMovrw.ArtCode==incode[i]) then begin
+      if (nonblank(StockMovrw.ArtCode) and nonblank(incode[i]) and (StockMovrw.ArtCode==incode[i])) then begin
         StockMovrw.Quant = qty[i];
         MatRowPut(StockMovr,ri,StockMovrw);
         vfound[StockMovrw.ArtCode] = true;
       end;
     end;
   end;
+  ClearRow(StockMovr,StockMovrw,1);
+  RemoveInvalidVarietyItemAfterPasting_StockMovVc(StockMovr,rwcnt);  
   currow = rwcnt;
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       StockMovrw.ArtCode = incode[i];
       StockMovrw.OrdQuant = qty[i];
       if (ReadFirstItem(StockMovrw.ArtCode,INr,true,true)) then begin
         StockMovrw.Spec = INr.Name;
       end;
-      MatRowPut(StockMovr,currow,StockMovrw);
+      MatRowInsert(StockMovr,currow,StockMovrw);
       if (VBr.UseInfoFromRow==0) then begin
-        if (StockMovVc_PasteArtCode(StockMovr,currow,1,aWarning)) then begin end;
+        StockMovVc_PasteArtCode(StockMovr,currow,1,aWarning);
       end else begin
-    //    StockMovDchrsum(StockMovr,currow);
-    //    StockMovDchrum(StockMovr,currow);
+        StockMovVc_PasteArtCode(StockMovr,currow,1,aWarning);
+        MatRowGet(StockMovr,currow,StockMovrw);
+        StockMovrw.OrdQuant = qty[i];
+        MatRowPut(StockMovr,currow,StockMovrw);
+        StockMovVc_PasteQuant(StockMovr,currow);
+        MatRowGet(StockMovr,currow,StockMovrw);
       end;
       currow = currow + 1;
     end;
@@ -268,27 +383,35 @@ begin
   vector Boolean vfound;
   
   BlockLoad(VBr);
+
+  MatRowGet(StockTaker,currow,StockTakerw);
+  if (nonblank(StockTakerw.ArtCode) and (ReadFirstItem(StockTakerw.ArtCode,INr,true,true)==false)) then begin 
+    MatRowDelete(StockTaker,currow);
+  end;
+  
   rwcnt = MatRowCnt(StockTaker);
   for (ri=0;ri<rwcnt;ri=ri+1) begin
     MatRowGet(StockTaker,ri,StockTakerw);
     for (i=0;i<pos;i=i+1) begin
-      if (StockTakerw.ArtCode==incode[i]) then begin
+      if (nonblank(StockTakerw.ArtCode) and nonblank(incode[i]) and (StockTakerw.ArtCode==incode[i])) then begin
         StockTakerw.Qty = qty[i];
         MatRowPut(StockTaker,ri,StockTakerw);
         vfound[StockTakerw.ArtCode] = true;
       end;
     end;
   end;
+  ClearRow(StockTaker,StockTakerw,1);
+  RemoveInvalidVarietyItemAfterPasting_StockTakeVc(StockTaker,rwcnt);  
   currow = rwcnt;
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       StockTakerw.ArtCode = incode[i];
       StockTakerw.Qty = qty[i];
       if (ReadFirstItem(StockTakerw.ArtCode,INr,true,true)) then begin
         StockTakerw.Spec = INr.Name;
       end;
-      MatRowPut(StockTaker,currow,StockTakerw);
+      MatRowInsert(StockTaker,currow,StockTakerw);
       if (VBr.UseInfoFromRow==0) then begin
         if (StockTakeVc_PasteArtCode(StockTaker,currow,1,warning)) then begin end;
       end else begin
@@ -308,37 +431,70 @@ begin
   row QTVc QTrw;
   Integer i,ri,rwcnt;
   string 255 warning;
-  record VarietyBlock VBr;
   record INVc INr;
   vector Boolean vfound;
+  string 255 lastartcode;
+  record INVc IN2r;
+  row QTVc QTprevrw;  
   
-  BlockLoad(VBr);
+  MatRowGet(QTr,currow,QTrw);
+  if (UpdateExistingVarietyRowsf) then begin
+    MatRowGet(QTr,currow,QTprevrw);
+    if (nonblank(QTrw.ArtCode) and (ReadFirstItem(QTrw.ArtCode,INr,true,true)==false)) then begin 
+      MatRowDelete(QTr,currow);
+    end;
+    ReadFirstItem(QTrw.ArtCode,INr,true,false);
+  end else begin
+    MatRowDelete(QTr,currow);
+  end;
+  
   rwcnt = MatRowCnt(QTr);
-  for (ri=0;ri<rwcnt;ri=ri+1) begin
-    MatRowGet(QTr,ri,QTrw);
-    for (i=0;i<pos;i=i+1) begin
-      if (QTrw.ArtCode==incode[i]) then begin
-        QTrw.Quant = qty[i];
-        MatRowPut(QTr,ri,QTrw);
-        if (QTDchrsum(QTr,ri,0)) then begin end;
-        QTDchsum(QTr,ri);
-        vfound[QTrw.ArtCode] = true;
+  if (UpdateExistingVarietyRowsf) then begin 
+    for (ri=0;ri<rwcnt;ri=ri+1) begin
+      MatRowGet(QTr,ri,QTrw);
+      for (i=0;i<pos;i=i+1) begin
+        if (nonblank(QTrw.ArtCode) and nonblank(incode[i]) and (QTrw.ArtCode==incode[i])) then begin
+          QTrw.Quant = qty[i];
+          MatRowPut(QTr,ri,QTrw);
+          if (QTDchrsum(QTr,ri,0)) then begin end;
+          QTDchsum(QTr,ri);
+          vfound[QTrw.ArtCode] = true;
+        end;
+        if (ReadFirstItem(QTrw.ArtCode,IN2r,true,true)) then begin
+          if (INr.Code==IN2r.Code) then begin 
+            lastartcode = IN2r.Code;
+            MatRowGet(QTr,ri,QTprevrw);
+          end;
+        end;         
       end;
     end;
+    RemoveInvalidVarietyItemAfterPasting_QTVc(QTr,rwcnt);    
+    currow = rwcnt;
   end;
-  currow = rwcnt;
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       QTrw.ArtCode = incode[i];
       QTrw.Quant = qty[i];
       if (ReadFirstItem(QTrw.ArtCode,INr,true,true)) then begin
         QTrw.Spec = INr.Name;
       end;
-      MatRowPut(QTr,currow,QTrw);
-      if (VBr.UseInfoFromRow==0) then begin
+      MatRowInsert(QTr,currow,QTrw);
+      if (UpdateExistingVarietyRowsf==false) then begin
         if (QTVc_PasteArtCode(QTr,currow,warning,warning)) then begin end;
       end else begin
+        if (nonblank(lastartcode)) then begin
+         if (ReadFirstItem(lastartcode,IN2r,true,false)) then begin 
+            if (INr.Code==IN2r.Code) then begin 
+              QTprevrw.ArtCode = QTrw.ArtCode;
+              QTprevrw.Quant = QTrw.Quant;
+              QTprevrw.Spec = QTrw.Spec;
+              MatRowPut(QTr,currow,QTprevrw);
+            end;          
+         end;  
+        end else begin
+          if (QTVc_PasteArtCode(QTr,currow,warning,warning)) then begin end;
+        end;        
         if (QTDchrsum(QTr,currow,0)) then begin end;
         QTDchsum(QTr,currow);
       end;
@@ -358,29 +514,50 @@ begin
   record VarietyBlock VBr;
   record INVc INr;
   vector Boolean vfound;
+  row PUVc PUprevrw;
   
   BlockLoad(VBr);
+
+  MatRowGet(PUr,currow,PUrw);
+  if (UpdateExistingVarietyRowsf) then begin 
+    MatRowGet(PUr,currow,PUprevrw);
+    if (nonblank(PUrw.ArtCode) and (ReadFirstItem(PUrw.ArtCode,INr,true,true)==false)) then begin 
+      MatRowDelete(PUr,currow);
+    end;
+    ReadFirstItem(PUrw.ArtCode,INr,true,false);
+  end else begin
+    MatRowDelete(PUr,currow);
+  end;   
+
+  if (nonblank(PUrw.ArtCode) and (ReadFirstItem(PUrw.ArtCode,INr,true,false)==false)) then begin 
+    MatRowDelete(PUr,currow);
+  end;
+  
   rwcnt = MatRowCnt(PUr);
-  for (ri=0;ri<rwcnt;ri=ri+1) begin
-    MatRowGet(PUr,ri,PUrw);
-    for (i=0;i<pos;i=i+1) begin
-      if (PUrw.ArtCode==incode[i]) then begin
-        PUrw.Quant = qty[i];
-        MatRowPut(PUr,ri,PUrw);
-        vfound[PUrw.ArtCode] = true;
+  if (UpdateExistingVarietyRowsf) then begin 
+    for (ri=0;ri<rwcnt;ri=ri+1) begin
+      MatRowGet(PUr,ri,PUrw);
+      for (i=0;i<pos;i=i+1) begin
+        if (nonblank(PUrw.ArtCode) and nonblank(incode[i]) and (PUrw.ArtCode==incode[i])) then begin
+          PUrw.Quant = qty[i];
+          MatRowPut(PUr,ri,PUrw);
+          vfound[PUrw.ArtCode] = true;
+        end;
       end;
     end;
+    RemoveInvalidVarietyItemAfterPasting_PUVc(PUr,rwcnt);      
+    currow = rwcnt;
   end;
-  currow = rwcnt;
+  ClearRow(PUr,PUrw,1);
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       PUrw.ArtCode = incode[i];
       PUrw.Quant = qty[i];
       if (ReadFirstItem(PUrw.ArtCode,INr,true,true)) then begin
         PUrw.Spec = INr.Name;
       end;
-      MatRowPut(PUr,currow,PUrw);
+      MatRowInsert(PUr,currow,PUrw);
     // Very special calculations, has to paste...
     //  if (VBr.UseInfoFromRow==0) then begin
         if (PUVc_PasteArtCode(PUr,currow,warning,inwarn)) then begin end;
@@ -503,7 +680,6 @@ begin
   POSumUp(POr);
   return;
 end;
-
 global
 procedure PasteRowsToIntORRemote(var record IntORVc IntORr,var Integer currow,array string incode,array val qty,Integer pos)
 begin
@@ -516,11 +692,17 @@ begin
   vector Boolean vfound;
   
   BlockLoad(VBr);
+
+  MatRowGet(IntORr,currow,IntORrw);
+  if (nonblank(IntORrw.ArtCode) and (ReadFirstItem(IntORrw.ArtCode,INr,true,true)==false)) then begin 
+    MatRowDelete(IntORr,currow);
+  end;
+
   rwcnt = MatRowCnt(IntORr);
   for (ri=0;ri<rwcnt;ri=ri+1) begin
     MatRowGet(IntORr,ri,IntORrw);
     for (i=0;i<pos;i=i+1) begin
-      if (IntORrw.ArtCode==incode[i]) then begin
+      if (nonblank(IntORrw.ArtCode) and nonblank(incode[i]) and (IntORrw.ArtCode==incode[i])) then begin
         IntORrw.Quant = qty[i];
         MatRowPut(IntORr,ri,IntORrw);
         IntORchrsum(IntORr,ri);
@@ -528,16 +710,18 @@ begin
       end;
     end;
   end;
+  ClearRow(IntORr,IntORrw,1);
+  RemoveInvalidVarietyItemAfterPasting_IntORVc(IntORr,rwcnt);    
   currow = rwcnt;
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       IntORrw.ArtCode = incode[i];
       IntORrw.Quant = qty[i];
       if (ReadFirstItem(IntORrw.ArtCode,INr,true,true)) then begin
         IntORrw.Spec = INr.Name;
       end;
-      MatRowPut(IntORr,currow,IntORrw);
+      MatRowInsert(IntORr,currow,IntORrw);
       if (VBr.UseInfoFromRow==0) then begin
         if (IntORVc_PasteArtCode(IntORr,currow,true)) then begin end;
         if (IntORchrsum(IntORr,currow)) then begin end;
@@ -563,11 +747,17 @@ begin
   vector Boolean vfound;
   
   BlockLoad(VBr);
+
+  MatRowGet(POQTr,currow,POQTrw);
+  if (nonblank(POQTrw.ArtCode) and (ReadFirstItem(POQTrw.ArtCode,INr,true,true)==false)) then begin 
+    MatRowDelete(POQTr,currow);
+  end;
+
   rwcnt = MatRowCnt(POQTr);
   for (ri=0;ri<rwcnt;ri=ri+1) begin
     MatRowGet(POQTr,ri,POQTrw);
     for (i=0;i<pos;i=i+1) begin
-      if (POQTrw.ArtCode==incode[i]) then begin
+      if (nonblank(POQTrw.ArtCode) and nonblank(incode[i]) and (POQTrw.ArtCode==incode[i])) then begin
         POQTrw.Quant = qty[i];
         MatRowPut(POQTr,ri,POQTrw);
         POQTVc_PasteQuant(POQTr,currow);
@@ -576,17 +766,19 @@ begin
       end;
     end;
   end;
+  ClearRow(POQTr,POQTrw,1);
+  RemoveInvalidVarietyItemAfterPasting_POQTVc(POQTr,rwcnt);      
   currow = rwcnt;
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       POQTrw.ArtCode = incode[i];
       POQTrw.Quant = qty[i];
 
       if (ReadFirstItem(POQTrw.ArtCode,INr,true,true)) then begin
         POQTrw.Spec = INr.Name;
       end;
-      MatRowPut(POQTr,currow,POQTrw);
+      MatRowInsert(POQTr,currow,POQTrw);
       if (VBr.UseInfoFromRow==0) then begin
         if (POQTVc_PasteArtCode(POQTr,currow,false)) then begin end;
         MatRowGet(POQTr,currow,POQTrw);
@@ -622,27 +814,35 @@ begin
   vector Boolean vfound;
   
   BlockLoad(VBr);
+
+  MatRowGet(SDr,currow,SDrw);
+  if (nonblank(SDrw.ArtCode) and (ReadFirstItem(SDrw.ArtCode,INr,true,true)==false)) then begin 
+    MatRowDelete(SDr,currow);
+  end;
+
   rwcnt = MatRowCnt(SDr);
   for (ri=0;ri<rwcnt;ri=ri+1) begin
     MatRowGet(SDr,ri,SDrw);
     for (i=0;i<pos;i=i+1) begin
-      if (SDrw.ArtCode==incode[i]) then begin
+      if (nonblank(SDrw.ArtCode) and nonblank(incode[i]) and (SDrw.ArtCode==incode[i])) then begin
         SDrw.Qty = qty[i];
         MatRowPut(SDr,ri,SDrw);
         vfound[SDrw.ArtCode] = true;
       end;
     end;
   end;
+  ClearRow(SDr,SDrw,1);
+  RemoveInvalidVarietyItemAfterPasting_SDVc(SDr,rwcnt);      
   currow = rwcnt;
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       SDrw.ArtCode = incode[i];
       SDrw.Qty = qty[i];
       if (ReadFirstItem(SDrw.ArtCode,INr,true,true)) then begin
         SDrw.Spec = INr.Name;
       end;
-      MatRowPut(SDr,currow,SDrw);
+      MatRowInsert(SDr,currow,SDrw);
       if (VBr.UseInfoFromRow==0) then begin
         if (SDVc_PasteArtCode(SDr,currow,1,warning,warning)) then begin end;
       end else begin
@@ -668,21 +868,29 @@ begin
   vector Boolean vfound;
   
   BlockLoad(VBr);
+
+  MatRowGet(SRr,currow,SRrw);
+  if (nonblank(SRrw.ArtCode) and (ReadFirstItem(SRrw.ArtCode,INr,true,true)==false)) then begin 
+    MatRowDelete(SRr,currow);
+  end;
+
   rwcnt = MatRowCnt(SRr);
   for (ri=0;ri<rwcnt;ri=ri+1) begin
     MatRowGet(SRr,ri,SRrw);
     for (i=0;i<pos;i=i+1) begin
-      if (SRrw.ArtCode==incode[i]) then begin
+      if (nonblank(SRrw.ArtCode) and nonblank(incode[i]) and (SRrw.ArtCode==incode[i])) then begin
         SRrw.Qty = qty[i];
         MatRowPut(SRr,ri,SRrw);
         vfound[SRrw.ArtCode] = true;
       end;
     end;
   end;
+  ClearRow(SRr,SRrw,1);
+  RemoveInvalidVarietyItemAfterPasting_SRVc(SRr,rwcnt);      
   currow = rwcnt;
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       SRrw.ArtCode = incode[i];
       SRrw.Qty = qty[i];
       if (i>0 and currow<MatRowCnt(SRr)) then begin
@@ -691,7 +899,7 @@ begin
       if (ReadFirstItem(SRrw.ArtCode,INr,true,true)) then begin
         SRrw.Spec = INr.Name;
       end;
-      MatRowPut(SRr,currow,SRrw);
+      MatRowInsert(SRr,currow,SRrw);
       if (VBr.UseInfoFromRow==0) then begin
         if (SRVc_PasteArtCode(SRr,currow,true,warning)) then begin end;
       end;
@@ -714,11 +922,17 @@ begin
   vector Boolean vfound;
   
   BlockLoad(VBr);
+
+  MatRowGet(Prodr,currow,Prodrw);
+  if (nonblank(Prodrw.Item) and (ReadFirstItem(Prodrw.Item,INr,true,true)==false)) then begin 
+    MatRowDelete(Prodr,currow);
+  end;
+
   rwcnt = MatRowCnt(Prodr);
   for (ri=0;ri<rwcnt;ri=ri+1) begin
     MatRowGet(Prodr,ri,Prodrw);
     for (i=0;i<pos;i=i+1) begin
-      if (Prodrw.Item==incode[i]) then begin
+      if (nonblank(Prodrw.Item) and nonblank(incode[i]) and (Prodrw.Item==incode[i])) then begin
         switch (fieldname) begin
           case "InQty": Prodrw.InQty = qty[i];
           case "OutQty": Prodrw.OutQty = qty[i];
@@ -728,10 +942,12 @@ begin
       end;
     end;
   end;
+  ClearRow(Prodr,Prodrw,1);
+  RemoveInvalidVarietyItemAfterPasting_ProdVc(Prodr,rwcnt);      
   currow = rwcnt;
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       Prodrw.Item = incode[i];
       switch (fieldname) begin
         case "InQty": Prodrw.InQty = qty[i];
@@ -740,7 +956,7 @@ begin
       if (ReadFirstItem(Prodrw.Item,INr,true,true)) then begin
         Prodrw.Comment = INr.Name;
       end;
-      MatRowPut(Prodr,currow,Prodrw);
+      MatRowInsert(Prodr,currow,Prodrw);
       if (VBr.UseInfoFromRow==0) then begin
         ProdVc_PasteItem(Prodr,currow);
       end else begin
@@ -766,11 +982,17 @@ begin
   vector Boolean vfound;
   
   BlockLoad(VBr);
+
+  MatRowGet(ProdOpr,currow,ProdOprw);
+  if (nonblank(ProdOprw.Item) and (ReadFirstItem(ProdOprw.Item,INr,true,true)==false)) then begin 
+    MatRowDelete(ProdOpr,currow);
+  end;
+
   rwcnt = MatRowCnt(ProdOpr);
   for (ri=0;ri<rwcnt;ri=ri+1) begin
     MatRowGet(ProdOpr,ri,ProdOprw);
     for (i=0;i<pos;i=i+1) begin
-      if (ProdOprw.Item==incode[i]) then begin
+      if (nonblank(ProdOprw.Item) and nonblank(incode[i]) and (ProdOprw.Item==incode[i])) then begin      
         switch (fieldname) begin
           case "InQty": ProdOprw.InQty = qty[i];
           case "OutQty": ProdOprw.OutQty = qty[i];
@@ -782,7 +1004,7 @@ begin
   end;
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       ProdOprw.Item = incode[i];
       switch (fieldname) begin
         case "InQty": ProdOprw.InQty = qty[i];
@@ -791,7 +1013,7 @@ begin
       if (ReadFirstItem(ProdOprw.Item,INr,true,true)) then begin
         ProdOprw.Comment = INr.Name;
       end;
-      MatRowPut(ProdOpr,currow,ProdOprw);
+      MatRowInsert(ProdOpr,currow,ProdOprw);
       if (VBr.UseInfoFromRow==0) then begin
         ProdOperationVc_PasteItem(ProdOpr,currow);
       end else begin
@@ -817,11 +1039,17 @@ begin
   vector Boolean vfound;
   
   BlockLoad(VBr);
+
+  MatRowGet(Recr,currow,Recrw);
+  if (nonblank(Recrw.Item) and (ReadFirstItem(Recrw.Item,INr,true,true)==false)) then begin 
+    MatRowDelete(Recr,currow);
+  end;
+
   rwcnt = MatRowCnt(Recr);
   for (ri=0;ri<rwcnt;ri=ri+1) begin
     MatRowGet(Recr,ri,Recrw);
     for (i=0;i<pos;i=i+1) begin
-      if (Recrw.Item==incode[i]) then begin
+      if (nonblank(Recrw.Item) and nonblank(incode[i]) and (Recrw.Item==incode[i])) then begin      
         switch (fieldname) begin
           case "InQty": Recrw.InQty = qty[i];
           case "OutQty": Recrw.OutQty = qty[i];
@@ -831,10 +1059,11 @@ begin
       end;
     end;
   end;
+  RemoveInvalidVarietyItemAfterPasting_RecVc(Recr,rwcnt);      
   currow = rwcnt;
 
   for (i=0;i<pos;i=i+1) begin
-    if (vfound[incode[i]]==false) then begin
+    if ((vfound[incode[i]]==false) and (nonblank(incode[i]))) then begin
       Recrw.Item = incode[i];
       switch (fieldname) begin
         case "InQty": Recrw.InQty = qty[i];
@@ -843,7 +1072,7 @@ begin
       if (ReadFirstItem(Recrw.Item,INr,true,true)) then begin
         Recrw.Comment = INr.Name;
       end;
-      MatRowPut(Recr,currow,Recrw);
+      MatRowInsert(Recr,currow,Recrw);
       if (VBr.UseInfoFromRow==0) then begin
         RecVc_PasteItem(Recr,currow);
       end else begin
@@ -863,8 +1092,7 @@ function Boolean MATVARINSClassOnOKWindowPaste(var string tstr,var string sepstr
                  var Array string varsx,var Array string varsy)
 begin
   Boolean res;
-
-
+  
   res = false;
   if (FindItemVAR(tstr,sepstr,msk,mskrep,varsubset)) then begin
     FillMaskVAR(tstr,sepstr,msk,maskvar2,maskvarsz2);
@@ -1191,6 +1419,50 @@ begin
   end;
 
   EBookkeepingEClassOnOKWindow = res;
+  return;
+end;
+
+global
+function Boolean OPZSTAT1XMLEClassOnOKWindow(Integer wn)
+begin
+  boolean res;
+  record RcVc RepSpec;
+  integer smonth,emonth,sday,eday,syear,eyear;
+
+  res = false;
+  GetWindowRecord(wn, RepSpec);
+  syear = GetYear(RepSpec.sStartDate);
+  smonth = GetMonth(RepSpec.sStartDate);
+  sday = GetDay(RepSpec.sStartDate);
+  eyear = GetYear(RepSpec.sEndDate);
+  emonth = GetMonth(RepSpec.sEndDate);
+  eday = GetDay(RepSpec.sEndDate);
+  if (smonth==1 and sday==1) then begin
+    if (eyear==syear and emonth==3 and eday==31) then begin
+      res = true;
+    end;
+  end;
+  if (smonth==4 and sday==1) then begin
+    if (eyear==syear and emonth==6 and eday==30) then begin
+      res = true;
+    end;
+  end;
+  if (smonth==7 and sday==1) then begin
+    if (eyear==syear and emonth==9 and eday==30) then begin
+      res = true;
+    end;
+  end;
+  if (smonth==10 and sday==1) then begin
+    if (eyear==syear and emonth==12 and eday==31) then begin
+      res = true;
+    end;
+  end;
+
+  if (!res) then begin
+    MessageBox(20851,"");
+  end;
+
+  OPZSTAT1XMLEClassOnOKWindow = res;
   return;
 end;
 

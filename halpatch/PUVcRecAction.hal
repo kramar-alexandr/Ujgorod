@@ -1,3 +1,4 @@
+external function LongInt ReadLocation(string,var record LocationVc);
 external procedure B1ToB2StrValRM(string,val,val,var string,roundmode);
 external procedure B1ToB2ValRM(val,val,val,var val,roundmode);
 external function roundmode GetCostRoundModeRB();
@@ -5,8 +6,7 @@ external updating function LongInt POVcRecordUpdate(var record POVc,record POVc,
 external updating function LongInt POVcRecordUpdateAfter(var record POVc,record POVc,LongInt,LongInt);
 external procedure FindTempStockRow(LongInt,string,Boolean,record TempStockVc,var row TempStockVc);
 external function Boolean StockRecordForLocationAllowed(string,string,string,date,integer,var Integer,var string);
-external function Boolean HasModNL();
-external function Boolean HasIncomeAndExpenseBook();
+external function Boolean HasIntegratedNL();
 external procedure VerifyRowObjects(String,String,String,String,var Integer,var String,var Boolean,Array string,Array string,var Integer);
 external updating function Integer CreateVIFromPO(LongInt,record RcVc,var record VIVc);
 external updating procedure FindAcptRulesAndCreateAcceptanceAlert(Integer,Integer,string,string,string,val,string,string,string,string);
@@ -310,7 +310,7 @@ begin
     MatRowPut(StockMovr,smrwcnt,StockMovrw);
     SetPositionStatus(toposcode,2);    
     PUrw.BarCode = StockMovr.SerNr;    
-    //BS, if next PUrw doesn«t contain pallet item and the item has a pallet item
+    //BS, if next PUrw doesnt contain pallet item and the item has a pallet item
     // we should create a new StockMovVc.
     // or else labels will not be printed for 2nd/4th/6th item.
     MatRowGet(PUr,i+1,PUrw);
@@ -556,7 +556,11 @@ global
 updating function LongInt PUVcRecordSaveAfter(var record PUVc PUr,record PUVc PU2r,LongInt stat,LongInt long4)
 begin
   LongInt res;
+  record UserVc Userr;
 
+  Userr.Code = PUr.Sign;
+  ReadFirstMain(Userr,1,true);
+  PUr.SalesGroup = Userr.SalesGroup;  
   SavePurchase(PUr,false);
   if (PUr.OKFlag!=0) then begin
     PUMakeStockMovement(PUr,false);
@@ -719,12 +723,27 @@ begin
   return;
 end;
 
+updating procedure UpdateVEIV(record PUVc PUr)
+begin
+  record VEIVVc VEIVr;
+  record VEIVVc oldVEIVr;
+  
+  VEIVr.PUSerNr = PUr.SerNr;
+  if (ReadFirstKey("PUSerNr",VEIVr,1,true)) then begin
+    RecordCopy(oldVEIVr,VEIVr);
+    VEIVr.PUSerNr = -1;
+    RecordUpdate(oldVEIVr,VEIVr,false);
+  end;
+  return;
+end;
+
 global
 updating function LongInt PUVcRecordRemoveAfter(var record PUVc PUr,record PUVc PU2r,LongInt stat,LongInt long4)
 begin
   LongInt res;
 
   RemovePU(PUr);
+  UpdateVEIV(PUr);
   PUVcRecordRemoveAfter = res;
   return;
 end;
@@ -794,7 +813,7 @@ end;
 global
 updating function LongInt PUVcRecordCheck(var record PUVc PUr,record PUVc PU2r,LongInt stat,LongInt check)
 begin
-  LongInt res;
+  LongInt res,err;
   record POVc POr;
   row POVc POrw;
   record PUVc localPUr;
@@ -936,8 +955,8 @@ begin
     loc = MSb.MainStock;
   end;  
   if (nonblank(loc)) then begin
-    LocRec.Code = loc;
-    if (ReadFirstMain(LocRec,1,true)==false) then begin
+    err = ReadLocation(loc,LocRec);
+    if (err!=0) then begin
       RecordCheckError(1120,PUr.Location,-1,"Location");      
       res = -1;
       goto L99PUVcRecordCheck;
@@ -996,7 +1015,7 @@ begin
     MatRowGet(PUr,i,PUrw);
     testf = true;
     if (IsStandardProduct) then begin
-      testf = (HasModNL or HasIncomeAndExpenseBook) and transf;
+      testf = HasIntegratedNL and transf;
     end;
     if (testf) then begin
       if (nonblank(PUrw.CostAcc)) then begin
@@ -1033,8 +1052,8 @@ begin
       location = loc;
     end;
     if (nonblank(location)) then begin
-      LocRec.Code = location;
-      if (ReadFirstMain(LocRec,1,true)==false) then begin
+      err = ReadLocation(location,LocRec);
+      if (err!=0) then begin
         RecordCheckError(1120,PUrw.Location,i,"Location");
         res = -1;
         goto L99PUVcRecordCheck;
@@ -1162,6 +1181,11 @@ begin
     end;
     if (ReadFirstItem(PUrw.ArtCode,INr,true,true)==false) then begin
       RecordCheckError(1120," " & PUrw.ArtCode,i,"ArtCode");      
+      res = -1;
+      goto L99PUVcRecordCheck;
+    end;
+    if (INr.Terminated!=0) then begin
+      RecordCheckError(1266," " & PUrw.ArtCode,i,"ArtCode");      
       res = -1;
       goto L99PUVcRecordCheck;
     end;
@@ -1420,13 +1444,13 @@ begin
                 end;
               end;
               if (PUrw.Quant!=0) then begin
-                if (SerialNrAvail2(PUrw.ArtCode,PUrw.SerialNr,PUrw.Quant)==true) then begin
-                  RecordCheckError(1241,"",i,"SerialNr");      
+                if (SerialNrAvail2(PUrw.ArtCode,PUrw.SerialNr,PUrw.Quant)) then begin
+                  RecordCheckError(1243,"",i,"SerialNr");      
                   res = -1;
                   goto L99PUVcRecordCheck;
                 end;
               end;
-              if (PUrw.Quant!=1) then begin
+              if (PUrw.Quant!=1 and PUrw.Quant!=0) then begin
                 RecordCheckError(1242,"",i,"Quant");      
                 res = -1;
                 goto L99PUVcRecordCheck;
@@ -1463,13 +1487,13 @@ begin
                   end;
               end;
             end;
-            /*if (FIFOPerSerialNr(INr,CAb)!=0) then begin//otherwise cost price on deliveries is completely wrong
-              if (SerialNrAvail2(PUrw.ArtCode,PUrw.SerialNr,1)==true) then begin
-                RecordCheckError(1241,"",i,"SerialNr");      
+            /*if (FIFOPerSerialNr(INr,CAb)!=0) then begin//otherwise cost price on deliveries is completely wrong// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:05:48 PM
+              if (SerialNrAvail2(PUrw.ArtCode,PUrw.SerialNr,1)) then begin
+                RecordCheckError(1243,"",i,"SerialNr");      
                 res = -1;
                 goto L99PUVcRecordCheck;
               end;              
-            end;*/
+            end;*/// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 4:05:51 PM
             FindBatchBestBeforeDate(PUrw.ArtCode,PUrw.SerialNr,bbd);
             if (nonblankdate(bbd)) then begin
               if (PUrw.BestBefore!=bbd)then begin
@@ -1518,7 +1542,7 @@ begin
 LPUVcRecordCheck_GenTrans:;
   if (gentrans==false) then begin transf = false; end;
   if (IsStandardProduct) then begin
-    transf = (HasModNL or HasIncomeAndExpenseBook) and transf;
+    transf = HasIntegratedNL and transf;
   end;
   if (transf) then begin
     errcode = MakeTransFromPU(gTRp,PUr,LocRec,false);
@@ -1617,6 +1641,8 @@ begin
   Boolean gToDualBase,gBase1ToBase2;
   val fr,to1,to2,br1,br2,t;
   string 10 curncy;
+  record PUVc cPUr;
+  transaction Boolean gPUVcRecordImport_RecordExists;
 
   BlockLoad(cvm);
   if (cvm.DualBaseCurrencyFlag!=0) then begin gToDualBase = true; end;
@@ -1651,6 +1677,8 @@ begin
   if (PUr.NoTAXonVAT==-1) then begin
     PUr.NoTAXonVAT = 0;
   end;
+  cPUr.SerNr = PUr.SerNr;
+  gPUVcRecordImport_RecordExists = ReadFirstMain(cPUr,1,true);
   PUVcRecordImport = res;
   return;
 end;
@@ -1660,13 +1688,16 @@ updating function LongInt PUVcRecordImportAfter(var record PUVc PUr,record PUVc 
 begin
   LongInt res;
   Integer err;
+  transaction Boolean gPUVcRecordImport_RecordExists;
     
   if (PUr.OKFlag!=0) then begin
-    PurUpdateSerialNr(PUr,true,false);
-    if (ImportingTextBackup==false and CanOKStockRecord(err)==true) then begin
-      PurUpdateStock(PUr,false);
-      PurUpdateCostPrice(PUr,false);  // this should be called during import since records are from other systems
-      PurUpdateItemHist(PUr);
+    if (gPUVcRecordImport_RecordExists==false) then begin
+      PurUpdateSerialNr(PUr,true,false);
+      if (ImportingTextBackup==false and CanOKStockRecord(err)==true) then begin
+        PurUpdateStock(PUr,false);
+        PurUpdateCostPrice(PUr,false);  // this should be called during import since records are from other systems
+        PurUpdateItemHist(PUr);
+      end;
     end;
   end;
   PUVcRecordImportAfter = res; 

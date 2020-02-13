@@ -3,7 +3,7 @@ remote function Boolean HasEInvoiceExpired();
 remote function Boolean PasteCust2InInv(var record IVVc,record LocalMachineBlock,string,Boolean,var string,var string,var string,var string,var string);
 remote function string 255 AddBranchObjectToObjectList(string,string);
 remote function Boolean HasEInvoicing();
-
+ 
 global
 function LongInt IVDefaultsClient(var record IVVc IVr,record IVVc IV2r,LongInt long3,LongInt long4)
 begin

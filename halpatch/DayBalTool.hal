@@ -8,10 +8,10 @@ external procedure NoDupObjs(string,var string);
 external procedure GetBaseCurncy(Integer,var string);
 
 global
-procedure AddEuroCurncyNomARTrRow(record TRVc TRp,string acc,string objs,string vatcod,string comm,val valv,val valv2,Boolean accf,
+procedure AddEuroCurncyNomARTrRow2(record TRVc TRp,string acc,string objs,string vatcod,string comm,val valv,val valv2,Boolean accf,
              Boolean dcflag,var val totsump,string curncy,val frrate,val torate1,val torate2,val baserate1,val baserate2,
              val curval,val nomval,string CompCode,LongInt SerNr,Integer Typ,val qp,Date duep,LongInt insertrownr,
-             Boolean negamf,string taccnumber,string tfilename,string tcode)
+             Boolean negamf,string taccnumber,string tfilename,string tcode,string rvrsvatcode)
 BEGIN
   row TRVc TRrw;
   Integer i,rwcnt,typeofcur;
@@ -135,6 +135,7 @@ L15:;
   TRrw.Objects = objects;
   TRrw.Comment = comment;
   TRrw.VATCode = vatcod;
+  TRrw.RvrsVATCode = rvrsvatcode;
   if (curncy<>"") then begin
     TRrw.Curncy = localcurncy;
   end else begin
@@ -338,6 +339,19 @@ LAddEuroCurncyNomARTrRow:;
 END;
 
 global
+procedure AddEuroCurncyNomARTrRow(record TRVc TRp,string acc,string objs,string vatcod,string comm,val valv,val valv2,Boolean accf,
+             Boolean dcflag,var val totsump,string curncy,val frrate,val torate1,val torate2,val baserate1,val baserate2,
+             val curval,val nomval,string CompCode,LongInt SerNr,Integer Typ,val qp,Date duep,LongInt insertrownr,
+             Boolean negamf,string taccnumber,string tfilename,string tcode)
+begin
+  AddEuroCurncyNomARTrRow2(TRp,acc,objs,vatcod,comm,valv,valv2,accf,
+             dcflag,totsump,curncy,frrate,torate1,torate2,baserate1,baserate2,
+             curval,nomval,CompCode,SerNr,Typ,qp,duep,insertrownr,
+             negamf,taccnumber,tfilename,tcode,"");
+  return;
+end;
+
+global
 procedure AddEuroCurncyNomTrRow(record TRVc TRp,string acc,string objs,string vatcod,string comm,val valv,Boolean accf,
            Boolean dcflag,var val totsump,string curncy,val frrate,val torate1,val torate2,val baserate1,val baserate2,
            val curval,val nomval,val qp,LongInt insertrownr,Boolean negamf,string taccnumber,string tfilename,string tcode,Integer typ)
@@ -348,6 +362,26 @@ BEGIN
                           curval,nomval,"",-1,typ,qp,nild,insertrownr,negamf,taccnumber,tfilename,tcode);
   RETURN;                        
 END;
+
+global
+procedure AddEuroCurncyTrRow2(record TRVc TRp,string acc,string objs,string vatcod,string rvrsvatcod,string comm,val valv,Boolean accf,Boolean dcflag,
+                            var val totsump,string curncy,val frrate,val torate1,val torate2,val baserate1,val baserate2,val curval,
+                            val qp,LongInt insertrownr,Boolean negamf,string taccnumber)
+begin
+  val nilv,nomval,valv2;
+  Date nild;
+  string 255 CompCode,tfilename,tcode;
+  LongInt SerNr;
+  Integer Typ;
+  Date duep;
+  
+  nilv = -1;
+  AddEuroCurncyNomARTrRow2(TRp,acc,objs,vatcod,comm,valv,valv2,accf,
+             dcflag,totsump,curncy,frrate,torate1,torate2,baserate1,baserate2,
+             curval,nomval,CompCode,SerNr,Typ,qp,duep,insertrownr,
+             negamf,taccnumber,tfilename,tcode,rvrsvatcod);
+  return;
+end;
 
 global
 procedure AddEuroCurncyTrRow(record TRVc TRp,string acc,string objs,string vatcod,string comm,val valv,Boolean accf,Boolean dcflag,
