@@ -639,8 +639,7 @@ begin
   record SerNrTrackBlock SNrb;
   LongInt err;
   string 50 tempartcode;
-	
-	logtext(0,"IVVc_PasteSerialNr2 01");
+
 
   BlockLoad(SNrb);
   MatRowGet(IVr,rownr,IVrw);
@@ -678,7 +677,6 @@ begin
       end;  
     end;
   end;
-  logtext(0,"IVVc_PasteSerialNr2 02");
   if (blank(IVrw.ArtCode)) then begin 
     if (FindLastInvoiceRowForSerial(IVr.SerNr,IVr.CustCode,IVrw.SerialNr,lastIVrw)) then begin 
       if (nonblank(lastIVrw.ArtCode)) and (nonblank(IVrw.SerialNr)) and (IVrw.SerialNr==lastIVrw.SerialNr) then begin 
@@ -698,7 +696,6 @@ begin
       end;
     end;
   end;
-  logtext(0,"IVVc_PasteSerialNr2 03");
   MatRowGet(IVr,rownr,IVrw);
   if ((SNrb.BulkSerialNos==0) or (InString(IVrw.SerialNr,":")==0)) then begin
     SerialNrDimensions(IVrw.ArtCode,IVrw.SerialNr,UnitXval,UnitYval,UnitZval);
@@ -715,7 +712,6 @@ begin
     end;
     IVrw.Quant = CalculateSerialNrQuantity(IVrw.ArtCode,IVrw.SerialNr,location,true,IVrw.UnitXval,IVrw.UnitYval,IVrw.UnitZval,IVrw.Quant);  
   end;
-  logtext(0,"IVVc_PasteSerialNr2 04");
   GetSerialNumberCountryOfOrg("IVVc",IVr.SerNr,rownr,IVrw.ArtCode,IVrw.SerialNr,IVrw.CountryOfOrg,tstr);
   MatRowPut(IVr,rownr,IVrw);
   if (IVrw.Quant!=prevquant) then begin
@@ -726,10 +722,9 @@ begin
     IVSumup(IVr,true);
   end;
   
-  logtext(0,"IVVc_PasteSerialNr2 05");
   IVVc_PasteArtCode(IVr,rownr,inwarning,inwarning,TouchScreenLookf,sernrf);// Edit ************************** Wednesday, 15 June 2016 14:50:43
   
-  logtext(0,"IVVc_PasteSerialNr2 06");
+  
 LIVVc_PasteSerialNr:;
   IVVc_PasteSerialNr2 = res;
   return;

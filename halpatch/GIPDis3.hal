@@ -27,6 +27,8 @@ external procedure FindPLQPrice(record PLQVc,record INVc,var val,var val);
 external function Boolean GetRebate(record INVc,var val,var val,string,string,var val,var Boolean,Date);
 external procedure GetStructureCostPrice(string,var val);
 external function Boolean GetFirstItem(var string,var record INVc);
+external function Boolean GetFirstItemSer(var string,var record INVc,var string);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 13 02 2020 y. at 5:38:50 PM
+
 external procedure SetDefProjectUnit(string,var string);
 
 /*  This code will calculate the price if the price is not in the prices register, I don't think it should work that way
@@ -387,23 +389,23 @@ end;
 
 /*should i put branch as argument ? */
 global
-function Boolean GetItemPriceDiscount3ser(string item,val qtp,var record INVc INr,string crncycode,
+function Boolean GetItemPriceDiscount3ser(var string serial, string item,val qtp,var record INVc INr,string crncycode,
          val frrate,val torate1,val torate2,val basrate1,val basrate2,
          string langcode,string custcat,string pricelist,string rebcode,
          var val price,var string descstr,var val discount,
          var string vatcode,var val basepricep,var string salesacc,Integer aexport,var Boolean calcpricef,
          Date tdp,Time tt,string custcode,Boolean forcepropervar,var Boolean nomoreremotecalls,string paydeal,var string tax2code,var val tax2prc,
-         string region,string location,var string taxtempletecode, string serial)
-begin
+         string region,string location,var string taxtempletecode)
+BEGIN
   Boolean res;
   record PDVc PDr;
   record ITVc ITr;
   record PLVc PLr;
   record PLQVc PLQr;
   record PLDefVc PLDefr;
-  Boolean pldeffound,infound,qtydepf,foundstaff,promotionsf;
+  Boolean pldeffound,infound,qtydepf,foundstaff;
   val tprice,tdisc;
-  string 255 lang2,lpricelist;
+  string 255 lang2,pricelist2;
   val fr,to1,to2,br1,br2;  
   record AccBlock ARAccb;
   record CostAccBlock CAb;
@@ -417,13 +419,14 @@ begin
   Array string 2 maskvarsz;
   string 60 sz,msk,mskrep;
   string 200 varsubset;
-  Boolean nomorepricing,rebfound,qtyplfound,reversedvatf;
+  Boolean nomorepricing,rebfound,qtyplfound;
   string 10 plvatcode,pltaxtemplatecode;
 //  row PLDefVc PLDefrw;
 //  Integer rwcnt,i;
 //  Boolean res2;
-  record PDSalesAccBlock PDSAb;
+  record PDSalesAccBlock PDSalesAccRec;
   row LocationAccBlock LAbrw;
+  string 100 fserial;
 
   nomorepricing = false;
   exportf = aexport;
@@ -432,7 +435,7 @@ begin
   foundstaff = false;
   qtydepf = false;
   calcpricef = false;
-  lpricelist = pricelist;
+  pricelist2 = pricelist;
   BlockLoad(ARAccb);
   BlockLoad(CAb);
   if (ARAccb.CredSalesAccs==0) then begin
@@ -448,7 +451,8 @@ begin
   tdisc = discount;
   basepricep = blankval;
 
-  infound = GetFirstItem(item,INr);
+  infound = GetFirstItemSer(item,INr,serial);
+  
   theitemcode = INr.Code;
   if (infound==false) then begin
     infound = ReadFirstItem(item,INr,true,forcepropervar);
@@ -464,7 +468,7 @@ begin
     FillMaskVAR(item,itemsize,mask,maskvar,maskvarsz);
   end;
 
-  BlockLoad(PDSAb);
+  BlockLoad(PDSalesAccRec);
   if (INr.Terminated<>0) then begin infound = false; end;
   if (infound) then begin
     if (nonblank(INr.CalcPrice)) then begin
@@ -498,7 +502,7 @@ begin
       salesacc = INr.CredExpSalesAcc;
     end;  
     if (blank(salesacc)) then begin
-      if (PDSAb.UsePDSalesAcc==1) then begin
+      if (PDSalesAccRec.UsePDSalesAcc==1) then begin
         PDr.Code = paydeal;
         if (ReadFirstMain(PDr,1,true)) then begin end;
         salesacc = PDr.pdSalesAcc;
@@ -581,39 +585,21 @@ begin
     res = true;
     tprice = INr.UPrice1;
     if (HasPriceLists==false) then begin
-      goto L44GetItemPriceDiscount3;
+      goto L44GetItemPriceDiscount3ser;
     end;
     if (nonblank(custcode)) then begin
       if (nonblank(custcode)) then begin
-        PLr.PLCode = lpricelist;
+        PLr.PLCode = pricelist2;
         PLr.ArtCode = theitemcode;
         PLr.CustCode = custcode;
-				PLr.SerialNr = serial;// Edit ************************** Wednesday, 15 June 2016 14:27:31
-        plf = ReadFirstMain(PLr,4,true);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:19:18 PM
-        PLDefr.Code = lpricelist;
-        pldeffound = ReadFirstMain(PLDefr,1,true);        
+        PLr.SerialNr = serial;// Edit ************************** Wednesday, 15 June 2016 14:27:31
+        plf = ReadFirstMain(PLr,4,true);// Edit ************************** Wednesday, 15 June 2016 14:28:39
         if ((plf==false) and varf) then begin
-          PLr.PLCode = lpricelist;
+          PLr.PLCode = pricelist2;
           PLr.ArtCode = maskvar[0];
           PLr.CustCode = custcode;
           PLr.SerialNr = serial;// Edit ************************** Wednesday, 15 June 2016 14:27:31
-          plf = ReadFirstMain(PLr,4,true);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:19:35 PM
-          PLDefr.Code = lpricelist;
-          pldeffound = ReadFirstMain(PLDefr,1,true);        
-        end;
-        if (pldeffound) then begin
-          if (nonblank(PLDefr.StartDate)) then begin
-            if (tdp<PLDefr.StartDate) then begin
-              pldeffound = false;
-              plf = false;
-            end;
-          end;
-          if (nonblank(PLDefr.EndDate)) then begin
-            if (tdp>PLDefr.EndDate) then begin
-              pldeffound = false;
-              plf = false;
-            end;
-          end;
+          plf = ReadFirstMain(PLr,4,true);// Edit ************************** Wednesday, 15 June 2016 14:28:40
         end;
         if (plf) then begin
           tprice = PLr.ExVatPrice;
@@ -631,30 +617,30 @@ begin
           if (nonblank(pltaxtemplatecode)) then begin
             taxtempletecode = pltaxtemplatecode;
           end;
-          goto L34GetItemPriceDiscount3;  
+          goto L44GetItemPriceDiscount3ser;  
         end;
       end;
     end;    
 //MOved to GetPriceList
-    if (nonblank(lpricelist)) then begin
+    if (nonblank(pricelist2)) then begin
       if (GetYear(tdp)>0) then begin
-        pldeffound = PriceListforDateTime3(tdp,tt,lpricelist,lpricelist,PLDefr,custcode,item);
+        pldeffound = PriceListforDateTime2(tdp,tt,pricelist2,pricelist2,PLDefr);
 /*            
-        PLDefr.PLReplCode = lpricelist;
+        PLDefr.PLReplCode = pricelist2;
         PLDefr.StartDate = tdp;
         pldeffound = ReadLastKey("PLReplCode",PLDefr,2,false); 
-        if (PLDefr.PLReplCode<>lpricelist) then begin pldeffound = false; end;
+        if (PLDefr.PLReplCode<>pricelist2) then begin pldeffound = false; end;
         if (DateInRange(tdp,PLDefr.StartDate,PLDefr.EndDate)==false) then begin pldeffound = false; end;
-        if (pldeffound) then begin lpricelist = PLDefr.Code; end;
+        if (pldeffound) then begin pricelist2 = PLDefr.Code; end;
 */        
       end;  
       if (pldeffound==false) then begin
-        PLDefr.Code = lpricelist;
+        PLDefr.Code = pricelist2;
         pldeffound = ReadFirstMain(PLDefr,1,true);        
         if (pldeffound) then begin        
           if (nonblankdate(tdp)) then begin
             if (DateInRange(tdp,PLDefr.StartDate,PLDefr.EndDate)==false) then begin
-              goto L44GetItemPriceDiscount3;
+              goto L44GetItemPriceDiscount3ser;
             end;
           end;
         end;    
@@ -673,22 +659,21 @@ begin
       end;  
       switch (PLDefr.DepPrice) begin
         case 2:
-					PLr.SerialNr = serial;// Edit ************************** Wednesday, 15 June 2016 14:30:34
-          PLr.PLCode = lpricelist;
-          PLr.ArtCode = theitemcode;        
-          plf = ReadFirstKey("SerialNr",PLr,3,true);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:20:08 PM
-/*          
-          if (plf==false) and (pricelist!=lpricelist) then begin
+        	PLr.SerialNr = serial;// Edit ************************** Wednesday, 15 June 2016 14:30:34
+          PLr.PLCode = pricelist2;
+          PLr.ArtCode = theitemcode;  
+                
+          plf = ReadFirstKey("SerialNr",PLr,3,true);// Edit ************************** Wednesday, 15 June 2016 14:30:47
+          if (plf==false) and (pricelist!=pricelist2) then begin
             PLr.PLCode = pricelist;
             PLr.ArtCode = theitemcode;        
             plf = ReadFirstMain(PLr,2,true);
           end;
-*/          
           if ((plf==false) and varf) then begin
           	PLr.SerialNr = serial;// Edit ************************** Wednesday, 15 June 2016 14:30:34
-            PLr.PLCode = lpricelist;
+            PLr.PLCode = pricelist2;
             PLr.ArtCode = maskvar[0];        
-            plf = ReadFirstKey("SerialNr",PLr,3,true);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:20:23 PM
+            plf = ReadFirstKey("SerialNr",PLr,3,true);// Edit ************************** Wednesday, 15 June 2016 14:31:15
           end;
           if (plf) then begin 
             if (nonblank(custcode)) then begin
@@ -723,11 +708,11 @@ begin
           end;
 
         case 1:
-          PLQr.PLCode = lpricelist;
+          PLQr.PLCode = pricelist2;
           PLQr.ArtCode = theitemcode;
           plf = ReadFirstMain(PLQr,2,true);
           if ((plf==false) and varf) then begin
-            PLQr.PLCode = lpricelist;
+            PLQr.PLCode = pricelist2;
             PLQr.ArtCode = maskvar[0];
             plf = ReadFirstMain(PLQr,2,true);
           end;
@@ -741,22 +726,21 @@ begin
             pldeffound = false;
           end;
         case 0:
-          PLr.PLCode = lpricelist;
+          PLr.PLCode = pricelist2;
           PLr.ArtCode = theitemcode;  
           PLr.SerialNr = serial;// Edit ************************** Wednesday, 15 June 2016 14:35:38      
-          plf = ReadFirstKey("SerialNr",PLr,3,true);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:21:42 PM
-/*          
-          if (plf==false) and (pricelist!=lpricelist) then begin
+          plf = ReadFirstKey("SerialNr",PLr,3,true);// Edit ************************** Wednesday, 15 June 2016 14:35:49
+          if (plf==false) and (pricelist!=pricelist2) then begin
             PLr.PLCode = pricelist;
-            PLr.ArtCode = theitemcode;        
-            plf = ReadFirstMain(PLr,2,true);
-          end;
-*/          
-          if ((plf==false) and varf) then begin
-            PLr.PLCode = lpricelist;
-            PLr.ArtCode = maskvar[0];    
+            PLr.ArtCode = theitemcode;    
             PLr.SerialNr = serial;// Edit ************************** Wednesday, 15 June 2016 14:35:38        
-            plf = ReadFirstKey("SerialNr",PLr,3,true);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 12 02 2020 y. at 2:24:07 PM
+            plf = ReadFirstKey("SerialNr",PLr,3,true);// Edit ************************** Wednesday, 15 June 2016 14:36:25
+          end;
+          if ((plf==false) and varf) then begin
+            PLr.PLCode = pricelist2;
+            PLr.ArtCode = maskvar[0];   
+            PLr.SerialNr = serial;// Edit ************************** Wednesday, 15 June 2016 14:35:38         
+            plf = ReadFirstKey("SerialNr",PLr,3,true);// Edit ************************** Wednesday, 15 June 2016 14:36:23
           end;
           if (plf) then begin 
             if (nonblank(custcode)) then begin
@@ -805,13 +789,12 @@ begin
           end;
         end;
     end;
-L34GetItemPriceDiscount3:;
     if (pldeffound) then begin
-       if (crncycode==PLDefr.CurncyCode) then begin goto L45GetItemPriceDiscount3; end;// do not touch price 
+       if (crncycode==PLDefr.CurncyCode) then begin goto L44GetItemPriceDiscount3ser; end;// do not touch price 
        if (nonblank(PLDefr.CurncyCode)) then begin
          if (blank(crncycode)) then begin           
            tprice = MulWithRateToBase1(PLDefr.CurncyCode,CurrentDate,tprice,DefaultCurRoundOff);
-           goto L45GetItemPriceDiscount3;
+           goto L44GetItemPriceDiscount3ser;
          end else begin
            tprice = MulWithRateToBase1(PLDefr.CurncyCode,CurrentDate,tprice,DefaultCurRoundOff);
            if (frrate==0 and torate1==0 and torate2==0 and basrate1==0 and basrate2==0) then begin
@@ -819,28 +802,27 @@ L34GetItemPriceDiscount3:;
            end else begin
              tprice = DivRateToBase1(crncycode,tprice,frrate,torate1,torate2,basrate1,basrate2,DefaultCurRoundOff);
            end;
-           goto L45GetItemPriceDiscount3;
+           goto L44GetItemPriceDiscount3ser;
          end;
        end;
     end;    
-L44GetItemPriceDiscount3:;
-//is this Div needed at all ? 
+
     if (frrate==0 and torate1==0 and torate2==0 and basrate1==0 and basrate2==0) then begin
       tprice = DivWithRateToBase1(crncycode,CurrentDate,tprice,DefaultCurRoundOff);
     end else begin
       tprice = DivRateToBase1(crncycode,tprice,frrate,torate1,torate2,basrate1,basrate2,DefaultCurRoundOff);
     end;
-L45GetItemPriceDiscount3:;
+
+L44GetItemPriceDiscount3ser:;
     price = tprice;
     lang2 = langcode;
-    GetItemNameStr(1,descstr,lang2,INr.Name,theitemcode);
-    
-    if (nomorepricing==false and promotionsf==false) then begin
+    if (GetItemNameStr(1,descstr,lang2,INr.Name,theitemcode)) then begin end;
+    if (nomorepricing==false) then begin
       rebfound = GetRebate(INr,tprice,qtp,custcat,rebcode,tdisc,foundstaff,tdp);
       if (foundstaff) then begin
         discount = tdisc;
       end else begin
-        if (blank(discount)) then begin
+        if (discount==blankval) then begin
           discount = tdisc;
         end;        
       end;        
@@ -890,7 +872,7 @@ L45GetItemPriceDiscount3:;
         salesacc = ARAccb.CredExpSalesAcc;
       end;
     end;
-    if (PDSAb.UsePDSalesAcc==2) then begin
+    if (PDSalesAccRec.UsePDSalesAcc==2) then begin
       PDr.Code = paydeal;
       if (ReadFirstMain(PDr,1,true)) then begin end;
       if (nonblank(PDr.pdSalesAcc)) then begin
@@ -926,25 +908,8 @@ L45GetItemPriceDiscount3:;
   end;
   RegionPerceptionTax(custcode,region,INr.EUCodex,INr.Group,tax2code,tax2prc);
   nomoreremotecalls = !calcpricef and !rebfound and !qtyplfound;
-//Trace("item " & item," pricelist " & pricelist & " rebcode " & rebcode & " custcode " & custcode & " tprice " & tprice);            
+//Trace("item " & item," pricelist " & pricelist & " rebcode " & rebcode & " custcode " & custcode & " tprice " & tprice); 
   GetItemPriceDiscount3ser = res;
-  RETURN;
-END;
-
-global
-function val GetTax1Discount(string custcode,Date transdate,string vatcode)
-BEGIN
-  val res;
-  record Tax1RebVc Tax1Rebr;
-
-  Tax1Rebr.Code = vatcode;
-  Tax1Rebr.CustCode = custcode;
-  if (ReadFirstMain(Tax1Rebr,2,true)) then begin
-    if (transdate>=Tax1Rebr.From) then begin
-      res = Tax1Rebr.TAX1Reb;
-    end;
-  end;
-  GetTax1Discount = res;
   RETURN;
 END;
 
@@ -973,7 +938,7 @@ global
 procedure GetTaxesDiscounts(string custcode,Date transdate,string vatcode,string tax2code,var val tax1reb,var val tax2reb)
 BEGIN
 
-  tax1reb = GetTax1Discount(custcode,transdate,vatcode);
+  //tax1reb = GetTax1Discount(custcode,transdate,vatcode);
 /*
 not used register
   tax2reb = GetTax2Discount(custcode,transdate,tax2code);
