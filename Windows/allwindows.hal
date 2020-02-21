@@ -4408,3 +4408,51 @@ begin
     end;
   EndWindow;
 end;
+
+window BackupSettingsTClass:1
+  wtag("language","UKR"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,h3,v,vs;
+  WindowBegin("Настройки резервних копій",BackupSettingsTClass,CGSbl,-);
+  SetWRect(20,80,420,300);
+  SetBlid(BackupSettingsBlock);
+  
+  vs = 20; h=70; h2 = -100; v=15; h3 = 200;
+  if (StandardHansa==false) then begin
+  Tile(0,30,false,"",RemoteBackupsUser);
+  
+  TileButton(1,"Віддалене рез. копіюв.");
+  TileButton(2,"Journaling");
+    TileButton(3,"Journaling"); //!!TRANSLATE
+  
+    Tile(1,240,false,"",CleanupBackupFolderf);
+    CheckBox(h3,v,0,"Automatically delete old backups",CleanupBackupFolderf); //!!TRANSLATE
+    EditField(h3,v+=vs,30,"Days to keep daily",Normal,DaysToKeepDaily,false,0); //!!TRANSLATE
+    EditField(h3,v+=vs,30,"Weeks to keep weekly",Normal,WeeksToKeepWeekly,false,0); //!!TRANSLATE
+    EditField(h3,v+=vs,30,"Years to keep yearly",Normal,YearsToKeepYearly,false,0); //!!TRANSLATE
+    Tile(2,240,false,"",RemoteBackupsUser);
+    v = 15;
+  end;
+  CheckBox(h,v,0,"Віддалені резервні копії",RemoteBackupsf);
+  CheckBox(h,v+=vs,0,"HasHadCloudBackupFlag",HasHadCloudBackupFlag);
+  EditField(h,v+=vs,140,"Користувач",Normal,RemoteBackupsUser,false,0);
+  EditFieldTL(h2,v,80,"Пароль",M4Star,Normal,40,RemoteBackupsPassword,false,0);
+  EditField(h,v+=vs,140,"Адреса",Normal,RemoteBackupsAddress,false,0);
+  EditField(h2,v,80,"Порт",Normal,RemoteBackupsPort,false,0);
+  
+  CheckBox(h,v+=vs,0,"Дозволити клонування",EnableCloning); 
+  EditField(h2,v,80,"Клонування: пароль",Normal,ClonePassword,false,0); 
+  
+  if (StandardHansa==false) then begin
+    Tile(3,240,false,"",MaxJournalFiles);
+  vs = 20; h=120; h2 = -120; v=15;
+  ButtonFrame(h,v,165,3,"Замінюв. журнал");
+  RadioButton(h,v,0,0,"вручну",RotateJournal);
+  RadioButton(h,v+=16,1,0,"щоденно",RotateJournal);
+  RadioButton(h,v+=16,2,0,"щотижнево",RotateJournal); 
+  
+  EditField(h,v+=(vs*2),80,"Макс. файл журналу",Normal,MaxJournalFiles,false,0);
+  end;
+  
+  EndWindow;
+end;
