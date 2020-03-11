@@ -223,7 +223,7 @@ BEGIN
     end;
   end;
   if (res!=defqty) then begin
-    MessageBox(2290,"");
+   //MessageBox(2290,"");
   end;
   CalculateSerialNrQuantity = res;
   RETURN;
