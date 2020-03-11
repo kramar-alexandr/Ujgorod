@@ -552,9 +552,11 @@ if (HasTouchScreenLook==false) then begin
   //  MatCol(t=kInvoiceRowTypeNormal,194,"Найменування",0,Spec,false,0);
   t=kInvoiceRowTypeNormal;
   MatCol(t,144,"Сер. №",0,SerialNr,false,SerialNrSClass); //Edit***************************Sasha2,12:01 21.06.2016
+  EnterSkip("ArtCode");// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 11 03 2020 y. at 4:17:42 PM
   MatCol(t,300,"Опис",0,Spec,false,0);
   MatCol(t,-380,"Бренд",0,Classification,false,DISClass); //Edit***************************Sasha2,17:23 30.08.2016
   MatCol(t,-300,"Штрих-код",0,Barcode,false,0);
+  EnterSkip("SerialNr");// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 11 03 2020 y. at 4:18:29 PM
   MatCol(t,-165,"Ціна",0,Price,true,0);
   //  MatColTL(t,-235,"",0,M45Val,Normal,0,Price,true,0);
   MatCol(t,-100,"%",0,vRebate,true,0);
