@@ -46,6 +46,7 @@ begin
 	statictext(h1,v+27,"Этикетка для Zebra",false);
 	RadioButton(h1,v+=30,0,0,"Стара/нова ціна",flags[10]);
 	RadioButton(h1,v+=16,1,0,"Єдина ціна",flags[10]);
+	RadioButton(h1,v+=16,2,0,"Ціна/Персональна ціна",flags[10]);
   v=v+30;
   h=300;
   ColourPushButton(h,v,h+100,v+30,"ChoosePrinter","Друк",8);
