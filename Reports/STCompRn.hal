@@ -143,17 +143,17 @@ BEGIN
               end else begin
 //                if (item!=StockTakerw.ArtCode) then begin testf = false; end;
 //                if (item!=Left(StockTakerw.ArtCode,len(item))) then begin testf = false; end;
-                if (TestArtCodeMatch(StockTakerw.ArtCode,item)==false) then begin testf = false; end;
+                if (TestArtCodeMatch(StockTakerw.ArtCode,item)==false) then begin testf = false; end;//?????// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 23 03 2021 y. at 12:05:33 PM
+                if(StockTakerw.ArtCode==item and !testf)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 23 03 2021 y. at 11:51:16 AM
+									testf = true;
+								end;
               end;
               if (nonblank(RepSpec.AccStr)) then begin
                 if (nonblank(StockTakerw.Location)) then begin
                   if (StockTakerw.Location<>RepSpec.AccStr) then begin testf = false; end;
                 end else begin
                   if (nonblank(StockTaker.Location)) then begin
-                    if (StockTaker.Location<>RepSpec.AccStr) then begin testf = false; end;//??????// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 23 03 2021 y. at 11:51:13 AM
-                    if(StockTakerw.ArtCode==item and !testf)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 23 03 2021 y. at 11:51:16 AM
-											testf = true;
-										end;
+                    if (StockTaker.Location<>RepSpec.AccStr) then begin testf = false; end;
                   end else begin
                     if (MainStockRec.MainStock<>RepSpec.AccStr) then begin testf = false; end;
                   end;
